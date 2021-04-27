@@ -1,6 +1,6 @@
 
 /* scanner for a toy Pascal-like language */
-%option yylineno noyywrap
+%option yylineno noyywrap 
 /*%option case-insensitive*/
 
 %x LINE_COMMENT

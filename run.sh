@@ -1,3 +1,4 @@
-flex -o lexer.c lexer.l
-gcc lexer.c -o lexer
+flex lexer.l
+gcc lex.yy.c -o lexer
+rm lex.yy.c
 ./lexer<test.cpp
