@@ -1,7 +1,3 @@
-#flex scanner.l
-#gcc -g lex.yy.c -o scanner -lfl
-#./scanner
-
-bison parser.y
-g++ -o parser parser.cpp
-./parser
+flex -o lexer.c lexer.l
+gcc lexer.c -o lexer
+./lexer<test.cpp

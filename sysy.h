@@ -27,7 +27,7 @@ enum Parser
     T_EE,
     T_NE,
     T_AND,
-    T_IR,
+    T_OR,
     T_SEMICOLON,
     T_COMMA,
     T_LS,

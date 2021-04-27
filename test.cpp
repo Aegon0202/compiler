@@ -1,6 +1,10 @@
-#include "sysy.h"
+// this is zhushi
+/*
+dasdasd
+*/
+
 int main(void)
 {
-  int a = T_INT;
+  int a = 20;
   int b = 20;
 }
