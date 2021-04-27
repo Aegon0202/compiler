@@ -41,7 +41,7 @@
 %token <int> T_OCTAL "八进制常数"
 %token <int> T_HEXADECIMAL "十六进制常数"
 
-%token <<EOF>> "文件结尾"
+%token END 0 "文件结尾"
 
 %start CompUnit
 
