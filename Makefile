@@ -1,7 +1,7 @@
 all:
-	flex -o scanner.cpp scanner.l
+	flex -o lexer.cpp lexer.l
 	bison -o parser.cpp parser.y
-	g++ -g scanner.cpp parser.cpp -o a.out
+	g++ -g lexer.cpp parser.cpp -o compiler
 
 clean:
-	rm -rf a.out scanner.cpp parser.cpp
+	rm -rf compiler lexer.cpp parser.cpp

@@ -8,7 +8,7 @@
 
 %{
     #include <math.h>
-    #include "scanner.hpp"
+    #include "lexer.hpp"
 %}
 
 %%

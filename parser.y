@@ -29,7 +29,7 @@
 {
     #include <iostream>
     #include "parser.hpp"
-    #include "scanner.hpp"
+    #include "lexer.hpp"
 
     using namespace saltyfish;
 }
@@ -82,11 +82,11 @@
 {
   namespace saltyfish
   {
-    saltyfish::Scanner scanner;
+    saltyfish::Lexer lexer;
     // Return the next token.
     auto yylex () -> Parser::symbol_type
     {      
-      return scanner.get_next_token();
+      return lexer.get_next_token();
     }
   }
 }
