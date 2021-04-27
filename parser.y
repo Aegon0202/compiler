@@ -241,7 +241,8 @@ namespace saltyfish
 }
 
 int main ()
-{
+{ 
+
   saltyfish::Parser parser;
   return parser.parse();
 }
