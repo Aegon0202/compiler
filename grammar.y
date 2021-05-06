@@ -84,3 +84,4 @@ T_IDENT vardef_dimension_list T_EQUAL InitVal {printf("变量定义");}
 
 InitVal:
 Number
+
