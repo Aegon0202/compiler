@@ -4,7 +4,7 @@
 #include "flex.bison/SysY.tab.h"
 #include "SysY.type/SysY.type.def.h"
 #include "SysY.type/SysY.type.new.h"
-#include "SysY.type/SysY.type.visitor.hpp"
+#include "SysY.type/SysY.type.visitor.h"
 
 int main()
 {
