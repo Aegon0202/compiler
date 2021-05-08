@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ConstantInt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Constant.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ValueDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Exp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryExp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Ident.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PrimaryExp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UnaryExp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncallExp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Decl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ValueDecl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncDecl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncParamDecl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ASTUnit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Stmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IfStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WhileStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BreakStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ContinueStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ReturnStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AssignStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ExpStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EmptyStmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CompUnit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ConstantInt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Type.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ValueDef.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Exp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryExp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Ident.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PrimaryExp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="UnaryExp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FuncallExp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Decl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ValueDecl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FuncDecl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FuncParamDecl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTUnit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Stmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IfStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WhileStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BreakStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ContinueStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ReturnStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AssignStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BlockStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ExpStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EmptyStmt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CompUnit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FuncDef.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+.vscode
+AST/.vs
+AST/Debug
+AST/UpgradeLog.htm
+AST/AST/Debug
+AST/ASTVisitor/Debug
+parser.hpp
+parser.cpp
+scanner.cpp
+a.out
+location.hh

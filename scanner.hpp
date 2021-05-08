@@ -18,20 +18,21 @@
 // Scanner method signature is defined by this macro. Original yylex() returns int.
 // Sinice Bison 3 uses symbol_type, we must change returned type. We also rename it
 // to something sane, since you cannot overload return type.
-#undef YY_DECL
-#define YY_DECL saltyfish::Parser::symbol_type saltyfish::Scanner::get_next_token()
-
 #include "parser.hpp" // this is needed for symbol_type
+#include "location.hh"
 
-namespace saltyfish {
+#undef YY_DECL
+#define YY_DECL saltyfish::Parser::symbol_type saltyfish::Scanner::get_next_token(saltyfish::Driver& driver)
 
-    
+
+namespace saltyfish {    
 class Scanner : public yyFlexLexer {
 public:
-    Scanner(){}
+	Scanner(){}
+    Scanner(std::istream *in):yyFlexLexer(in){}
 	virtual ~Scanner() {}
-	virtual saltyfish::Parser::symbol_type get_next_token();
-        
+	virtual saltyfish::Parser::symbol_type get_next_token(saltyfish::Driver& driver);
+	using yyFlexLexer::yylex;
 private:
 
 };
