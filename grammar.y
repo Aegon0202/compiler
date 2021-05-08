@@ -48,42 +48,154 @@
 %start CompUnit
 
 %%
-CompUnit:
-%empty | CompUnit Decl | CompUnit FuncDef
+CompUnit
+    :   Decl 
+    |   FuncDef
+    |   CompUnit FuncDef 
+    |   CompUnit Decl 
+    ;
 
-Decl:
-ConstDecl | VarDecl
+Decl
+    :   ConstDecl 
+    |   VarDecl
+    ;
 
 
-ConstDecl:
-T_CONST BType constdef_comma_list T_SEMICOLON {cout<<"常量声明"<<endl;}
+ConstDecl
+    :    T_CONST BType ConstDefs T_SEMICOLON 
+    ;
 
-constdef_comma_list:
+ConstDefs
+    :   ConstDef
+    |   ConstDefs T_COMMA ConstDef
+    ;
+
+BType
+    :   T_INT
+    ;
+
 ConstDef
-| constdef_comma_list T_COMMA ConstDef
+    :   T_IDENT ArrayDef T_EQUAL ConstInitVal 
+    ;
 
-BType:
-T_INT
+ArrayDef
+    :   %empty 
+    |   ArrayDef T_LM ConstExp T_RM
+    ;
 
-ConstDef:
-T_IDENT constdef_dimension_list T_EQUAL ConstInitVal {cout<<"常数定义"<<endl;}
+ConstInitVal
+    :   number
+    ;
 
-constdef_dimension_list:
-%empty | constdef_dimension_list T_LM ConstExp T_RM
+VarDecl
+    :   BType VarDefs T_SEMICOLON
+    ;
 
-ConstInitVal:
-Number  {cout<<"数字"<<endl;}
+VarDefs
+    :   VarDef
+    |   VarDefs T_COMMA VarDef
+    ;
 
-VarDecl:
-BType VarDef vardef_comma_list T_SEMICOLON {cout<<"变量声明"<<endl;}
+VarDef
+    :   T_IDENT ArrayDef T_EQUAL InitVal 
+    |   T_IDENT ArrayDef
+    ;
 
-vardef_comma_list:
-VarDef| vardef_comma_list T_COMMA VarDef
 
-VarDef:
-T_IDENT vardef_dimension_list T_EQUAL InitVal {cout<<"变量定义"<<endl;}
-| T_IDENT vardef_dimension_list {cout<<"变量定义"<<endl;}
+InitVal
+    :   Exp
+    |   T_LB InitVals T_RB
+    ;
 
-InitVal:
-Number
+InitVals
+    :   %empty
+    |   InitVal
+    |   InitVals T_COMMA InitVal
+    ;
+
+FuncType
+    :   T_INT
+    |   T_VOID
+    ;
+
+FuncDef
+    :   FuncType T_IDENT T_LS FuncfParams T_RS Block
+    ;
+
+FuncfParams
+    :   %empty
+    |   FuncfParam
+    |   FuncfParams T_COMMA FuncfParam
+    ;
+
+FuncfParam
+    :   BType T_IDENT
+    |   BType T_IDENT T_LS T_RS ExpArrayDefs
+    ;
+
+ExpArrayDefs
+    :   %empty
+    |   ExpArrayDef
+    |   ExpArrayDefs ExpArrayDef
+    ;
+
+ExpArrayDef
+    :   T_LM Exp T_RM
+    ;
+
+Block
+    :   T_LB BlockItems T_RB
+    ;
+
+BlockItems
+    :   %empty
+    |   BlockItem
+    |   BlockItems BlockItem
+    ;
+
+BlockItem
+    :   Decl
+    |   Stmt
+    ;
+
+Stmt
+    :   LVal T_EQUAL Exp T_SEMICOLON
+    |   Exp T_SEMICOLON
+    |   T_SEMICOLON
+    |   Block
+    |   T_IF T_LS Conditon T_RS Stmt
+    |   T_IF T_LS Conditon T_RS Stmt T_ELSE Stmt
+    |   T_WHILE T_LS Conditon T_RS Stmt
+    |   T_BREAK T_SEMICOLON
+    |   T_CONTINUE T_SEMICOLON
+    |   T_RETURN T_SEMICOLON
+    |   T_RETURN Exp T_SEMICOLON
+    ;
+
+Exp
+    :   AddExp
+    ;
+
+Conditon
+    : LOrExp
+    ;
+
+LVal
+    :   T_IDENT ExpArrayDefs
+    ;
+
+PrimaryExp
+    :   T_LS Exp T_RS
+    |   LVal
+    |   Number
+    ;
+
+Number 
+    :   IntConst
+    ;
+
+
+
+
+
 
