@@ -119,16 +119,16 @@ FuncType
     ;
 
 FuncDef
-    :   FuncType T_IDENT T_LS FuncfParams T_RS Block
+    :   FuncType T_IDENT T_LS FuncFParams T_RS Block
     ;
 
-FuncfParams
+FuncFParams
     :   %empty
-    |   FuncfParam
-    |   FuncfParams T_COMMA FuncfParam
+    |   FuncFParam
+    |   FuncFParams T_COMMA FuncFParam
     ;
 
-FuncfParam
+FuncFParam
     :   BType T_IDENT
     |   BType T_IDENT T_LS T_RS ExpArrayDefs
     ;
@@ -194,7 +194,77 @@ Number
     :   IntConst
     ;
 
+UnaryExp
+    :   T_ADD
+    |   T_SUB
+    |   T_NOT
+    ;
 
+FuncRParams
+    :   FuncRParam
+    |   FuncRParams T_COMMA FuncRParam
+    ;
+
+FuncRParam
+    : Exp
+    ;
+
+MulExp
+    :   UnaryExp
+    |   MulExp MulOp UnaryExp
+    ;
+
+MulOp   
+    :   T_MUL
+    |   T_DIV
+    |   T_MOD
+    ;
+
+AddExp
+    :   MulExp
+    |   AddExp AddOp MulExp
+    ;
+
+AddOp
+    :   T_ADD
+    |   T_SUB
+    ;
+
+RelExp
+    :   AddExp
+    |   RelExp RelOp AddExp
+    ;
+
+RelOp
+    :   T_B
+    |   T_BE
+    |   T_A
+    |   T_AE
+
+EqExp
+    :   RelExp
+    |   EqExp EqOp RelExp
+    ;
+
+EqOp   
+    :   T_EE
+    |   T_NE
+
+LAndExp
+    :   EqExp 
+    |   LAndExp T_AND EqExp
+    ;
+
+LOrExp
+    :   LAndExp
+    |   LOrExp T_OR LAndExp
+    ;
+
+ConstExp
+    :   AddExp
+    ;
+
+%%
 
 
 
