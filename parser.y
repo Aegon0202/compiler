@@ -1,6 +1,15 @@
 %require "3.5"
 %language "c++"
-%output "grammar.cpp"
+%output "parser.cpp" 
+
+%define parse.error verbose
+
+%define api.parser.class {Parser}
+
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+%define api.namespace {saltyfish}
 
 %code requires
 {
@@ -19,10 +28,14 @@
 %code top
 {
     #include <iostream>
-    #include "grammer.hpp"
+    #include "parser.hpp"
     #include "lexer.hpp"
 
     using namespace saltyfish;
+    saltyfish::Parser::symbol_type yylex(){
+        static Lexer* lexer = new Lexer();
+        return lexer->get_next_token();
+    }
 }
 
 
@@ -298,6 +311,18 @@ IntConst
 
 %%
 
+namespace saltyfish
+{
+  auto Parser::error (const std::string& msg) -> void
+  {
+    std::cerr << msg << '\n';
+  }
+}
 
+int main ()
+{
+  saltyfish::Parser parser;
+  return parser.parse();
+}
 
 

@@ -78,7 +78,3 @@
 
 %%
 
-int main(){
-    while(yylex()!=-1);
-    return 1;
-}

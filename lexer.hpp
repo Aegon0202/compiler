@@ -1,5 +1,5 @@
-#ifndef SCANNER_HPP
-#define SCANNER_HPP
+#ifndef LEXER_HPP
+#define LEXER_HPP
 
 /**
  * Generated Flex class name is yyFlexLexer by default. If we want to use more flex-generated
@@ -14,11 +14,12 @@
 #include <FlexLexer.h>
 #endif
 
+#undef YY_DECL
+#define YY_DECL saltyfish::Parser::symbol_type saltyfish::Lexer::get_next_token()
+#include "parser.hpp"
 // Scanner method signature is defined by this macro. Original yylex() returns int.
 // Sinice Bison 3 uses symbol_type, we must change returned type. We also rename it
 // to something sane, since you cannot overload return type.
-#undef YY_DECL
-#define YY_DECL saltyfish::Parser::symbol_type saltyfish::Scanner::get_next_token()
 
 namespace saltyfish
 {
@@ -28,6 +29,7 @@ namespace saltyfish
     public:
         Lexer() {}
         virtual ~Lexer() {}
+        virtual saltyfish::Parser::symbol_type get_next_token();
 
     private:
     };
