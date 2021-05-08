@@ -4,4 +4,4 @@ all:
 	g++ -g lexer.cpp grammar.cpp -o compiler
 
 clean:
-	rm -rf compiler lexer.cpp parser.cpp parser.hpp
+	rm -rf compiler lexer.cpp parser.cpp

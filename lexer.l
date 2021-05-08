@@ -1,14 +1,12 @@
-
-/* scanner for a toy Pascal-like language */
-%option yylineno noyywrap 
-/*%option case-insensitive*/
+%option yylineno noyywrap c++ yyclass="Lexer" prefix="sf"
 
 %x LINE_COMMENT
 %x BLOCK_COMMENT
 
 %{
-#include "sysy.h"
+#include "sysy.hpp"
 #include <stdio.h>
+#include "lexer.hpp"
 %}
 
 %%

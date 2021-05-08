@@ -1,6 +1,30 @@
-%{
-    #include "yacc.tab.h"
-%}
+%require "3.5"
+%language "c++"
+%output "grammar.cpp"
+
+%code requires
+{
+    #include <iostream>
+    #include <string>
+    #include <vector>
+    #include <stdint.h>
+
+    using namespace std;
+
+    namespace saltyfish {
+
+    }
+}
+
+%code top
+{
+    #include <iostream>
+    #include "grammer.hpp"
+    #include "lexer.hpp"
+
+    using namespace saltyfish;
+}
+
 
 /* declare token */
 %token T_COMMA "逗号"
