@@ -56,7 +56,7 @@ ConstDecl | VarDecl
 
 
 ConstDecl:
-T_CONST BType constdef_comma_list T_SEMICOLON {printf("常量声明");}
+T_CONST BType constdef_comma_list T_SEMICOLON {cout<<"常量声明"<<endl;}
 
 constdef_comma_list:
 ConstDef
@@ -66,23 +66,23 @@ BType:
 T_INT
 
 ConstDef:
-T_IDENT constdef_dimension_list T_EQUAL ConstInitVal {printf("常数定义");}
+T_IDENT constdef_dimension_list T_EQUAL ConstInitVal {cout<<"常数定义"<<endl;}
 
 constdef_dimension_list:
 %empty | constdef_dimension_list T_LM ConstExp T_RM
 
 ConstInitVal:
-Number
+Number  {cout<<"数字"<<endl;}
 
 VarDecl:
-BType VarDef vardef_comma_list T_SEMICOLON {printf("变量声明");}
+BType VarDef vardef_comma_list T_SEMICOLON {cout<<"变量声明"<<endl;}
 
 vardef_comma_list:
 VarDef| vardef_comma_list T_COMMA VarDef
 
 VarDef:
-T_IDENT vardef_dimension_list T_EQUAL InitVal {printf("变量定义");}
-| T_IDENT vardef_dimension_list {print("变量定义");}
+T_IDENT vardef_dimension_list T_EQUAL InitVal {cout<<"变量定义"<<endl;}
+| T_IDENT vardef_dimension_list {cout<<"变量定义"<<endl;}
 
 InitVal:
 Number
