@@ -1,4 +1,6 @@
 
+
+/* declare token */
 %token T_COMMA "逗号"
 %token T_SEMICOLON "分号"
 %token T_LB "左大括号"
