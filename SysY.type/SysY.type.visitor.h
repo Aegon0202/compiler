@@ -255,6 +255,5 @@
         VisitTokenFuncBody
 
 VisitorDeclGenerator(printToken, printTokenFunc, void);
-VisitorDeclGenerator(freeTokenRecusive, freeTokenRecusiveFunc, void);
 
 #endif

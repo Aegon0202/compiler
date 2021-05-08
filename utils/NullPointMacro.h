@@ -1,6 +1,6 @@
 #ifndef NULL_POINT_MACRO_H
 #define NULL_POINT_MACRO_H
-
+#include <stdio.h>
 #define EnsureNotNull(p)                                                                 \
     do                                                                                   \
     {                                                                                    \
