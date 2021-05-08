@@ -1,4 +1,6 @@
-
+%{
+    #include "yacc.tab.h"
+%}
 
 /* declare token */
 %token T_COMMA "逗号"
@@ -33,7 +35,7 @@
 %token T_A "大于号"
 %token T_BE "小于等于号"
 %token T_AE "大于等于号"
-%token T_E "等于等于号"
+%token T_EE "等于等于号"
 %token T_NE "不等于号"
 %token T_AND "与号"
 %token T_OR "或号"
@@ -84,7 +86,7 @@ ArrayDef
     ;
 
 ConstInitVal
-    :   number
+    :   Number
     ;
 
 VarDecl
@@ -262,6 +264,12 @@ LOrExp
 
 ConstExp
     :   AddExp
+    ;
+
+IntConst
+    :   T_DECIMAL
+    |   T_OCTAL
+    |   T_HEXADECIMAL
     ;
 
 %%
