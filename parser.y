@@ -101,7 +101,7 @@ Decl
 
 
 ConstDecl
-    :    T_CONST BType ConstDefs T_SEMICOLON 
+    :    T_CONST T_INT ConstDefs T_SEMICOLON 
     ;
 
 ConstDefs
@@ -109,17 +109,14 @@ ConstDefs
     |   ConstDefs T_COMMA ConstDef
     ;
 
-BType
-    :   T_INT
-    ;
-
 ConstDef
-    :   T_IDENT ArrayDef T_EQUAL ConstInitVal 
+    :   T_IDENT ArrayDef T_EQUAL ConstInitVal
+    |   T_IDENT T_EQUAL ConstInitVal 
     ;
 
 ArrayDef
-    :   %empty 
-    |   ArrayDef T_LM ConstExp T_RM
+    :   ArrayDef T_LM ConstExp T_RM
+    |   T_LM ConstExp T_RM
     ;
 
 ConstInitVal
@@ -127,7 +124,7 @@ ConstInitVal
     ;
 
 VarDecl
-    :   BType VarDefs T_SEMICOLON
+    :   T_INT VarDefs T_SEMICOLON
     ;
 
 VarDefs
@@ -138,43 +135,43 @@ VarDefs
 VarDef
     :   T_IDENT ArrayDef T_EQUAL InitVal 
     |   T_IDENT ArrayDef
+    |   T_IDENT
+    |   T_IDENT T_EQUAL InitVal
     ;
 
 
 InitVal
     :   Exp
     |   T_LB InitVals T_RB
+    |   T_LB T_RB
     ;
 
 InitVals
-    :   %empty
-    |   InitVal
+    :   InitVal
     |   InitVals T_COMMA InitVal
     ;
 
-FuncType
-    :   T_INT
-    |   T_VOID
-    ;
 
 FuncDef
-    :   FuncType T_IDENT T_LS FuncFParams T_RS Block
+    :   T_INT T_IDENT T_LS FuncFParams T_RS Block
+    |   T_VOID T_IDENT T_LS FuncFParams T_RS Block
+    |   T_INT T_IDENT T_LS T_RS Block
+    |   T_VOID T_IDENT T_LS T_RS Block
     ;
 
 FuncFParams
-    :   %empty
-    |   FuncFParam
+    :   FuncFParam
     |   FuncFParams T_COMMA FuncFParam
     ;
 
 FuncFParam
-    :   BType T_IDENT
-    |   BType T_IDENT T_LS T_RS ExpArrayDefs
+    :   T_INT T_IDENT
+    |   T_INT T_IDENT T_LM T_RM ExpArrayDefs
+    |   T_INT T_IDENT T_LM T_RM
     ;
 
 ExpArrayDefs
-    :   %empty
-    |   ExpArrayDef
+    :   ExpArrayDef
     |   ExpArrayDefs ExpArrayDef
     ;
 
@@ -184,11 +181,11 @@ ExpArrayDef
 
 Block
     :   T_LB BlockItems T_RB
+    |   T_LB T_RB
     ;
 
 BlockItems
-    :   %empty
-    |   BlockItem
+    :   BlockItem
     |   BlockItems BlockItem
     ;
 
@@ -234,6 +231,12 @@ Number
     ;
 
 UnaryExp
+    :   PrimaryExp
+    |   T_IDENT T_LS FuncRParams T_RS
+    |   T_IDENT T_LS T_RS
+    |   UnaryOp UnaryExp
+
+UnaryOp
     :   T_ADD
     |   T_SUB
     |   T_NOT
