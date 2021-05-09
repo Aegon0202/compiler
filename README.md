@@ -1,4 +1,4 @@
-# complier
+# compiler
 
 SF(salty fish) compiler is a C-developed optimizing compiler which is being produced by a group of undergraduate students 
 from Huazhong University of Science and Technology.  
