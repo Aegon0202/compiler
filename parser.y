@@ -30,7 +30,7 @@
     #include <iostream>
     #include "parser.hpp"
     #include "lexer.hpp"
-
+    using namespace std;
     using namespace saltyfish;
     saltyfish::Parser::symbol_type yylex(){
         static Lexer* lexer = new Lexer();
@@ -204,7 +204,7 @@ Stmt
     |   T_SEMICOLON
     |   Block
     |   T_IF T_LS Condition T_RS Stmt %prec K_LOW_THAN_ELSE
-    |   T_IF T_LS Condition T_RS Stmt T_ELSE Stmt
+    |   T_IF T_LS Condition T_RS Stmt T_ELSE Stmt   {cout<< "if-else语句"<<endl;}
     |   T_WHILE T_LS Condition T_RS Stmt
     |   T_BREAK T_SEMICOLON
     |   T_CONTINUE T_SEMICOLON

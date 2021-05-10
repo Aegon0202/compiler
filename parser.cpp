@@ -39,7 +39,7 @@
     #include <iostream>
     #include "parser.hpp"
     #include "lexer.hpp"
-
+    using namespace std;
     using namespace saltyfish;
     saltyfish::Parser::symbol_type yylex(){
         static Lexer* lexer = new Lexer();
@@ -587,8 +587,14 @@ namespace saltyfish {
         {
           switch (yyn)
             {
+  case 51:
+#line 207 "parser.y"
+                                                    {cout<< "if-else语句"<<endl;}
+#line 594 "parser.cpp"
+    break;
 
-#line 592 "parser.cpp"
+
+#line 598 "parser.cpp"
 
             default:
               break;
@@ -1115,7 +1121,7 @@ namespace saltyfish {
 
 #line 12 "parser.y"
 } // saltyfish
-#line 1119 "parser.cpp"
+#line 1125 "parser.cpp"
 
 #line 323 "parser.y"
 

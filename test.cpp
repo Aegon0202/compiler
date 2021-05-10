@@ -4,6 +4,10 @@ dasdasd
 */
 int main()
 {
-  1231 = a;
-  return;
+  if (a == 1)
+  {
+  }
+  else
+  {
+  }
 }
