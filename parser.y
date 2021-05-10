@@ -493,7 +493,6 @@ Exp:
 |	Exp T_NE Exp	{BINARY_EXP($$,$1,$3,Ne,@$);}
 |	Exp T_AND Exp	{BINARY_EXP($$,$1,$3,And,@$);}
 |	Exp T_OR Exp	{BINARY_EXP($$,$1,$3,Or,@$);}
-|	Exp T_EQUAL Exp	{BINARY_EXP($$,$1,$3,Equal,@$);}
 |	T_LS Exp T_RS	{$$=std::move($2);}
 |	Ident			{$$=std::move(make_unique<PrimaryExp>(PrimaryExp::PrimaryExpType::Ident,std::move($1),@$));}
 |	Number			{$$=std::move(make_unique<PrimaryExp>(PrimaryExp::PrimaryExpType::ConstantInt,std::move($1),@$));}

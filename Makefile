@@ -7,7 +7,7 @@ INC = -IAST/AST -IAST/ASTVisitor
 
 all:
 	flex -o scanner.cpp scanner.l
-	bison -o parser.cpp parser.y
+	bison -v -o parser.cpp parser.y
 	g++ -g $(MAIN_SRC) $(AST_SRC) $(ASTVISITOR_SRC) $(INC) -o a.out
 
 clean:

@@ -1,0 +1,2379 @@
+Grammar
+
+    0 $accept: CompUnit "文件结尾"
+
+    1 CompUnit: CompUnitList
+
+    2 CompUnitList: %empty
+    3             | CompUnitList Decl
+    4             | CompUnitList FuncDef
+
+    5 ArrayDimList: %empty
+    6             | ArrayDimSubList
+    7             | "左中括号" "右中括号" ArrayDimSubList
+
+    8 ArrayDimSubList: "左中括号" Exp "右中括号"
+    9                | ArrayDimSubList "左中括号" Exp "右中括号"
+
+   10 BType: "int关键字"
+   11      | "void关键字"
+
+   12 Decl: ValueDecl
+
+   13 ValueDecl: "const关键字" BType ValueDefList "分号"
+   14          | BType ValueDefList "分号"
+
+   15 ValueDefList: ValueDef
+   16             | ValueDefList "逗号" ValueDef
+
+   17 ValueDef: Ident ArrayDimList
+   18         | Ident ArrayDimList "等号" Exp
+   19         | Ident ArrayDimList "等号" ArrayAssignList
+
+   20 ArrayAssignList: "左大括号" "右大括号"
+   21                | "左大括号" ArrayAssignSubList "右大括号"
+
+   22 ArrayAssignSubList: Exp
+   23                   | ArrayAssignSubList "逗号" Exp
+   24                   | ArrayAssignSubList "逗号" ArrayAssignList
+
+   25 FuncDef: BType Ident "左小括号" "右小括号" Block
+   26        | BType Ident "左小括号" FuncParamDeclList "右小括号" Block
+
+   27 FuncParamDeclList: FuncParamDecl
+   28                  | FuncParamDeclList "逗号" FuncParamDecl
+
+   29 FuncParamDecl: BType Ident
+
+   30 Block: "左大括号" "右大括号"
+   31      | "左大括号" BlockItemList "右大括号"
+
+   32 BlockItemList: Decl
+   33              | Stmt
+   34              | BlockItemList Decl
+   35              | BlockItemList Stmt
+
+   36 Stmt: Ident "等号" Exp "分号"
+   37     | "分号"
+   38     | Exp "分号"
+   39     | Block
+   40     | "if关键字" "左小括号" Exp "右小括号" Stmt
+   41     | "if关键字" "左小括号" Exp "右小括号" Stmt "else关键字" Stmt
+   42     | "while关键字" "左小括号" Exp "右小括号" Stmt
+   43     | "break关键字" "分号"
+   44     | "continue关键字" "分号"
+   45     | "return关键字" Exp "分号"
+   46     | "return关键字" "分号"
+
+   47 Ident: "标识符"
+
+   48 Number: "十进制常数"
+   49       | "八进制常数"
+   50       | "十六进制常数"
+
+   51 FuncallParamList: Exp
+   52                 | FuncallParamList "逗号" Exp
+
+   53 Exp: Exp "乘号" Exp
+   54    | Exp "除号" Exp
+   55    | Exp "余号" Exp
+   56    | Exp "加号" Exp
+   57    | Exp "减号" Exp
+   58    | Exp "小于号" Exp
+   59    | Exp "大于号" Exp
+   60    | Exp "小于等于号" Exp
+   61    | Exp "大于等于号" Exp
+   62    | Exp "等于等于号" Exp
+   63    | Exp "不等于号" Exp
+   64    | Exp "与号" Exp
+   65    | Exp "或号" Exp
+   66    | "左小括号" Exp "右小括号"
+   67    | Ident
+   68    | Number
+   69    | Ident "左小括号" "右小括号"
+   70    | Ident "左小括号" FuncallParamList "右小括号"
+   71    | "加号" Exp
+   72    | "减号" Exp
+   73    | "感叹号" Exp
+
+
+Terminals, with rules where they appear
+
+    "文件结尾" (0) 0
+    error (256)
+    "逗号" (258) 16 23 24 28 52
+    "分号" (259) 13 14 36 37 38 43 44 45 46
+    "左大括号" (260) 20 21 30 31
+    "右大括号" (261) 20 21 30 31
+    "左中括号" (262) 7 8 9
+    "右中括号" (263) 7 8 9
+    "左小括号" (264) 25 26 40 41 42 66 69 70
+    "右小括号" (265) 25 26 40 41 42 66 69 70
+    "等号" (266) 18 19 36
+    "const关键字" <std::string> (267) 13
+    "int关键字" <std::string> (268) 10
+    "void关键字" <std::string> (269) 11
+    "if关键字" <std::string> (270) 40 41
+    "else关键字" <std::string> (271) 41
+    "while关键字" <std::string> (272) 42
+    "break关键字" <std::string> (273) 43
+    "continue关键字" <std::string> (274) 44
+    "return关键字" <std::string> (275) 45 46
+    "加号" (276) 56 71
+    "减号" (277) 57 72
+    "乘号" (278) 53
+    "除号" (279) 54
+    "余号" (280) 55
+    "感叹号" (281) 73
+    "小于号" (282) 58
+    "大于号" (283) 59
+    "小于等于号" (284) 60
+    "大于等于号" (285) 61
+    "等于等于号" (286) 62
+    "不等于号" (287) 63
+    "与号" (288) 64
+    "或号" (289) 65
+    "标识符" <std::string> (290) 47
+    "十进制常数" <int> (291) 48
+    "八进制常数" <int> (292) 49
+    "十六进制常数" <int> (293) 50
+    T_LOWER_THEN_ELSE (294)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (40)
+        on left: 0
+    CompUnit < std::unique_ptr<CompUnit> > (41)
+        on left: 1
+        on right: 0
+    CompUnitList < std::vector<std::unique_ptr<ASTUnit>> > (42)
+        on left: 2 3 4
+        on right: 1 3 4
+    ArrayDimList < std::vector<unique_ptr<Exp>> > (43)
+        on left: 5 6 7
+        on right: 17 18 19
+    ArrayDimSubList < std::vector<unique_ptr<Exp>> > (44)
+        on left: 8 9
+        on right: 6 7 9
+    BType < unique_ptr<Type> > (45)
+        on left: 10 11
+        on right: 13 14 25 26 29
+    Decl < std::unique_ptr<Decl>> (46)
+        on left: 12
+        on right: 3 32 34
+    ValueDecl < unique_ptr<ValueDecl> > (47)
+        on left: 13 14
+        on right: 12
+    ValueDefList < std::vector<unique_ptr<ValueDef>> > (48)
+        on left: 15 16
+        on right: 13 14 16
+    ValueDef < unique_ptr<ValueDef> > (49)
+        on left: 17 18 19
+        on right: 15 16
+    ArrayAssignList (50)
+        on left: 20 21
+        on right: 19 24
+    ArrayAssignSubList (51)
+        on left: 22 23 24
+        on right: 21 23 24
+    FuncDef < std::unique_ptr<FuncDef> > (52)
+        on left: 25 26
+        on right: 4
+    FuncParamDeclList < std::vector<unique_ptr<FuncParamDecl>> > (53)
+        on left: 27 28
+        on right: 26 28
+    FuncParamDecl < unique_ptr<FuncParamDecl> > (54)
+        on left: 29
+        on right: 27 28
+    Block < std::unique_ptr<BlockStmt> > (55)
+        on left: 30 31
+        on right: 25 26 39
+    BlockItemList < std::vector<std::unique_ptr<ASTUnit>> > (56)
+        on left: 32 33 34 35
+        on right: 31 34 35
+    Stmt < std::unique_ptr<Stmt> > (57)
+        on left: 36 37 38 39 40 41 42 43 44 45 46
+        on right: 33 35 40 41 42
+    Ident < unique_ptr<Ident> > (58)
+        on left: 47
+        on right: 17 18 19 25 26 29 36 67 69 70
+    Number < unique_ptr<ConstantInt> > (59)
+        on left: 48 49 50
+        on right: 68
+    FuncallParamList < std::vector<unique_ptr<Exp>> > (60)
+        on left: 51 52
+        on right: 52 70
+    Exp < unique_ptr<Exp> > (61)
+        on left: 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73
+        on right: 8 9 18 22 23 36 38 40 41 42 45 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 71 72 73
+
+
+State 0
+
+    0 $accept: . CompUnit "文件结尾"
+
+    $default  reduce using rule 2 (CompUnitList)
+
+    CompUnit      go to state 1
+    CompUnitList  go to state 2
+
+
+State 1
+
+    0 $accept: CompUnit . "文件结尾"
+
+    "文件结尾"  shift, and go to state 3
+
+
+State 2
+
+    1 CompUnit: CompUnitList .
+    3 CompUnitList: CompUnitList . Decl
+    4             | CompUnitList . FuncDef
+
+    "const关键字"  shift, and go to state 4
+    "int关键字"    shift, and go to state 5
+    "void关键字"   shift, and go to state 6
+
+    $default  reduce using rule 1 (CompUnit)
+
+    BType      go to state 7
+    Decl       go to state 8
+    ValueDecl  go to state 9
+    FuncDef    go to state 10
+
+
+State 3
+
+    0 $accept: CompUnit "文件结尾" .
+
+    $default  accept
+
+
+State 4
+
+   13 ValueDecl: "const关键字" . BType ValueDefList "分号"
+
+    "int关键字"   shift, and go to state 5
+    "void关键字"  shift, and go to state 6
+
+    BType  go to state 11
+
+
+State 5
+
+   10 BType: "int关键字" .
+
+    $default  reduce using rule 10 (BType)
+
+
+State 6
+
+   11 BType: "void关键字" .
+
+    $default  reduce using rule 11 (BType)
+
+
+State 7
+
+   14 ValueDecl: BType . ValueDefList "分号"
+   25 FuncDef: BType . Ident "左小括号" "右小括号" Block
+   26        | BType . Ident "左小括号" FuncParamDeclList "右小括号" Block
+
+    "标识符"  shift, and go to state 12
+
+    ValueDefList  go to state 13
+    ValueDef      go to state 14
+    Ident         go to state 15
+
+
+State 8
+
+    3 CompUnitList: CompUnitList Decl .
+
+    $default  reduce using rule 3 (CompUnitList)
+
+
+State 9
+
+   12 Decl: ValueDecl .
+
+    $default  reduce using rule 12 (Decl)
+
+
+State 10
+
+    4 CompUnitList: CompUnitList FuncDef .
+
+    $default  reduce using rule 4 (CompUnitList)
+
+
+State 11
+
+   13 ValueDecl: "const关键字" BType . ValueDefList "分号"
+
+    "标识符"  shift, and go to state 12
+
+    ValueDefList  go to state 16
+    ValueDef      go to state 14
+    Ident         go to state 17
+
+
+State 12
+
+   47 Ident: "标识符" .
+
+    $default  reduce using rule 47 (Ident)
+
+
+State 13
+
+   14 ValueDecl: BType ValueDefList . "分号"
+   16 ValueDefList: ValueDefList . "逗号" ValueDef
+
+    "逗号"  shift, and go to state 18
+    "分号"  shift, and go to state 19
+
+
+State 14
+
+   15 ValueDefList: ValueDef .
+
+    $default  reduce using rule 15 (ValueDefList)
+
+
+State 15
+
+   17 ValueDef: Ident . ArrayDimList
+   18         | Ident . ArrayDimList "等号" Exp
+   19         | Ident . ArrayDimList "等号" ArrayAssignList
+   25 FuncDef: BType Ident . "左小括号" "右小括号" Block
+   26        | BType Ident . "左小括号" FuncParamDeclList "右小括号" Block
+
+    "左中括号"  shift, and go to state 20
+    "左小括号"  shift, and go to state 21
+
+    $default  reduce using rule 5 (ArrayDimList)
+
+    ArrayDimList     go to state 22
+    ArrayDimSubList  go to state 23
+
+
+State 16
+
+   13 ValueDecl: "const关键字" BType ValueDefList . "分号"
+   16 ValueDefList: ValueDefList . "逗号" ValueDef
+
+    "逗号"  shift, and go to state 18
+    "分号"  shift, and go to state 24
+
+
+State 17
+
+   17 ValueDef: Ident . ArrayDimList
+   18         | Ident . ArrayDimList "等号" Exp
+   19         | Ident . ArrayDimList "等号" ArrayAssignList
+
+    "左中括号"  shift, and go to state 20
+
+    $default  reduce using rule 5 (ArrayDimList)
+
+    ArrayDimList     go to state 22
+    ArrayDimSubList  go to state 23
+
+
+State 18
+
+   16 ValueDefList: ValueDefList "逗号" . ValueDef
+
+    "标识符"  shift, and go to state 12
+
+    ValueDef  go to state 25
+    Ident     go to state 17
+
+
+State 19
+
+   14 ValueDecl: BType ValueDefList "分号" .
+
+    $default  reduce using rule 14 (ValueDecl)
+
+
+State 20
+
+    7 ArrayDimList: "左中括号" . "右中括号" ArrayDimSubList
+    8 ArrayDimSubList: "左中括号" . Exp "右中括号"
+
+    "右中括号"        shift, and go to state 26
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 36
+
+
+State 21
+
+   25 FuncDef: BType Ident "左小括号" . "右小括号" Block
+   26        | BType Ident "左小括号" . FuncParamDeclList "右小括号" Block
+
+    "右小括号"   shift, and go to state 37
+    "int关键字"   shift, and go to state 5
+    "void关键字"  shift, and go to state 6
+
+    BType              go to state 38
+    FuncParamDeclList  go to state 39
+    FuncParamDecl      go to state 40
+
+
+State 22
+
+   17 ValueDef: Ident ArrayDimList .
+   18         | Ident ArrayDimList . "等号" Exp
+   19         | Ident ArrayDimList . "等号" ArrayAssignList
+
+    "等号"  shift, and go to state 41
+
+    $default  reduce using rule 17 (ValueDef)
+
+
+State 23
+
+    6 ArrayDimList: ArrayDimSubList .
+    9 ArrayDimSubList: ArrayDimSubList . "左中括号" Exp "右中括号"
+
+    "左中括号"  shift, and go to state 42
+
+    $default  reduce using rule 6 (ArrayDimList)
+
+
+State 24
+
+   13 ValueDecl: "const关键字" BType ValueDefList "分号" .
+
+    $default  reduce using rule 13 (ValueDecl)
+
+
+State 25
+
+   16 ValueDefList: ValueDefList "逗号" ValueDef .
+
+    $default  reduce using rule 16 (ValueDefList)
+
+
+State 26
+
+    7 ArrayDimList: "左中括号" "右中括号" . ArrayDimSubList
+
+    "左中括号"  shift, and go to state 43
+
+    ArrayDimSubList  go to state 44
+
+
+State 27
+
+   66 Exp: "左小括号" . Exp "右小括号"
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 45
+
+
+State 28
+
+   71 Exp: "加号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 46
+
+
+State 29
+
+   72 Exp: "减号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 47
+
+
+State 30
+
+   73 Exp: "感叹号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 48
+
+
+State 31
+
+   48 Number: "十进制常数" .
+
+    $default  reduce using rule 48 (Number)
+
+
+State 32
+
+   49 Number: "八进制常数" .
+
+    $default  reduce using rule 49 (Number)
+
+
+State 33
+
+   50 Number: "十六进制常数" .
+
+    $default  reduce using rule 50 (Number)
+
+
+State 34
+
+   67 Exp: Ident .
+   69    | Ident . "左小括号" "右小括号"
+   70    | Ident . "左小括号" FuncallParamList "右小括号"
+
+    "左小括号"  shift, and go to state 49
+
+    $default  reduce using rule 67 (Exp)
+
+
+State 35
+
+   68 Exp: Number .
+
+    $default  reduce using rule 68 (Exp)
+
+
+State 36
+
+    8 ArrayDimSubList: "左中括号" Exp . "右中括号"
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "右中括号"     shift, and go to state 50
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 37
+
+   25 FuncDef: BType Ident "左小括号" "右小括号" . Block
+
+    "左大括号"  shift, and go to state 64
+
+    Block  go to state 65
+
+
+State 38
+
+   29 FuncParamDecl: BType . Ident
+
+    "标识符"  shift, and go to state 12
+
+    Ident  go to state 66
+
+
+State 39
+
+   26 FuncDef: BType Ident "左小括号" FuncParamDeclList . "右小括号" Block
+   28 FuncParamDeclList: FuncParamDeclList . "逗号" FuncParamDecl
+
+    "逗号"        shift, and go to state 67
+    "右小括号"  shift, and go to state 68
+
+
+State 40
+
+   27 FuncParamDeclList: FuncParamDecl .
+
+    $default  reduce using rule 27 (FuncParamDeclList)
+
+
+State 41
+
+   18 ValueDef: Ident ArrayDimList "等号" . Exp
+   19         | Ident ArrayDimList "等号" . ArrayAssignList
+
+    "左大括号"        shift, and go to state 69
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    ArrayAssignList  go to state 70
+    Ident            go to state 34
+    Number           go to state 35
+    Exp              go to state 71
+
+
+State 42
+
+    9 ArrayDimSubList: ArrayDimSubList "左中括号" . Exp "右中括号"
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 72
+
+
+State 43
+
+    8 ArrayDimSubList: "左中括号" . Exp "右中括号"
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 36
+
+
+State 44
+
+    7 ArrayDimList: "左中括号" "右中括号" ArrayDimSubList .
+    9 ArrayDimSubList: ArrayDimSubList . "左中括号" Exp "右中括号"
+
+    "左中括号"  shift, and go to state 42
+
+    $default  reduce using rule 7 (ArrayDimList)
+
+
+State 45
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+   66    | "左小括号" Exp . "右小括号"
+
+    "右小括号"     shift, and go to state 73
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 46
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+   71    | "加号" Exp .
+
+    "乘号"  shift, and go to state 53
+    "除号"  shift, and go to state 54
+    "余号"  shift, and go to state 55
+
+    $default  reduce using rule 71 (Exp)
+
+
+State 47
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+   72    | "减号" Exp .
+
+    "乘号"  shift, and go to state 53
+    "除号"  shift, and go to state 54
+    "余号"  shift, and go to state 55
+
+    $default  reduce using rule 72 (Exp)
+
+
+State 48
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+   73    | "感叹号" Exp .
+
+    $default  reduce using rule 73 (Exp)
+
+
+State 49
+
+   69 Exp: Ident "左小括号" . "右小括号"
+   70    | Ident "左小括号" . FuncallParamList "右小括号"
+
+    "左小括号"        shift, and go to state 27
+    "右小括号"        shift, and go to state 74
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident             go to state 34
+    Number            go to state 35
+    FuncallParamList  go to state 75
+    Exp               go to state 76
+
+
+State 50
+
+    8 ArrayDimSubList: "左中括号" Exp "右中括号" .
+
+    $default  reduce using rule 8 (ArrayDimSubList)
+
+
+State 51
+
+   56 Exp: Exp "加号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 77
+
+
+State 52
+
+   57 Exp: Exp "减号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 78
+
+
+State 53
+
+   53 Exp: Exp "乘号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 79
+
+
+State 54
+
+   54 Exp: Exp "除号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 80
+
+
+State 55
+
+   55 Exp: Exp "余号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 81
+
+
+State 56
+
+   58 Exp: Exp "小于号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 82
+
+
+State 57
+
+   59 Exp: Exp "大于号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 83
+
+
+State 58
+
+   60 Exp: Exp "小于等于号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 84
+
+
+State 59
+
+   61 Exp: Exp "大于等于号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 85
+
+
+State 60
+
+   62 Exp: Exp "等于等于号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 86
+
+
+State 61
+
+   63 Exp: Exp "不等于号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 87
+
+
+State 62
+
+   64 Exp: Exp "与号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 88
+
+
+State 63
+
+   65 Exp: Exp "或号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 89
+
+
+State 64
+
+   30 Block: "左大括号" . "右大括号"
+   31      | "左大括号" . BlockItemList "右大括号"
+
+    "分号"              shift, and go to state 90
+    "左大括号"        shift, and go to state 64
+    "右大括号"        shift, and go to state 91
+    "左小括号"        shift, and go to state 27
+    "const关键字"      shift, and go to state 4
+    "int关键字"        shift, and go to state 5
+    "void关键字"       shift, and go to state 6
+    "if关键字"         shift, and go to state 92
+    "while关键字"      shift, and go to state 93
+    "break关键字"      shift, and go to state 94
+    "continue关键字"   shift, and go to state 95
+    "return关键字"     shift, and go to state 96
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    BType          go to state 97
+    Decl           go to state 98
+    ValueDecl      go to state 9
+    Block          go to state 99
+    BlockItemList  go to state 100
+    Stmt           go to state 101
+    Ident          go to state 102
+    Number         go to state 35
+    Exp            go to state 103
+
+
+State 65
+
+   25 FuncDef: BType Ident "左小括号" "右小括号" Block .
+
+    $default  reduce using rule 25 (FuncDef)
+
+
+State 66
+
+   29 FuncParamDecl: BType Ident .
+
+    $default  reduce using rule 29 (FuncParamDecl)
+
+
+State 67
+
+   28 FuncParamDeclList: FuncParamDeclList "逗号" . FuncParamDecl
+
+    "int关键字"   shift, and go to state 5
+    "void关键字"  shift, and go to state 6
+
+    BType          go to state 38
+    FuncParamDecl  go to state 104
+
+
+State 68
+
+   26 FuncDef: BType Ident "左小括号" FuncParamDeclList "右小括号" . Block
+
+    "左大括号"  shift, and go to state 64
+
+    Block  go to state 105
+
+
+State 69
+
+   20 ArrayAssignList: "左大括号" . "右大括号"
+   21                | "左大括号" . ArrayAssignSubList "右大括号"
+
+    "右大括号"        shift, and go to state 106
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    ArrayAssignSubList  go to state 107
+    Ident               go to state 34
+    Number              go to state 35
+    Exp                 go to state 108
+
+
+State 70
+
+   19 ValueDef: Ident ArrayDimList "等号" ArrayAssignList .
+
+    $default  reduce using rule 19 (ValueDef)
+
+
+State 71
+
+   18 ValueDef: Ident ArrayDimList "等号" Exp .
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+    $default  reduce using rule 18 (ValueDef)
+
+
+State 72
+
+    9 ArrayDimSubList: ArrayDimSubList "左中括号" Exp . "右中括号"
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "右中括号"     shift, and go to state 109
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 73
+
+   66 Exp: "左小括号" Exp "右小括号" .
+
+    $default  reduce using rule 66 (Exp)
+
+
+State 74
+
+   69 Exp: Ident "左小括号" "右小括号" .
+
+    $default  reduce using rule 69 (Exp)
+
+
+State 75
+
+   52 FuncallParamList: FuncallParamList . "逗号" Exp
+   70 Exp: Ident "左小括号" FuncallParamList . "右小括号"
+
+    "逗号"        shift, and go to state 110
+    "右小括号"  shift, and go to state 111
+
+
+State 76
+
+   51 FuncallParamList: Exp .
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+    $default  reduce using rule 51 (FuncallParamList)
+
+
+State 77
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   56    | Exp "加号" Exp .
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "乘号"  shift, and go to state 53
+    "除号"  shift, and go to state 54
+    "余号"  shift, and go to state 55
+
+    $default  reduce using rule 56 (Exp)
+
+
+State 78
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   57    | Exp "减号" Exp .
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "乘号"  shift, and go to state 53
+    "除号"  shift, and go to state 54
+    "余号"  shift, and go to state 55
+
+    $default  reduce using rule 57 (Exp)
+
+
+State 79
+
+   53 Exp: Exp . "乘号" Exp
+   53    | Exp "乘号" Exp .
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    $default  reduce using rule 53 (Exp)
+
+
+State 80
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   54    | Exp "除号" Exp .
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    $default  reduce using rule 54 (Exp)
+
+
+State 81
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   55    | Exp "余号" Exp .
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    $default  reduce using rule 55 (Exp)
+
+
+State 82
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   58    | Exp "小于号" Exp .
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+
+    $default  reduce using rule 58 (Exp)
+
+
+State 83
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   59    | Exp "大于号" Exp .
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+
+    $default  reduce using rule 59 (Exp)
+
+
+State 84
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   60    | Exp "小于等于号" Exp .
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+
+    $default  reduce using rule 60 (Exp)
+
+
+State 85
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   61    | Exp "大于等于号" Exp .
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+
+    $default  reduce using rule 61 (Exp)
+
+
+State 86
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   62    | Exp "等于等于号" Exp .
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"  shift, and go to state 51
+    "减号"  shift, and go to state 52
+    "乘号"  shift, and go to state 53
+    "除号"  shift, and go to state 54
+    "余号"  shift, and go to state 55
+
+    $default  reduce using rule 62 (Exp)
+
+
+State 87
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   63    | Exp "不等于号" Exp .
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"  shift, and go to state 51
+    "减号"  shift, and go to state 52
+    "乘号"  shift, and go to state 53
+    "除号"  shift, and go to state 54
+    "余号"  shift, and go to state 55
+
+    $default  reduce using rule 63 (Exp)
+
+
+State 88
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   64    | Exp "与号" Exp .
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+
+    $default  reduce using rule 64 (Exp)
+
+
+State 89
+
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+   65    | Exp "或号" Exp .
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+
+    $default  reduce using rule 65 (Exp)
+
+
+State 90
+
+   37 Stmt: "分号" .
+
+    $default  reduce using rule 37 (Stmt)
+
+
+State 91
+
+   30 Block: "左大括号" "右大括号" .
+
+    $default  reduce using rule 30 (Block)
+
+
+State 92
+
+   40 Stmt: "if关键字" . "左小括号" Exp "右小括号" Stmt
+   41     | "if关键字" . "左小括号" Exp "右小括号" Stmt "else关键字" Stmt
+
+    "左小括号"  shift, and go to state 112
+
+
+State 93
+
+   42 Stmt: "while关键字" . "左小括号" Exp "右小括号" Stmt
+
+    "左小括号"  shift, and go to state 113
+
+
+State 94
+
+   43 Stmt: "break关键字" . "分号"
+
+    "分号"  shift, and go to state 114
+
+
+State 95
+
+   44 Stmt: "continue关键字" . "分号"
+
+    "分号"  shift, and go to state 115
+
+
+State 96
+
+   45 Stmt: "return关键字" . Exp "分号"
+   46     | "return关键字" . "分号"
+
+    "分号"              shift, and go to state 116
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 117
+
+
+State 97
+
+   14 ValueDecl: BType . ValueDefList "分号"
+
+    "标识符"  shift, and go to state 12
+
+    ValueDefList  go to state 13
+    ValueDef      go to state 14
+    Ident         go to state 17
+
+
+State 98
+
+   32 BlockItemList: Decl .
+
+    $default  reduce using rule 32 (BlockItemList)
+
+
+State 99
+
+   39 Stmt: Block .
+
+    $default  reduce using rule 39 (Stmt)
+
+
+State 100
+
+   31 Block: "左大括号" BlockItemList . "右大括号"
+   34 BlockItemList: BlockItemList . Decl
+   35              | BlockItemList . Stmt
+
+    "分号"              shift, and go to state 90
+    "左大括号"        shift, and go to state 64
+    "右大括号"        shift, and go to state 118
+    "左小括号"        shift, and go to state 27
+    "const关键字"      shift, and go to state 4
+    "int关键字"        shift, and go to state 5
+    "void关键字"       shift, and go to state 6
+    "if关键字"         shift, and go to state 92
+    "while关键字"      shift, and go to state 93
+    "break关键字"      shift, and go to state 94
+    "continue关键字"   shift, and go to state 95
+    "return关键字"     shift, and go to state 96
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    BType      go to state 97
+    Decl       go to state 119
+    ValueDecl  go to state 9
+    Block      go to state 99
+    Stmt       go to state 120
+    Ident      go to state 102
+    Number     go to state 35
+    Exp        go to state 103
+
+
+State 101
+
+   33 BlockItemList: Stmt .
+
+    $default  reduce using rule 33 (BlockItemList)
+
+
+State 102
+
+   36 Stmt: Ident . "等号" Exp "分号"
+   67 Exp: Ident .
+   69    | Ident . "左小括号" "右小括号"
+   70    | Ident . "左小括号" FuncallParamList "右小括号"
+
+    "左小括号"  shift, and go to state 49
+    "等号"        shift, and go to state 121
+
+    $default  reduce using rule 67 (Exp)
+
+
+State 103
+
+   38 Stmt: Exp . "分号"
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "分号"           shift, and go to state 122
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 104
+
+   28 FuncParamDeclList: FuncParamDeclList "逗号" FuncParamDecl .
+
+    $default  reduce using rule 28 (FuncParamDeclList)
+
+
+State 105
+
+   26 FuncDef: BType Ident "左小括号" FuncParamDeclList "右小括号" Block .
+
+    $default  reduce using rule 26 (FuncDef)
+
+
+State 106
+
+   20 ArrayAssignList: "左大括号" "右大括号" .
+
+    $default  reduce using rule 20 (ArrayAssignList)
+
+
+State 107
+
+   21 ArrayAssignList: "左大括号" ArrayAssignSubList . "右大括号"
+   23 ArrayAssignSubList: ArrayAssignSubList . "逗号" Exp
+   24                   | ArrayAssignSubList . "逗号" ArrayAssignList
+
+    "逗号"        shift, and go to state 123
+    "右大括号"  shift, and go to state 124
+
+
+State 108
+
+   22 ArrayAssignSubList: Exp .
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+    $default  reduce using rule 22 (ArrayAssignSubList)
+
+
+State 109
+
+    9 ArrayDimSubList: ArrayDimSubList "左中括号" Exp "右中括号" .
+
+    $default  reduce using rule 9 (ArrayDimSubList)
+
+
+State 110
+
+   52 FuncallParamList: FuncallParamList "逗号" . Exp
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 125
+
+
+State 111
+
+   70 Exp: Ident "左小括号" FuncallParamList "右小括号" .
+
+    $default  reduce using rule 70 (Exp)
+
+
+State 112
+
+   40 Stmt: "if关键字" "左小括号" . Exp "右小括号" Stmt
+   41     | "if关键字" "左小括号" . Exp "右小括号" Stmt "else关键字" Stmt
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 126
+
+
+State 113
+
+   42 Stmt: "while关键字" "左小括号" . Exp "右小括号" Stmt
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 127
+
+
+State 114
+
+   43 Stmt: "break关键字" "分号" .
+
+    $default  reduce using rule 43 (Stmt)
+
+
+State 115
+
+   44 Stmt: "continue关键字" "分号" .
+
+    $default  reduce using rule 44 (Stmt)
+
+
+State 116
+
+   46 Stmt: "return关键字" "分号" .
+
+    $default  reduce using rule 46 (Stmt)
+
+
+State 117
+
+   45 Stmt: "return关键字" Exp . "分号"
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "分号"           shift, and go to state 128
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 118
+
+   31 Block: "左大括号" BlockItemList "右大括号" .
+
+    $default  reduce using rule 31 (Block)
+
+
+State 119
+
+   34 BlockItemList: BlockItemList Decl .
+
+    $default  reduce using rule 34 (BlockItemList)
+
+
+State 120
+
+   35 BlockItemList: BlockItemList Stmt .
+
+    $default  reduce using rule 35 (BlockItemList)
+
+
+State 121
+
+   36 Stmt: Ident "等号" . Exp "分号"
+
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Ident   go to state 34
+    Number  go to state 35
+    Exp     go to state 129
+
+
+State 122
+
+   38 Stmt: Exp "分号" .
+
+    $default  reduce using rule 38 (Stmt)
+
+
+State 123
+
+   23 ArrayAssignSubList: ArrayAssignSubList "逗号" . Exp
+   24                   | ArrayAssignSubList "逗号" . ArrayAssignList
+
+    "左大括号"        shift, and go to state 69
+    "左小括号"        shift, and go to state 27
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    ArrayAssignList  go to state 130
+    Ident            go to state 34
+    Number           go to state 35
+    Exp              go to state 131
+
+
+State 124
+
+   21 ArrayAssignList: "左大括号" ArrayAssignSubList "右大括号" .
+
+    $default  reduce using rule 21 (ArrayAssignList)
+
+
+State 125
+
+   52 FuncallParamList: FuncallParamList "逗号" Exp .
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+    $default  reduce using rule 52 (FuncallParamList)
+
+
+State 126
+
+   40 Stmt: "if关键字" "左小括号" Exp . "右小括号" Stmt
+   41     | "if关键字" "左小括号" Exp . "右小括号" Stmt "else关键字" Stmt
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "右小括号"     shift, and go to state 132
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 127
+
+   42 Stmt: "while关键字" "左小括号" Exp . "右小括号" Stmt
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "右小括号"     shift, and go to state 133
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 128
+
+   45 Stmt: "return关键字" Exp "分号" .
+
+    $default  reduce using rule 45 (Stmt)
+
+
+State 129
+
+   36 Stmt: Ident "等号" Exp . "分号"
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "分号"           shift, and go to state 134
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+
+State 130
+
+   24 ArrayAssignSubList: ArrayAssignSubList "逗号" ArrayAssignList .
+
+    $default  reduce using rule 24 (ArrayAssignSubList)
+
+
+State 131
+
+   23 ArrayAssignSubList: ArrayAssignSubList "逗号" Exp .
+   53 Exp: Exp . "乘号" Exp
+   54    | Exp . "除号" Exp
+   55    | Exp . "余号" Exp
+   56    | Exp . "加号" Exp
+   57    | Exp . "减号" Exp
+   58    | Exp . "小于号" Exp
+   59    | Exp . "大于号" Exp
+   60    | Exp . "小于等于号" Exp
+   61    | Exp . "大于等于号" Exp
+   62    | Exp . "等于等于号" Exp
+   63    | Exp . "不等于号" Exp
+   64    | Exp . "与号" Exp
+   65    | Exp . "或号" Exp
+
+    "加号"           shift, and go to state 51
+    "减号"           shift, and go to state 52
+    "乘号"           shift, and go to state 53
+    "除号"           shift, and go to state 54
+    "余号"           shift, and go to state 55
+    "小于号"        shift, and go to state 56
+    "大于号"        shift, and go to state 57
+    "小于等于号"  shift, and go to state 58
+    "大于等于号"  shift, and go to state 59
+    "等于等于号"  shift, and go to state 60
+    "不等于号"     shift, and go to state 61
+    "与号"           shift, and go to state 62
+    "或号"           shift, and go to state 63
+
+    $default  reduce using rule 23 (ArrayAssignSubList)
+
+
+State 132
+
+   40 Stmt: "if关键字" "左小括号" Exp "右小括号" . Stmt
+   41     | "if关键字" "左小括号" Exp "右小括号" . Stmt "else关键字" Stmt
+
+    "分号"              shift, and go to state 90
+    "左大括号"        shift, and go to state 64
+    "左小括号"        shift, and go to state 27
+    "if关键字"         shift, and go to state 92
+    "while关键字"      shift, and go to state 93
+    "break关键字"      shift, and go to state 94
+    "continue关键字"   shift, and go to state 95
+    "return关键字"     shift, and go to state 96
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Block   go to state 99
+    Stmt    go to state 135
+    Ident   go to state 102
+    Number  go to state 35
+    Exp     go to state 103
+
+
+State 133
+
+   42 Stmt: "while关键字" "左小括号" Exp "右小括号" . Stmt
+
+    "分号"              shift, and go to state 90
+    "左大括号"        shift, and go to state 64
+    "左小括号"        shift, and go to state 27
+    "if关键字"         shift, and go to state 92
+    "while关键字"      shift, and go to state 93
+    "break关键字"      shift, and go to state 94
+    "continue关键字"   shift, and go to state 95
+    "return关键字"     shift, and go to state 96
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Block   go to state 99
+    Stmt    go to state 136
+    Ident   go to state 102
+    Number  go to state 35
+    Exp     go to state 103
+
+
+State 134
+
+   36 Stmt: Ident "等号" Exp "分号" .
+
+    $default  reduce using rule 36 (Stmt)
+
+
+State 135
+
+   40 Stmt: "if关键字" "左小括号" Exp "右小括号" Stmt .
+   41     | "if关键字" "左小括号" Exp "右小括号" Stmt . "else关键字" Stmt
+
+    "else关键字"  shift, and go to state 137
+
+    $default  reduce using rule 40 (Stmt)
+
+
+State 136
+
+   42 Stmt: "while关键字" "左小括号" Exp "右小括号" Stmt .
+
+    $default  reduce using rule 42 (Stmt)
+
+
+State 137
+
+   41 Stmt: "if关键字" "左小括号" Exp "右小括号" Stmt "else关键字" . Stmt
+
+    "分号"              shift, and go to state 90
+    "左大括号"        shift, and go to state 64
+    "左小括号"        shift, and go to state 27
+    "if关键字"         shift, and go to state 92
+    "while关键字"      shift, and go to state 93
+    "break关键字"      shift, and go to state 94
+    "continue关键字"   shift, and go to state 95
+    "return关键字"     shift, and go to state 96
+    "加号"              shift, and go to state 28
+    "减号"              shift, and go to state 29
+    "感叹号"           shift, and go to state 30
+    "标识符"           shift, and go to state 12
+    "十进制常数"     shift, and go to state 31
+    "八进制常数"     shift, and go to state 32
+    "十六进制常数"  shift, and go to state 33
+
+    Block   go to state 99
+    Stmt    go to state 138
+    Ident   go to state 102
+    Number  go to state 35
+    Exp     go to state 103
+
+
+State 138
+
+   41 Stmt: "if关键字" "左小括号" Exp "右小括号" Stmt "else关键字" Stmt .
+
+    $default  reduce using rule 41 (Stmt)
