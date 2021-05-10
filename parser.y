@@ -84,6 +84,10 @@
 
 %token END 0 "文件结尾"
 
+%nonassoc T_IF
+%nonassoc K_LOW_THAN_ELSE
+%nonassoc T_ELSE
+
 %start CompUnit
 
 %%
@@ -199,9 +203,9 @@ Stmt
     |   Exp T_SEMICOLON
     |   T_SEMICOLON
     |   Block
-    |   T_IF T_LS Conditon T_RS Stmt
-    |   T_IF T_LS Conditon T_RS Stmt T_ELSE Stmt
-    |   T_WHILE T_LS Conditon T_RS Stmt
+    |   T_IF T_LS Condition T_RS Stmt %prec K_LOW_THAN_ELSE
+    |   T_IF T_LS Condition T_RS Stmt T_ELSE Stmt
+    |   T_WHILE T_LS Condition T_RS Stmt
     |   T_BREAK T_SEMICOLON
     |   T_CONTINUE T_SEMICOLON
     |   T_RETURN T_SEMICOLON
@@ -212,12 +216,13 @@ Exp
     :   AddExp
     ;
 
-Conditon
+Condition
     : LOrExp
     ;
 
 LVal
     :   T_IDENT ExpArrayDefs
+    |   T_IDENT
     ;
 
 PrimaryExp
@@ -235,6 +240,7 @@ UnaryExp
     |   T_IDENT T_LS FuncRParams T_RS
     |   T_IDENT T_LS T_RS
     |   UnaryOp UnaryExp
+    ;
 
 UnaryOp
     :   T_ADD
@@ -282,6 +288,7 @@ RelOp
     |   T_BE
     |   T_A
     |   T_AE
+    ;
 
 EqExp
     :   RelExp
@@ -291,6 +298,7 @@ EqExp
 EqOp   
     :   T_EE
     |   T_NE
+    ;
 
 LAndExp
     :   EqExp 

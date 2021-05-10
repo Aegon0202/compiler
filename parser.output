@@ -1,0 +1,2267 @@
+语法
+
+    0 $accept: CompUnit "文件结尾"
+
+    1 CompUnit: Decl
+    2         | FuncDef
+    3         | CompUnit FuncDef
+    4         | CompUnit Decl
+
+    5 Decl: ConstDecl
+    6     | VarDecl
+
+    7 ConstDecl: "const关键字" "int关键字" ConstDefs "分号"
+
+    8 ConstDefs: ConstDef
+    9          | ConstDefs "逗号" ConstDef
+
+   10 ConstDef: "标识符" ArrayDef "等号" ConstInitVal
+   11         | "标识符" "等号" ConstInitVal
+
+   12 ArrayDef: ArrayDef "左中括号" ConstExp "右中括号"
+   13         | "左中括号" ConstExp "右中括号"
+
+   14 ConstInitVal: Number
+
+   15 VarDecl: "int关键字" VarDefs "分号"
+
+   16 VarDefs: VarDef
+   17        | VarDefs "逗号" VarDef
+
+   18 VarDef: "标识符" ArrayDef "等号" InitVal
+   19       | "标识符" ArrayDef
+   20       | "标识符"
+   21       | "标识符" "等号" InitVal
+
+   22 InitVal: Exp
+   23        | "左大括号" InitVals "右大括号"
+   24        | "左大括号" "右大括号"
+
+   25 InitVals: InitVal
+   26         | InitVals "逗号" InitVal
+
+   27 FuncDef: "int关键字" "标识符" "左小括号" FuncFParams "右小括号" Block
+   28        | "void关键字" "标识符" "左小括号" FuncFParams "右小括号" Block
+   29        | "int关键字" "标识符" "左小括号" "右小括号" Block
+   30        | "void关键字" "标识符" "左小括号" "右小括号" Block
+
+   31 FuncFParams: FuncFParam
+   32            | FuncFParams "逗号" FuncFParam
+
+   33 FuncFParam: "int关键字" "标识符"
+   34           | "int关键字" "标识符" "左中括号" "右中括号" ExpArrayDefs
+   35           | "int关键字" "标识符" "左中括号" "右中括号"
+
+   36 ExpArrayDefs: ExpArrayDef
+   37             | ExpArrayDefs ExpArrayDef
+
+   38 ExpArrayDef: "左中括号" Exp "右中括号"
+
+   39 Block: "左大括号" BlockItems "右大括号"
+   40      | "左大括号" "右大括号"
+
+   41 BlockItems: BlockItem
+   42           | BlockItems BlockItem
+
+   43 BlockItem: Decl
+   44          | Stmt
+
+   45 Stmt: LVal "等号" Exp "分号"
+   46     | Exp "分号"
+   47     | "分号"
+   48     | Block
+   49     | "if关键字" "左小括号" Condition "右小括号" Stmt
+   50     | "if关键字" "左小括号" Condition "右小括号" Stmt "else关键字" Stmt
+   51     | "while关键字" "左小括号" Condition "右小括号" Stmt
+   52     | "break关键字" "分号"
+   53     | "continue关键字" "分号"
+   54     | "return关键字" "分号"
+   55     | "return关键字" Exp "分号"
+
+   56 Exp: AddExp
+
+   57 Condition: LOrExp
+
+   58 LVal: "标识符" ExpArrayDefs
+   59     | "标识符"
+
+   60 PrimaryExp: "左小括号" Exp "右小括号"
+   61           | LVal
+   62           | Number
+
+   63 Number: IntConst
+
+   64 UnaryExp: PrimaryExp
+   65         | "标识符" "左小括号" FuncRParams "右小括号"
+   66         | "标识符" "左小括号" "右小括号"
+   67         | UnaryOp UnaryExp
+
+   68 UnaryOp: "加号"
+   69        | "减号"
+   70        | "感叹号"
+
+   71 FuncRParams: FuncRParam
+   72            | FuncRParams "逗号" FuncRParam
+
+   73 FuncRParam: Exp
+
+   74 MulExp: UnaryExp
+   75       | MulExp MulOp UnaryExp
+
+   76 MulOp: "乘号"
+   77      | "除号"
+   78      | "余号"
+
+   79 AddExp: MulExp
+   80       | AddExp AddOp MulExp
+
+   81 AddOp: "加号"
+   82      | "减号"
+
+   83 RelExp: AddExp
+   84       | RelExp RelOp AddExp
+
+   85 RelOp: "小于号"
+   86      | "小于等于号"
+   87      | "大于号"
+   88      | "大于等于号"
+
+   89 EqExp: RelExp
+   90      | EqExp EqOp RelExp
+
+   91 EqOp: "等于等于号"
+   92     | "不等于号"
+
+   93 LAndExp: EqExp
+   94        | LAndExp "与号" EqExp
+
+   95 LOrExp: LAndExp
+   96       | LOrExp "或号" LAndExp
+
+   97 ConstExp: AddExp
+
+   98 IntConst: "十进制常数"
+   99         | "八进制常数"
+  100         | "十六进制常数"
+
+
+终结语词，附有它们出现处的规则
+
+    "文件结尾" (0) 0
+    error (256)
+    "逗号" (258) 9 17 26 32 72
+    "分号" (259) 7 15 45 46 47 52 53 54 55
+    "左大括号" (260) 23 24 39 40
+    "右大括号" (261) 23 24 39 40
+    "左中括号" (262) 12 13 34 35 38
+    "右中括号" (263) 12 13 34 35 38
+    "左小括号" (264) 27 28 29 30 49 50 51 60 65 66
+    "右小括号" (265) 27 28 29 30 49 50 51 60 65 66
+    "等号" (266) 10 11 18 21 45
+    "const关键字" (267) 7
+    "int关键字" (268) 7 15 27 29 33 34 35
+    "void关键字" (269) 28 30
+    "if关键字" (270) 49 50
+    "else关键字" (271) 50
+    "while关键字" (272) 51
+    "break关键字" (273) 52
+    "continue关键字" (274) 53
+    "return关键字" (275) 54 55
+    "加号" (276) 68 81
+    "减号" (277) 69 82
+    "乘号" (278) 76
+    "除号" (279) 77
+    "余号" (280) 78
+    "感叹号" (281) 70
+    "小于号" (282) 85
+    "大于号" (283) 87
+    "小于等于号" (284) 86
+    "大于等于号" (285) 88
+    "等于等于号" (286) 91
+    "不等于号" (287) 92
+    "与号" (288) 94
+    "或号" (289) 96
+    "标识符" <const char *> (290) 10 11 18 19 20 21 27 28 29 30 33 34 35 58 59 65 66
+    "十进制常数" <int> (291) 98
+    "八进制常数" <int> (292) 99
+    "十六进制常数" <int> (293) 100
+    K_LOW_THAN_ELSE (294)
+
+
+非终结语词，附有它们出现处的规则
+
+    $accept (40)
+        on left: 0
+    CompUnit (41)
+        on left: 1 2 3 4
+        on right: 0 3 4
+    Decl (42)
+        on left: 5 6
+        on right: 1 4 43
+    ConstDecl (43)
+        on left: 7
+        on right: 5
+    ConstDefs (44)
+        on left: 8 9
+        on right: 7 9
+    ConstDef (45)
+        on left: 10 11
+        on right: 8 9
+    ArrayDef (46)
+        on left: 12 13
+        on right: 10 12 18 19
+    ConstInitVal (47)
+        on left: 14
+        on right: 10 11
+    VarDecl (48)
+        on left: 15
+        on right: 6
+    VarDefs (49)
+        on left: 16 17
+        on right: 15 17
+    VarDef (50)
+        on left: 18 19 20 21
+        on right: 16 17
+    InitVal (51)
+        on left: 22 23 24
+        on right: 18 21 25 26
+    InitVals (52)
+        on left: 25 26
+        on right: 23 26
+    FuncDef (53)
+        on left: 27 28 29 30
+        on right: 2 3
+    FuncFParams (54)
+        on left: 31 32
+        on right: 27 28 32
+    FuncFParam (55)
+        on left: 33 34 35
+        on right: 31 32
+    ExpArrayDefs (56)
+        on left: 36 37
+        on right: 34 37 58
+    ExpArrayDef (57)
+        on left: 38
+        on right: 36 37
+    Block (58)
+        on left: 39 40
+        on right: 27 28 29 30 48
+    BlockItems (59)
+        on left: 41 42
+        on right: 39 42
+    BlockItem (60)
+        on left: 43 44
+        on right: 41 42
+    Stmt (61)
+        on left: 45 46 47 48 49 50 51 52 53 54 55
+        on right: 44 49 50 51
+    Exp (62)
+        on left: 56
+        on right: 22 38 45 46 55 60 73
+    Condition (63)
+        on left: 57
+        on right: 49 50 51
+    LVal (64)
+        on left: 58 59
+        on right: 45 61
+    PrimaryExp (65)
+        on left: 60 61 62
+        on right: 64
+    Number (66)
+        on left: 63
+        on right: 14 62
+    UnaryExp (67)
+        on left: 64 65 66 67
+        on right: 67 74 75
+    UnaryOp (68)
+        on left: 68 69 70
+        on right: 67
+    FuncRParams (69)
+        on left: 71 72
+        on right: 65 72
+    FuncRParam (70)
+        on left: 73
+        on right: 71 72
+    MulExp (71)
+        on left: 74 75
+        on right: 75 79 80
+    MulOp (72)
+        on left: 76 77 78
+        on right: 75
+    AddExp (73)
+        on left: 79 80
+        on right: 56 80 83 84 97
+    AddOp (74)
+        on left: 81 82
+        on right: 80
+    RelExp (75)
+        on left: 83 84
+        on right: 84 89 90
+    RelOp (76)
+        on left: 85 86 87 88
+        on right: 84
+    EqExp (77)
+        on left: 89 90
+        on right: 90 93 94
+    EqOp (78)
+        on left: 91 92
+        on right: 90
+    LAndExp (79)
+        on left: 93 94
+        on right: 94 95 96
+    LOrExp (80)
+        on left: 95 96
+        on right: 57 96
+    ConstExp (81)
+        on left: 97
+        on right: 12 13
+    IntConst (82)
+        on left: 98 99 100
+        on right: 63
+
+
+状态 0
+
+    0 $accept: . CompUnit "文件结尾"
+
+    "const关键字"  偏移，并进入状态 1
+    "int关键字"    偏移，并进入状态 2
+    "void关键字"   偏移，并进入状态 3
+
+    CompUnit   转到状态 4
+    Decl       转到状态 5
+    ConstDecl  转到状态 6
+    VarDecl    转到状态 7
+    FuncDef    转到状态 8
+
+
+状态 1
+
+    7 ConstDecl: "const关键字" . "int关键字" ConstDefs "分号"
+
+    "int关键字"  偏移，并进入状态 9
+
+
+状态 2
+
+   15 VarDecl: "int关键字" . VarDefs "分号"
+   27 FuncDef: "int关键字" . "标识符" "左小括号" FuncFParams "右小括号" Block
+   29        | "int关键字" . "标识符" "左小括号" "右小括号" Block
+
+    "标识符"  偏移，并进入状态 10
+
+    VarDefs  转到状态 11
+    VarDef   转到状态 12
+
+
+状态 3
+
+   28 FuncDef: "void关键字" . "标识符" "左小括号" FuncFParams "右小括号" Block
+   30        | "void关键字" . "标识符" "左小括号" "右小括号" Block
+
+    "标识符"  偏移，并进入状态 13
+
+
+状态 4
+
+    0 $accept: CompUnit . "文件结尾"
+    3 CompUnit: CompUnit . FuncDef
+    4         | CompUnit . Decl
+
+    "文件结尾"    偏移，并进入状态 14
+    "const关键字"  偏移，并进入状态 1
+    "int关键字"    偏移，并进入状态 2
+    "void关键字"   偏移，并进入状态 3
+
+    Decl       转到状态 15
+    ConstDecl  转到状态 6
+    VarDecl    转到状态 7
+    FuncDef    转到状态 16
+
+
+状态 5
+
+    1 CompUnit: Decl .
+
+    $default  使用规则 1 以归约 (CompUnit)
+
+
+状态 6
+
+    5 Decl: ConstDecl .
+
+    $default  使用规则 5 以归约 (Decl)
+
+
+状态 7
+
+    6 Decl: VarDecl .
+
+    $default  使用规则 6 以归约 (Decl)
+
+
+状态 8
+
+    2 CompUnit: FuncDef .
+
+    $default  使用规则 2 以归约 (CompUnit)
+
+
+状态 9
+
+    7 ConstDecl: "const关键字" "int关键字" . ConstDefs "分号"
+
+    "标识符"  偏移，并进入状态 17
+
+    ConstDefs  转到状态 18
+    ConstDef   转到状态 19
+
+
+状态 10
+
+   18 VarDef: "标识符" . ArrayDef "等号" InitVal
+   19       | "标识符" . ArrayDef
+   20       | "标识符" .
+   21       | "标识符" . "等号" InitVal
+   27 FuncDef: "int关键字" "标识符" . "左小括号" FuncFParams "右小括号" Block
+   29        | "int关键字" "标识符" . "左小括号" "右小括号" Block
+
+    "左中括号"  偏移，并进入状态 20
+    "左小括号"  偏移，并进入状态 21
+    "等号"        偏移，并进入状态 22
+
+    $default  使用规则 20 以归约 (VarDef)
+
+    ArrayDef  转到状态 23
+
+
+状态 11
+
+   15 VarDecl: "int关键字" VarDefs . "分号"
+   17 VarDefs: VarDefs . "逗号" VarDef
+
+    "逗号"  偏移，并进入状态 24
+    "分号"  偏移，并进入状态 25
+
+
+状态 12
+
+   16 VarDefs: VarDef .
+
+    $default  使用规则 16 以归约 (VarDefs)
+
+
+状态 13
+
+   28 FuncDef: "void关键字" "标识符" . "左小括号" FuncFParams "右小括号" Block
+   30        | "void关键字" "标识符" . "左小括号" "右小括号" Block
+
+    "左小括号"  偏移，并进入状态 26
+
+
+状态 14
+
+    0 $accept: CompUnit "文件结尾" .
+
+    $default  接受
+
+
+状态 15
+
+    4 CompUnit: CompUnit Decl .
+
+    $default  使用规则 4 以归约 (CompUnit)
+
+
+状态 16
+
+    3 CompUnit: CompUnit FuncDef .
+
+    $default  使用规则 3 以归约 (CompUnit)
+
+
+状态 17
+
+   10 ConstDef: "标识符" . ArrayDef "等号" ConstInitVal
+   11         | "标识符" . "等号" ConstInitVal
+
+    "左中括号"  偏移，并进入状态 20
+    "等号"        偏移，并进入状态 27
+
+    ArrayDef  转到状态 28
+
+
+状态 18
+
+    7 ConstDecl: "const关键字" "int关键字" ConstDefs . "分号"
+    9 ConstDefs: ConstDefs . "逗号" ConstDef
+
+    "逗号"  偏移，并进入状态 29
+    "分号"  偏移，并进入状态 30
+
+
+状态 19
+
+    8 ConstDefs: ConstDef .
+
+    $default  使用规则 8 以归约 (ConstDefs)
+
+
+状态 20
+
+   13 ArrayDef: "左中括号" . ConstExp "右中括号"
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 45
+    ConstExp    转到状态 46
+    IntConst    转到状态 47
+
+
+状态 21
+
+   27 FuncDef: "int关键字" "标识符" "左小括号" . FuncFParams "右小括号" Block
+   29        | "int关键字" "标识符" "左小括号" . "右小括号" Block
+
+    "右小括号"  偏移，并进入状态 48
+    "int关键字"  偏移，并进入状态 49
+
+    FuncFParams  转到状态 50
+    FuncFParam   转到状态 51
+
+
+状态 22
+
+   21 VarDef: "标识符" "等号" . InitVal
+
+    "左大括号"        偏移，并进入状态 52
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    InitVal     转到状态 53
+    Exp         转到状态 54
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 23
+
+   12 ArrayDef: ArrayDef . "左中括号" ConstExp "右中括号"
+   18 VarDef: "标识符" ArrayDef . "等号" InitVal
+   19       | "标识符" ArrayDef .
+
+    "左中括号"  偏移，并进入状态 56
+    "等号"        偏移，并进入状态 57
+
+    $default  使用规则 19 以归约 (VarDef)
+
+
+状态 24
+
+   17 VarDefs: VarDefs "逗号" . VarDef
+
+    "标识符"  偏移，并进入状态 58
+
+    VarDef  转到状态 59
+
+
+状态 25
+
+   15 VarDecl: "int关键字" VarDefs "分号" .
+
+    $default  使用规则 15 以归约 (VarDecl)
+
+
+状态 26
+
+   28 FuncDef: "void关键字" "标识符" "左小括号" . FuncFParams "右小括号" Block
+   30        | "void关键字" "标识符" "左小括号" . "右小括号" Block
+
+    "右小括号"  偏移，并进入状态 60
+    "int关键字"  偏移，并进入状态 49
+
+    FuncFParams  转到状态 61
+    FuncFParam   转到状态 51
+
+
+状态 27
+
+   11 ConstDef: "标识符" "等号" . ConstInitVal
+
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    ConstInitVal  转到状态 62
+    Number        转到状态 63
+    IntConst      转到状态 47
+
+
+状态 28
+
+   10 ConstDef: "标识符" ArrayDef . "等号" ConstInitVal
+   12 ArrayDef: ArrayDef . "左中括号" ConstExp "右中括号"
+
+    "左中括号"  偏移，并进入状态 56
+    "等号"        偏移，并进入状态 64
+
+
+状态 29
+
+    9 ConstDefs: ConstDefs "逗号" . ConstDef
+
+    "标识符"  偏移，并进入状态 17
+
+    ConstDef  转到状态 65
+
+
+状态 30
+
+    7 ConstDecl: "const关键字" "int关键字" ConstDefs "分号" .
+
+    $default  使用规则 7 以归约 (ConstDecl)
+
+
+状态 31
+
+   60 PrimaryExp: "左小括号" . Exp "右小括号"
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Exp         转到状态 66
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 32
+
+   68 UnaryOp: "加号" .
+
+    $default  使用规则 68 以归约 (UnaryOp)
+
+
+状态 33
+
+   69 UnaryOp: "减号" .
+
+    $default  使用规则 69 以归约 (UnaryOp)
+
+
+状态 34
+
+   70 UnaryOp: "感叹号" .
+
+    $default  使用规则 70 以归约 (UnaryOp)
+
+
+状态 35
+
+   58 LVal: "标识符" . ExpArrayDefs
+   59     | "标识符" .
+   65 UnaryExp: "标识符" . "左小括号" FuncRParams "右小括号"
+   66         | "标识符" . "左小括号" "右小括号"
+
+    "左中括号"  偏移，并进入状态 67
+    "左小括号"  偏移，并进入状态 68
+
+    $default  使用规则 59 以归约 (LVal)
+
+    ExpArrayDefs  转到状态 69
+    ExpArrayDef   转到状态 70
+
+
+状态 36
+
+   98 IntConst: "十进制常数" .
+
+    $default  使用规则 98 以归约 (IntConst)
+
+
+状态 37
+
+   99 IntConst: "八进制常数" .
+
+    $default  使用规则 99 以归约 (IntConst)
+
+
+状态 38
+
+  100 IntConst: "十六进制常数" .
+
+    $default  使用规则 100 以归约 (IntConst)
+
+
+状态 39
+
+   61 PrimaryExp: LVal .
+
+    $default  使用规则 61 以归约 (PrimaryExp)
+
+
+状态 40
+
+   64 UnaryExp: PrimaryExp .
+
+    $default  使用规则 64 以归约 (UnaryExp)
+
+
+状态 41
+
+   62 PrimaryExp: Number .
+
+    $default  使用规则 62 以归约 (PrimaryExp)
+
+
+状态 42
+
+   74 MulExp: UnaryExp .
+
+    $default  使用规则 74 以归约 (MulExp)
+
+
+状态 43
+
+   67 UnaryExp: UnaryOp . UnaryExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 71
+    UnaryOp     转到状态 43
+    IntConst    转到状态 47
+
+
+状态 44
+
+   75 MulExp: MulExp . MulOp UnaryExp
+   79 AddExp: MulExp .
+
+    "乘号"  偏移，并进入状态 72
+    "除号"  偏移，并进入状态 73
+    "余号"  偏移，并进入状态 74
+
+    $default  使用规则 79 以归约 (AddExp)
+
+    MulOp  转到状态 75
+
+
+状态 45
+
+   80 AddExp: AddExp . AddOp MulExp
+   97 ConstExp: AddExp .
+
+    "加号"  偏移，并进入状态 76
+    "减号"  偏移，并进入状态 77
+
+    $default  使用规则 97 以归约 (ConstExp)
+
+    AddOp  转到状态 78
+
+
+状态 46
+
+   13 ArrayDef: "左中括号" ConstExp . "右中括号"
+
+    "右中括号"  偏移，并进入状态 79
+
+
+状态 47
+
+   63 Number: IntConst .
+
+    $default  使用规则 63 以归约 (Number)
+
+
+状态 48
+
+   29 FuncDef: "int关键字" "标识符" "左小括号" "右小括号" . Block
+
+    "左大括号"  偏移，并进入状态 80
+
+    Block  转到状态 81
+
+
+状态 49
+
+   33 FuncFParam: "int关键字" . "标识符"
+   34           | "int关键字" . "标识符" "左中括号" "右中括号" ExpArrayDefs
+   35           | "int关键字" . "标识符" "左中括号" "右中括号"
+
+    "标识符"  偏移，并进入状态 82
+
+
+状态 50
+
+   27 FuncDef: "int关键字" "标识符" "左小括号" FuncFParams . "右小括号" Block
+   32 FuncFParams: FuncFParams . "逗号" FuncFParam
+
+    "逗号"        偏移，并进入状态 83
+    "右小括号"  偏移，并进入状态 84
+
+
+状态 51
+
+   31 FuncFParams: FuncFParam .
+
+    $default  使用规则 31 以归约 (FuncFParams)
+
+
+状态 52
+
+   23 InitVal: "左大括号" . InitVals "右大括号"
+   24        | "左大括号" . "右大括号"
+
+    "左大括号"        偏移，并进入状态 52
+    "右大括号"        偏移，并进入状态 85
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    InitVal     转到状态 86
+    InitVals    转到状态 87
+    Exp         转到状态 54
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 53
+
+   21 VarDef: "标识符" "等号" InitVal .
+
+    $default  使用规则 21 以归约 (VarDef)
+
+
+状态 54
+
+   22 InitVal: Exp .
+
+    $default  使用规则 22 以归约 (InitVal)
+
+
+状态 55
+
+   56 Exp: AddExp .
+   80 AddExp: AddExp . AddOp MulExp
+
+    "加号"  偏移，并进入状态 76
+    "减号"  偏移，并进入状态 77
+
+    $default  使用规则 56 以归约 (Exp)
+
+    AddOp  转到状态 78
+
+
+状态 56
+
+   12 ArrayDef: ArrayDef "左中括号" . ConstExp "右中括号"
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 45
+    ConstExp    转到状态 88
+    IntConst    转到状态 47
+
+
+状态 57
+
+   18 VarDef: "标识符" ArrayDef "等号" . InitVal
+
+    "左大括号"        偏移，并进入状态 52
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    InitVal     转到状态 89
+    Exp         转到状态 54
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 58
+
+   18 VarDef: "标识符" . ArrayDef "等号" InitVal
+   19       | "标识符" . ArrayDef
+   20       | "标识符" .
+   21       | "标识符" . "等号" InitVal
+
+    "左中括号"  偏移，并进入状态 20
+    "等号"        偏移，并进入状态 22
+
+    $default  使用规则 20 以归约 (VarDef)
+
+    ArrayDef  转到状态 23
+
+
+状态 59
+
+   17 VarDefs: VarDefs "逗号" VarDef .
+
+    $default  使用规则 17 以归约 (VarDefs)
+
+
+状态 60
+
+   30 FuncDef: "void关键字" "标识符" "左小括号" "右小括号" . Block
+
+    "左大括号"  偏移，并进入状态 80
+
+    Block  转到状态 90
+
+
+状态 61
+
+   28 FuncDef: "void关键字" "标识符" "左小括号" FuncFParams . "右小括号" Block
+   32 FuncFParams: FuncFParams . "逗号" FuncFParam
+
+    "逗号"        偏移，并进入状态 83
+    "右小括号"  偏移，并进入状态 91
+
+
+状态 62
+
+   11 ConstDef: "标识符" "等号" ConstInitVal .
+
+    $default  使用规则 11 以归约 (ConstDef)
+
+
+状态 63
+
+   14 ConstInitVal: Number .
+
+    $default  使用规则 14 以归约 (ConstInitVal)
+
+
+状态 64
+
+   10 ConstDef: "标识符" ArrayDef "等号" . ConstInitVal
+
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    ConstInitVal  转到状态 92
+    Number        转到状态 63
+    IntConst      转到状态 47
+
+
+状态 65
+
+    9 ConstDefs: ConstDefs "逗号" ConstDef .
+
+    $default  使用规则 9 以归约 (ConstDefs)
+
+
+状态 66
+
+   60 PrimaryExp: "左小括号" Exp . "右小括号"
+
+    "右小括号"  偏移，并进入状态 93
+
+
+状态 67
+
+   38 ExpArrayDef: "左中括号" . Exp "右中括号"
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Exp         转到状态 94
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 68
+
+   65 UnaryExp: "标识符" "左小括号" . FuncRParams "右小括号"
+   66         | "标识符" "左小括号" . "右小括号"
+
+    "左小括号"        偏移，并进入状态 31
+    "右小括号"        偏移，并进入状态 95
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Exp          转到状态 96
+    LVal         转到状态 39
+    PrimaryExp   转到状态 40
+    Number       转到状态 41
+    UnaryExp     转到状态 42
+    UnaryOp      转到状态 43
+    FuncRParams  转到状态 97
+    FuncRParam   转到状态 98
+    MulExp       转到状态 44
+    AddExp       转到状态 55
+    IntConst     转到状态 47
+
+
+状态 69
+
+   37 ExpArrayDefs: ExpArrayDefs . ExpArrayDef
+   58 LVal: "标识符" ExpArrayDefs .
+
+    "左中括号"  偏移，并进入状态 67
+
+    $default  使用规则 58 以归约 (LVal)
+
+    ExpArrayDef  转到状态 99
+
+
+状态 70
+
+   36 ExpArrayDefs: ExpArrayDef .
+
+    $default  使用规则 36 以归约 (ExpArrayDefs)
+
+
+状态 71
+
+   67 UnaryExp: UnaryOp UnaryExp .
+
+    $default  使用规则 67 以归约 (UnaryExp)
+
+
+状态 72
+
+   76 MulOp: "乘号" .
+
+    $default  使用规则 76 以归约 (MulOp)
+
+
+状态 73
+
+   77 MulOp: "除号" .
+
+    $default  使用规则 77 以归约 (MulOp)
+
+
+状态 74
+
+   78 MulOp: "余号" .
+
+    $default  使用规则 78 以归约 (MulOp)
+
+
+状态 75
+
+   75 MulExp: MulExp MulOp . UnaryExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 100
+    UnaryOp     转到状态 43
+    IntConst    转到状态 47
+
+
+状态 76
+
+   81 AddOp: "加号" .
+
+    $default  使用规则 81 以归约 (AddOp)
+
+
+状态 77
+
+   82 AddOp: "减号" .
+
+    $default  使用规则 82 以归约 (AddOp)
+
+
+状态 78
+
+   80 AddExp: AddExp AddOp . MulExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 101
+    IntConst    转到状态 47
+
+
+状态 79
+
+   13 ArrayDef: "左中括号" ConstExp "右中括号" .
+
+    $default  使用规则 13 以归约 (ArrayDef)
+
+
+状态 80
+
+   39 Block: "左大括号" . BlockItems "右大括号"
+   40      | "左大括号" . "右大括号"
+
+    "分号"              偏移，并进入状态 102
+    "左大括号"        偏移，并进入状态 80
+    "右大括号"        偏移，并进入状态 103
+    "左小括号"        偏移，并进入状态 31
+    "const关键字"      偏移，并进入状态 1
+    "int关键字"        偏移，并进入状态 104
+    "if关键字"         偏移，并进入状态 105
+    "while关键字"      偏移，并进入状态 106
+    "break关键字"      偏移，并进入状态 107
+    "continue关键字"   偏移，并进入状态 108
+    "return关键字"     偏移，并进入状态 109
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Decl        转到状态 110
+    ConstDecl   转到状态 6
+    VarDecl     转到状态 7
+    Block       转到状态 111
+    BlockItems  转到状态 112
+    BlockItem   转到状态 113
+    Stmt        转到状态 114
+    Exp         转到状态 115
+    LVal        转到状态 116
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 81
+
+   29 FuncDef: "int关键字" "标识符" "左小括号" "右小括号" Block .
+
+    $default  使用规则 29 以归约 (FuncDef)
+
+
+状态 82
+
+   33 FuncFParam: "int关键字" "标识符" .
+   34           | "int关键字" "标识符" . "左中括号" "右中括号" ExpArrayDefs
+   35           | "int关键字" "标识符" . "左中括号" "右中括号"
+
+    "左中括号"  偏移，并进入状态 117
+
+    $default  使用规则 33 以归约 (FuncFParam)
+
+
+状态 83
+
+   32 FuncFParams: FuncFParams "逗号" . FuncFParam
+
+    "int关键字"  偏移，并进入状态 49
+
+    FuncFParam  转到状态 118
+
+
+状态 84
+
+   27 FuncDef: "int关键字" "标识符" "左小括号" FuncFParams "右小括号" . Block
+
+    "左大括号"  偏移，并进入状态 80
+
+    Block  转到状态 119
+
+
+状态 85
+
+   24 InitVal: "左大括号" "右大括号" .
+
+    $default  使用规则 24 以归约 (InitVal)
+
+
+状态 86
+
+   25 InitVals: InitVal .
+
+    $default  使用规则 25 以归约 (InitVals)
+
+
+状态 87
+
+   23 InitVal: "左大括号" InitVals . "右大括号"
+   26 InitVals: InitVals . "逗号" InitVal
+
+    "逗号"        偏移，并进入状态 120
+    "右大括号"  偏移，并进入状态 121
+
+
+状态 88
+
+   12 ArrayDef: ArrayDef "左中括号" ConstExp . "右中括号"
+
+    "右中括号"  偏移，并进入状态 122
+
+
+状态 89
+
+   18 VarDef: "标识符" ArrayDef "等号" InitVal .
+
+    $default  使用规则 18 以归约 (VarDef)
+
+
+状态 90
+
+   30 FuncDef: "void关键字" "标识符" "左小括号" "右小括号" Block .
+
+    $default  使用规则 30 以归约 (FuncDef)
+
+
+状态 91
+
+   28 FuncDef: "void关键字" "标识符" "左小括号" FuncFParams "右小括号" . Block
+
+    "左大括号"  偏移，并进入状态 80
+
+    Block  转到状态 123
+
+
+状态 92
+
+   10 ConstDef: "标识符" ArrayDef "等号" ConstInitVal .
+
+    $default  使用规则 10 以归约 (ConstDef)
+
+
+状态 93
+
+   60 PrimaryExp: "左小括号" Exp "右小括号" .
+
+    $default  使用规则 60 以归约 (PrimaryExp)
+
+
+状态 94
+
+   38 ExpArrayDef: "左中括号" Exp . "右中括号"
+
+    "右中括号"  偏移，并进入状态 124
+
+
+状态 95
+
+   66 UnaryExp: "标识符" "左小括号" "右小括号" .
+
+    $default  使用规则 66 以归约 (UnaryExp)
+
+
+状态 96
+
+   73 FuncRParam: Exp .
+
+    $default  使用规则 73 以归约 (FuncRParam)
+
+
+状态 97
+
+   65 UnaryExp: "标识符" "左小括号" FuncRParams . "右小括号"
+   72 FuncRParams: FuncRParams . "逗号" FuncRParam
+
+    "逗号"        偏移，并进入状态 125
+    "右小括号"  偏移，并进入状态 126
+
+
+状态 98
+
+   71 FuncRParams: FuncRParam .
+
+    $default  使用规则 71 以归约 (FuncRParams)
+
+
+状态 99
+
+   37 ExpArrayDefs: ExpArrayDefs ExpArrayDef .
+
+    $default  使用规则 37 以归约 (ExpArrayDefs)
+
+
+状态 100
+
+   75 MulExp: MulExp MulOp UnaryExp .
+
+    $default  使用规则 75 以归约 (MulExp)
+
+
+状态 101
+
+   75 MulExp: MulExp . MulOp UnaryExp
+   80 AddExp: AddExp AddOp MulExp .
+
+    "乘号"  偏移，并进入状态 72
+    "除号"  偏移，并进入状态 73
+    "余号"  偏移，并进入状态 74
+
+    $default  使用规则 80 以归约 (AddExp)
+
+    MulOp  转到状态 75
+
+
+状态 102
+
+   47 Stmt: "分号" .
+
+    $default  使用规则 47 以归约 (Stmt)
+
+
+状态 103
+
+   40 Block: "左大括号" "右大括号" .
+
+    $default  使用规则 40 以归约 (Block)
+
+
+状态 104
+
+   15 VarDecl: "int关键字" . VarDefs "分号"
+
+    "标识符"  偏移，并进入状态 58
+
+    VarDefs  转到状态 11
+    VarDef   转到状态 12
+
+
+状态 105
+
+   49 Stmt: "if关键字" . "左小括号" Condition "右小括号" Stmt
+   50     | "if关键字" . "左小括号" Condition "右小括号" Stmt "else关键字" Stmt
+
+    "左小括号"  偏移，并进入状态 127
+
+
+状态 106
+
+   51 Stmt: "while关键字" . "左小括号" Condition "右小括号" Stmt
+
+    "左小括号"  偏移，并进入状态 128
+
+
+状态 107
+
+   52 Stmt: "break关键字" . "分号"
+
+    "分号"  偏移，并进入状态 129
+
+
+状态 108
+
+   53 Stmt: "continue关键字" . "分号"
+
+    "分号"  偏移，并进入状态 130
+
+
+状态 109
+
+   54 Stmt: "return关键字" . "分号"
+   55     | "return关键字" . Exp "分号"
+
+    "分号"              偏移，并进入状态 131
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Exp         转到状态 132
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 110
+
+   43 BlockItem: Decl .
+
+    $default  使用规则 43 以归约 (BlockItem)
+
+
+状态 111
+
+   48 Stmt: Block .
+
+    $default  使用规则 48 以归约 (Stmt)
+
+
+状态 112
+
+   39 Block: "左大括号" BlockItems . "右大括号"
+   42 BlockItems: BlockItems . BlockItem
+
+    "分号"              偏移，并进入状态 102
+    "左大括号"        偏移，并进入状态 80
+    "右大括号"        偏移，并进入状态 133
+    "左小括号"        偏移，并进入状态 31
+    "const关键字"      偏移，并进入状态 1
+    "int关键字"        偏移，并进入状态 104
+    "if关键字"         偏移，并进入状态 105
+    "while关键字"      偏移，并进入状态 106
+    "break关键字"      偏移，并进入状态 107
+    "continue关键字"   偏移，并进入状态 108
+    "return关键字"     偏移，并进入状态 109
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Decl        转到状态 110
+    ConstDecl   转到状态 6
+    VarDecl     转到状态 7
+    Block       转到状态 111
+    BlockItem   转到状态 134
+    Stmt        转到状态 114
+    Exp         转到状态 115
+    LVal        转到状态 116
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 113
+
+   41 BlockItems: BlockItem .
+
+    $default  使用规则 41 以归约 (BlockItems)
+
+
+状态 114
+
+   44 BlockItem: Stmt .
+
+    $default  使用规则 44 以归约 (BlockItem)
+
+
+状态 115
+
+   46 Stmt: Exp . "分号"
+
+    "分号"  偏移，并进入状态 135
+
+
+状态 116
+
+   45 Stmt: LVal . "等号" Exp "分号"
+   61 PrimaryExp: LVal .
+
+    "等号"  偏移，并进入状态 136
+
+    $default  使用规则 61 以归约 (PrimaryExp)
+
+
+状态 117
+
+   34 FuncFParam: "int关键字" "标识符" "左中括号" . "右中括号" ExpArrayDefs
+   35           | "int关键字" "标识符" "左中括号" . "右中括号"
+
+    "右中括号"  偏移，并进入状态 137
+
+
+状态 118
+
+   32 FuncFParams: FuncFParams "逗号" FuncFParam .
+
+    $default  使用规则 32 以归约 (FuncFParams)
+
+
+状态 119
+
+   27 FuncDef: "int关键字" "标识符" "左小括号" FuncFParams "右小括号" Block .
+
+    $default  使用规则 27 以归约 (FuncDef)
+
+
+状态 120
+
+   26 InitVals: InitVals "逗号" . InitVal
+
+    "左大括号"        偏移，并进入状态 52
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    InitVal     转到状态 138
+    Exp         转到状态 54
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 121
+
+   23 InitVal: "左大括号" InitVals "右大括号" .
+
+    $default  使用规则 23 以归约 (InitVal)
+
+
+状态 122
+
+   12 ArrayDef: ArrayDef "左中括号" ConstExp "右中括号" .
+
+    $default  使用规则 12 以归约 (ArrayDef)
+
+
+状态 123
+
+   28 FuncDef: "void关键字" "标识符" "左小括号" FuncFParams "右小括号" Block .
+
+    $default  使用规则 28 以归约 (FuncDef)
+
+
+状态 124
+
+   38 ExpArrayDef: "左中括号" Exp "右中括号" .
+
+    $default  使用规则 38 以归约 (ExpArrayDef)
+
+
+状态 125
+
+   72 FuncRParams: FuncRParams "逗号" . FuncRParam
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Exp         转到状态 96
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    FuncRParam  转到状态 139
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 126
+
+   65 UnaryExp: "标识符" "左小括号" FuncRParams "右小括号" .
+
+    $default  使用规则 65 以归约 (UnaryExp)
+
+
+状态 127
+
+   49 Stmt: "if关键字" "左小括号" . Condition "右小括号" Stmt
+   50     | "if关键字" "左小括号" . Condition "右小括号" Stmt "else关键字" Stmt
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Condition   转到状态 140
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 141
+    RelExp      转到状态 142
+    EqExp       转到状态 143
+    LAndExp     转到状态 144
+    LOrExp      转到状态 145
+    IntConst    转到状态 47
+
+
+状态 128
+
+   51 Stmt: "while关键字" "左小括号" . Condition "右小括号" Stmt
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Condition   转到状态 146
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 141
+    RelExp      转到状态 142
+    EqExp       转到状态 143
+    LAndExp     转到状态 144
+    LOrExp      转到状态 145
+    IntConst    转到状态 47
+
+
+状态 129
+
+   52 Stmt: "break关键字" "分号" .
+
+    $default  使用规则 52 以归约 (Stmt)
+
+
+状态 130
+
+   53 Stmt: "continue关键字" "分号" .
+
+    $default  使用规则 53 以归约 (Stmt)
+
+
+状态 131
+
+   54 Stmt: "return关键字" "分号" .
+
+    $default  使用规则 54 以归约 (Stmt)
+
+
+状态 132
+
+   55 Stmt: "return关键字" Exp . "分号"
+
+    "分号"  偏移，并进入状态 147
+
+
+状态 133
+
+   39 Block: "左大括号" BlockItems "右大括号" .
+
+    $default  使用规则 39 以归约 (Block)
+
+
+状态 134
+
+   42 BlockItems: BlockItems BlockItem .
+
+    $default  使用规则 42 以归约 (BlockItems)
+
+
+状态 135
+
+   46 Stmt: Exp "分号" .
+
+    $default  使用规则 46 以归约 (Stmt)
+
+
+状态 136
+
+   45 Stmt: LVal "等号" . Exp "分号"
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Exp         转到状态 148
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 137
+
+   34 FuncFParam: "int关键字" "标识符" "左中括号" "右中括号" . ExpArrayDefs
+   35           | "int关键字" "标识符" "左中括号" "右中括号" .
+
+    "左中括号"  偏移，并进入状态 67
+
+    $default  使用规则 35 以归约 (FuncFParam)
+
+    ExpArrayDefs  转到状态 149
+    ExpArrayDef   转到状态 70
+
+
+状态 138
+
+   26 InitVals: InitVals "逗号" InitVal .
+
+    $default  使用规则 26 以归约 (InitVals)
+
+
+状态 139
+
+   72 FuncRParams: FuncRParams "逗号" FuncRParam .
+
+    $default  使用规则 72 以归约 (FuncRParams)
+
+
+状态 140
+
+   49 Stmt: "if关键字" "左小括号" Condition . "右小括号" Stmt
+   50     | "if关键字" "左小括号" Condition . "右小括号" Stmt "else关键字" Stmt
+
+    "右小括号"  偏移，并进入状态 150
+
+
+状态 141
+
+   80 AddExp: AddExp . AddOp MulExp
+   83 RelExp: AddExp .
+
+    "加号"  偏移，并进入状态 76
+    "减号"  偏移，并进入状态 77
+
+    $default  使用规则 83 以归约 (RelExp)
+
+    AddOp  转到状态 78
+
+
+状态 142
+
+   84 RelExp: RelExp . RelOp AddExp
+   89 EqExp: RelExp .
+
+    "小于号"        偏移，并进入状态 151
+    "大于号"        偏移，并进入状态 152
+    "小于等于号"  偏移，并进入状态 153
+    "大于等于号"  偏移，并进入状态 154
+
+    $default  使用规则 89 以归约 (EqExp)
+
+    RelOp  转到状态 155
+
+
+状态 143
+
+   90 EqExp: EqExp . EqOp RelExp
+   93 LAndExp: EqExp .
+
+    "等于等于号"  偏移，并进入状态 156
+    "不等于号"     偏移，并进入状态 157
+
+    $default  使用规则 93 以归约 (LAndExp)
+
+    EqOp  转到状态 158
+
+
+状态 144
+
+   94 LAndExp: LAndExp . "与号" EqExp
+   95 LOrExp: LAndExp .
+
+    "与号"  偏移，并进入状态 159
+
+    $default  使用规则 95 以归约 (LOrExp)
+
+
+状态 145
+
+   57 Condition: LOrExp .
+   96 LOrExp: LOrExp . "或号" LAndExp
+
+    "或号"  偏移，并进入状态 160
+
+    $default  使用规则 57 以归约 (Condition)
+
+
+状态 146
+
+   51 Stmt: "while关键字" "左小括号" Condition . "右小括号" Stmt
+
+    "右小括号"  偏移，并进入状态 161
+
+
+状态 147
+
+   55 Stmt: "return关键字" Exp "分号" .
+
+    $default  使用规则 55 以归约 (Stmt)
+
+
+状态 148
+
+   45 Stmt: LVal "等号" Exp . "分号"
+
+    "分号"  偏移，并进入状态 162
+
+
+状态 149
+
+   34 FuncFParam: "int关键字" "标识符" "左中括号" "右中括号" ExpArrayDefs .
+   37 ExpArrayDefs: ExpArrayDefs . ExpArrayDef
+
+    "左中括号"  偏移，并进入状态 67
+
+    $default  使用规则 34 以归约 (FuncFParam)
+
+    ExpArrayDef  转到状态 99
+
+
+状态 150
+
+   49 Stmt: "if关键字" "左小括号" Condition "右小括号" . Stmt
+   50     | "if关键字" "左小括号" Condition "右小括号" . Stmt "else关键字" Stmt
+
+    "分号"              偏移，并进入状态 102
+    "左大括号"        偏移，并进入状态 80
+    "左小括号"        偏移，并进入状态 31
+    "if关键字"         偏移，并进入状态 105
+    "while关键字"      偏移，并进入状态 106
+    "break关键字"      偏移，并进入状态 107
+    "continue关键字"   偏移，并进入状态 108
+    "return关键字"     偏移，并进入状态 109
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Block       转到状态 111
+    Stmt        转到状态 163
+    Exp         转到状态 115
+    LVal        转到状态 116
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 151
+
+   85 RelOp: "小于号" .
+
+    $default  使用规则 85 以归约 (RelOp)
+
+
+状态 152
+
+   87 RelOp: "大于号" .
+
+    $default  使用规则 87 以归约 (RelOp)
+
+
+状态 153
+
+   86 RelOp: "小于等于号" .
+
+    $default  使用规则 86 以归约 (RelOp)
+
+
+状态 154
+
+   88 RelOp: "大于等于号" .
+
+    $default  使用规则 88 以归约 (RelOp)
+
+
+状态 155
+
+   84 RelExp: RelExp RelOp . AddExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 164
+    IntConst    转到状态 47
+
+
+状态 156
+
+   91 EqOp: "等于等于号" .
+
+    $default  使用规则 91 以归约 (EqOp)
+
+
+状态 157
+
+   92 EqOp: "不等于号" .
+
+    $default  使用规则 92 以归约 (EqOp)
+
+
+状态 158
+
+   90 EqExp: EqExp EqOp . RelExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 141
+    RelExp      转到状态 165
+    IntConst    转到状态 47
+
+
+状态 159
+
+   94 LAndExp: LAndExp "与号" . EqExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 141
+    RelExp      转到状态 142
+    EqExp       转到状态 166
+    IntConst    转到状态 47
+
+
+状态 160
+
+   96 LOrExp: LOrExp "或号" . LAndExp
+
+    "左小括号"        偏移，并进入状态 31
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    LVal        转到状态 39
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 141
+    RelExp      转到状态 142
+    EqExp       转到状态 143
+    LAndExp     转到状态 167
+    IntConst    转到状态 47
+
+
+状态 161
+
+   51 Stmt: "while关键字" "左小括号" Condition "右小括号" . Stmt
+
+    "分号"              偏移，并进入状态 102
+    "左大括号"        偏移，并进入状态 80
+    "左小括号"        偏移，并进入状态 31
+    "if关键字"         偏移，并进入状态 105
+    "while关键字"      偏移，并进入状态 106
+    "break关键字"      偏移，并进入状态 107
+    "continue关键字"   偏移，并进入状态 108
+    "return关键字"     偏移，并进入状态 109
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Block       转到状态 111
+    Stmt        转到状态 168
+    Exp         转到状态 115
+    LVal        转到状态 116
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 162
+
+   45 Stmt: LVal "等号" Exp "分号" .
+
+    $default  使用规则 45 以归约 (Stmt)
+
+
+状态 163
+
+   49 Stmt: "if关键字" "左小括号" Condition "右小括号" Stmt .
+   50     | "if关键字" "左小括号" Condition "右小括号" Stmt . "else关键字" Stmt
+
+    "else关键字"  偏移，并进入状态 169
+
+    $default  使用规则 49 以归约 (Stmt)
+
+
+状态 164
+
+   80 AddExp: AddExp . AddOp MulExp
+   84 RelExp: RelExp RelOp AddExp .
+
+    "加号"  偏移，并进入状态 76
+    "减号"  偏移，并进入状态 77
+
+    $default  使用规则 84 以归约 (RelExp)
+
+    AddOp  转到状态 78
+
+
+状态 165
+
+   84 RelExp: RelExp . RelOp AddExp
+   90 EqExp: EqExp EqOp RelExp .
+
+    "小于号"        偏移，并进入状态 151
+    "大于号"        偏移，并进入状态 152
+    "小于等于号"  偏移，并进入状态 153
+    "大于等于号"  偏移，并进入状态 154
+
+    $default  使用规则 90 以归约 (EqExp)
+
+    RelOp  转到状态 155
+
+
+状态 166
+
+   90 EqExp: EqExp . EqOp RelExp
+   94 LAndExp: LAndExp "与号" EqExp .
+
+    "等于等于号"  偏移，并进入状态 156
+    "不等于号"     偏移，并进入状态 157
+
+    $default  使用规则 94 以归约 (LAndExp)
+
+    EqOp  转到状态 158
+
+
+状态 167
+
+   94 LAndExp: LAndExp . "与号" EqExp
+   96 LOrExp: LOrExp "或号" LAndExp .
+
+    "与号"  偏移，并进入状态 159
+
+    $default  使用规则 96 以归约 (LOrExp)
+
+
+状态 168
+
+   51 Stmt: "while关键字" "左小括号" Condition "右小括号" Stmt .
+
+    $default  使用规则 51 以归约 (Stmt)
+
+
+状态 169
+
+   50 Stmt: "if关键字" "左小括号" Condition "右小括号" Stmt "else关键字" . Stmt
+
+    "分号"              偏移，并进入状态 102
+    "左大括号"        偏移，并进入状态 80
+    "左小括号"        偏移，并进入状态 31
+    "if关键字"         偏移，并进入状态 105
+    "while关键字"      偏移，并进入状态 106
+    "break关键字"      偏移，并进入状态 107
+    "continue关键字"   偏移，并进入状态 108
+    "return关键字"     偏移，并进入状态 109
+    "加号"              偏移，并进入状态 32
+    "减号"              偏移，并进入状态 33
+    "感叹号"           偏移，并进入状态 34
+    "标识符"           偏移，并进入状态 35
+    "十进制常数"     偏移，并进入状态 36
+    "八进制常数"     偏移，并进入状态 37
+    "十六进制常数"  偏移，并进入状态 38
+
+    Block       转到状态 111
+    Stmt        转到状态 170
+    Exp         转到状态 115
+    LVal        转到状态 116
+    PrimaryExp  转到状态 40
+    Number      转到状态 41
+    UnaryExp    转到状态 42
+    UnaryOp     转到状态 43
+    MulExp      转到状态 44
+    AddExp      转到状态 55
+    IntConst    转到状态 47
+
+
+状态 170
+
+   50 Stmt: "if关键字" "左小括号" Condition "右小括号" Stmt "else关键字" Stmt .
+
+    $default  使用规则 50 以归约 (Stmt)

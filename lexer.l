@@ -38,7 +38,7 @@
 "<="                                    {printf("T_BE,%s\n",yytext);return saltyfish::Parser::make_T_BE();}
 ">="                                    {printf("T_AE,%s\n",yytext);return saltyfish::Parser::make_T_AE();}
 "!"                                     {printf("T_NOT,%s\n",yytext);return saltyfish::Parser::make_T_NOT();}
-"=="                                    {printf("T_E,%s\n",yytext);return saltyfish::Parser::make_T_EE();}
+"=="                                    {printf("T_EE,%s\n",yytext);return saltyfish::Parser::make_T_EE();}
 "!="                                    {printf("T_NE,%s\n",yytext);return saltyfish::Parser::make_T_NE();}
 "&&"                                    {printf("T_AND,%s\n",yytext);return saltyfish::Parser::make_T_AND();}
 "||"                                    {printf("T_OR,%s\n",yytext);return saltyfish::Parser::make_T_OR();}

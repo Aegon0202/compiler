@@ -480,7 +480,8 @@ namespace saltyfish {
         T_IDENT = 290,
         T_DECIMAL = 291,
         T_OCTAL = 292,
-        T_HEXADECIMAL = 293
+        T_HEXADECIMAL = 293,
+        K_LOW_THAN_ELSE = 294
       };
     };
 
@@ -659,13 +660,13 @@ switch (yytype)
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::END || tok == token::T_COMMA || tok == token::T_SEMICOLON || tok == token::T_LB || tok == token::T_RB || tok == token::T_LM || tok == token::T_RM || tok == token::T_LS || tok == token::T_RS || tok == token::T_EQUAL || tok == token::T_CONST || tok == token::T_INT || tok == token::T_VOID || tok == token::T_IF || tok == token::T_ELSE || tok == token::T_WHILE || tok == token::T_BREAK || tok == token::T_CONTINUE || tok == token::T_RETURN || tok == token::T_ADD || tok == token::T_SUB || tok == token::T_MUL || tok == token::T_DIV || tok == token::T_MOD || tok == token::T_NOT || tok == token::T_B || tok == token::T_A || tok == token::T_BE || tok == token::T_AE || tok == token::T_EE || tok == token::T_NE || tok == token::T_AND || tok == token::T_OR);
+        YY_ASSERT (tok == token::END || tok == token::T_COMMA || tok == token::T_SEMICOLON || tok == token::T_LB || tok == token::T_RB || tok == token::T_LM || tok == token::T_RM || tok == token::T_LS || tok == token::T_RS || tok == token::T_EQUAL || tok == token::T_CONST || tok == token::T_INT || tok == token::T_VOID || tok == token::T_IF || tok == token::T_ELSE || tok == token::T_WHILE || tok == token::T_BREAK || tok == token::T_CONTINUE || tok == token::T_RETURN || tok == token::T_ADD || tok == token::T_SUB || tok == token::T_MUL || tok == token::T_DIV || tok == token::T_MOD || tok == token::T_NOT || tok == token::T_B || tok == token::T_A || tok == token::T_BE || tok == token::T_AE || tok == token::T_EE || tok == token::T_NE || tok == token::T_AND || tok == token::T_OR || tok == token::K_LOW_THAN_ELSE);
       }
 #else
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::END || tok == token::T_COMMA || tok == token::T_SEMICOLON || tok == token::T_LB || tok == token::T_RB || tok == token::T_LM || tok == token::T_RM || tok == token::T_LS || tok == token::T_RS || tok == token::T_EQUAL || tok == token::T_CONST || tok == token::T_INT || tok == token::T_VOID || tok == token::T_IF || tok == token::T_ELSE || tok == token::T_WHILE || tok == token::T_BREAK || tok == token::T_CONTINUE || tok == token::T_RETURN || tok == token::T_ADD || tok == token::T_SUB || tok == token::T_MUL || tok == token::T_DIV || tok == token::T_MOD || tok == token::T_NOT || tok == token::T_B || tok == token::T_A || tok == token::T_BE || tok == token::T_AE || tok == token::T_EE || tok == token::T_NE || tok == token::T_AND || tok == token::T_OR);
+        YY_ASSERT (tok == token::END || tok == token::T_COMMA || tok == token::T_SEMICOLON || tok == token::T_LB || tok == token::T_RB || tok == token::T_LM || tok == token::T_RM || tok == token::T_LS || tok == token::T_RS || tok == token::T_EQUAL || tok == token::T_CONST || tok == token::T_INT || tok == token::T_VOID || tok == token::T_IF || tok == token::T_ELSE || tok == token::T_WHILE || tok == token::T_BREAK || tok == token::T_CONTINUE || tok == token::T_RETURN || tok == token::T_ADD || tok == token::T_SUB || tok == token::T_MUL || tok == token::T_DIV || tok == token::T_MOD || tok == token::T_NOT || tok == token::T_B || tok == token::T_A || tok == token::T_BE || tok == token::T_AE || tok == token::T_EE || tok == token::T_NE || tok == token::T_AND || tok == token::T_OR || tok == token::K_LOW_THAN_ELSE);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1285,6 +1286,21 @@ switch (yytype)
         return symbol_type (token::T_HEXADECIMAL, v);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_K_LOW_THAN_ELSE ()
+      {
+        return symbol_type (token::K_LOW_THAN_ELSE);
+      }
+#else
+      static
+      symbol_type
+      make_K_LOW_THAN_ELSE ()
+      {
+        return symbol_type (token::K_LOW_THAN_ELSE);
+      }
+#endif
 
 
   private:
@@ -1594,7 +1610,7 @@ switch (yytype)
       yylast_ = 232,     ///< Last index in yytable_.
       yynnts_ = 43,  ///< Number of nonterminal symbols.
       yyfinal_ = 14, ///< Termination state number.
-      yyntokens_ = 39  ///< Number of tokens.
+      yyntokens_ = 40  ///< Number of tokens.
     };
 
 
@@ -1639,9 +1655,9 @@ switch (yytype)
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38
+      35,    36,    37,    38,    39
     };
-    const int user_token_number_max_ = 293;
+    const int user_token_number_max_ = 294;
 
     if (t <= 0)
       return yyeof_;
@@ -1781,7 +1797,7 @@ switch (yytype)
 
 #line 12 "parser.y"
 } // saltyfish
-#line 1785 "parser.hpp"
+#line 1801 "parser.hpp"
 
 
 
