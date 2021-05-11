@@ -39,10 +39,7 @@
 }
 %code
 {
-	    saltyfish::Parser::symbol_type yylex(){
-        	static Lexer* lexer = new Lexer();
-        	return lexer->get_next_token();
-		}
+#define yylex lexer.get_next_token
 }
 
 

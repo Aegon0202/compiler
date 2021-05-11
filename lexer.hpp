@@ -32,7 +32,6 @@ namespace saltyfish
         Lexer() {}
         virtual ~Lexer() {}
         virtual saltyfish::Parser::symbol_type get_next_token(saltyfish::Index &index);
-        virtual saltyfish::Parser::symbol_type get_next_token();
         Lexer(std::istream *in) : yyFlexLexer(in) {}
 
     private:

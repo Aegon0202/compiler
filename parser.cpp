@@ -54,12 +54,9 @@
 // Unqualified %code blocks.
 #line 41 "parser.y"
 
-	    saltyfish::Parser::symbol_type yylex(){
-        	static Lexer* lexer = new Lexer();
-        	return lexer->get_next_token();
-		}
+#define yylex lexer.get_next_token
 
-#line 63 "parser.cpp"
+#line 60 "parser.cpp"
 
 
 #ifndef YY_
@@ -151,7 +148,7 @@
 
 #line 12 "parser.y"
 namespace saltyfish {
-#line 155 "parser.cpp"
+#line 152 "parser.cpp"
 
 
   /* Return YYSTR after stripping away unnecessary quotes and
@@ -625,13 +622,13 @@ namespace saltyfish {
           switch (yyn)
             {
   case 51:
-#line 214 "parser.y"
+#line 211 "parser.y"
                                                     {cout<< "if-else语句"<<endl;}
-#line 631 "parser.cpp"
+#line 628 "parser.cpp"
     break;
 
 
-#line 635 "parser.cpp"
+#line 632 "parser.cpp"
 
             default:
               break;
@@ -1117,17 +1114,17 @@ namespace saltyfish {
   const short
   Parser::yyrline_[] =
   {
-       0,   102,   102,   103,   104,   105,   109,   110,   115,   119,
-     120,   124,   125,   129,   130,   134,   138,   142,   143,   147,
-     148,   149,   150,   155,   156,   157,   161,   162,   167,   168,
-     169,   170,   174,   175,   179,   180,   181,   185,   186,   190,
-     194,   195,   199,   200,   204,   205,   209,   210,   211,   212,
-     213,   214,   215,   216,   217,   218,   219,   223,   227,   231,
-     232,   236,   237,   238,   242,   246,   247,   248,   249,   253,
-     254,   255,   259,   260,   264,   268,   269,   273,   274,   275,
-     279,   280,   284,   285,   289,   290,   294,   295,   296,   297,
-     301,   302,   306,   307,   311,   312,   316,   317,   321,   325,
-     326,   327
+       0,    99,    99,   100,   101,   102,   106,   107,   112,   116,
+     117,   121,   122,   126,   127,   131,   135,   139,   140,   144,
+     145,   146,   147,   152,   153,   154,   158,   159,   164,   165,
+     166,   167,   171,   172,   176,   177,   178,   182,   183,   187,
+     191,   192,   196,   197,   201,   202,   206,   207,   208,   209,
+     210,   211,   212,   213,   214,   215,   216,   220,   224,   228,
+     229,   233,   234,   235,   239,   243,   244,   245,   246,   250,
+     251,   252,   256,   257,   261,   265,   266,   270,   271,   272,
+     276,   277,   281,   282,   286,   287,   291,   292,   293,   294,
+     298,   299,   303,   304,   308,   309,   313,   314,   318,   322,
+     323,   324
   };
 
   // Print the state stack on the debug stream.
@@ -1162,9 +1159,9 @@ namespace saltyfish {
 
 #line 12 "parser.y"
 } // saltyfish
-#line 1166 "parser.cpp"
+#line 1163 "parser.cpp"
 
-#line 330 "parser.y"
+#line 327 "parser.y"
 
 
 namespace saltyfish
