@@ -8,8 +8,11 @@
 
 %define api.token.constructor
 %define api.value.type variant
-%define parse.assert
+%define parse.assert	
 %define api.namespace {saltyfish}
+%defines
+%locations
+
 
 %code requires
 {
@@ -30,12 +33,16 @@
     #include <iostream>
     #include "parser.hpp"
     #include "lexer.hpp"
+	#include "location.hh"
     using namespace std;
     using namespace saltyfish;
-    saltyfish::Parser::symbol_type yylex(){
-        static Lexer* lexer = new Lexer();
-        return lexer->get_next_token();
-    }
+}
+%code
+{
+	    saltyfish::Parser::symbol_type yylex(){
+        	static Lexer* lexer = new Lexer();
+        	return lexer->get_next_token();
+		}
 }
 
 

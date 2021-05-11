@@ -14,9 +14,11 @@
 #include <FlexLexer.h>
 #endif
 
-#undef YY_DECL
-#define YY_DECL saltyfish::Parser::symbol_type saltyfish::Lexer::get_next_token()
 #include "parser.hpp"
+#include "location.hh"
+
+#undef YY_DECL
+#define YY_DECL saltyfish::Parser::symbol_type saltyfish::Lexer::get_next_token(saltyfish::Index &index)
 // Scanner method signature is defined by this macro. Original yylex() returns int.
 // Sinice Bison 3 uses symbol_type, we must change returned type. We also rename it
 // to something sane, since you cannot overload return type.
@@ -29,7 +31,9 @@ namespace saltyfish
     public:
         Lexer() {}
         virtual ~Lexer() {}
+        virtual saltyfish::Parser::symbol_type get_next_token(saltyfish::Index &index);
         virtual saltyfish::Parser::symbol_type get_next_token();
+        Lexer(std::istream *in) : yyFlexLexer(in) {}
 
     private:
     };
