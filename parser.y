@@ -24,7 +24,8 @@
     using namespace std;
 
     namespace saltyfish {
-
+		class Index;
+		class Lexer;
     }
 }
 

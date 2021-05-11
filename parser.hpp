@@ -54,10 +54,11 @@
     using namespace std;
 
     namespace saltyfish {
-
+		class Index;
+		class Lexer;
     }
 
-#line 61 "parser.hpp"
+#line 62 "parser.hpp"
 
 # include <cassert>
 # include <cstdlib> // std::abort
@@ -192,7 +193,7 @@
 
 #line 12 "parser.y"
 namespace saltyfish {
-#line 196 "parser.hpp"
+#line 197 "parser.hpp"
 
 
 
@@ -1817,7 +1818,7 @@ switch (yytype)
 
 #line 12 "parser.y"
 } // saltyfish
-#line 1821 "parser.hpp"
+#line 1822 "parser.hpp"
 
 
 
