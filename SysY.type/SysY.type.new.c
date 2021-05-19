@@ -135,6 +135,18 @@ struct IntConst *newIntConst(int type, char *number)
     }
     while ((n = number[k]))
     {
+        if (n >= '0' && n <= '9')
+        {
+            n = n - '0';
+        }
+        else if (n >= 'A' && n <= 'F')
+        {
+            n = n - 'A' + 10;
+        }
+        else
+        {
+            n = n - 'a' + 10;
+        }
         sum = sum * base + n;
         k++;
     }
@@ -289,9 +301,4 @@ struct String *newString(int type, const char *content)
 void yyerror(char const *s)
 {
     fprintf(stderr, "%s\n", s);
-}
-
-int main()
-{
-    return yyparse();
 }

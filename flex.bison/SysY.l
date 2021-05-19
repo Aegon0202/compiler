@@ -6,7 +6,8 @@
     #include "../SysY.type/SysY.type.def.h"
     #include "../SysY.type/SysY.type.new.h"
     #include "./SysY.tab.h"
-    #define PRINT(type,text) fprintf(yyout, "( " #type " , %s )\n", text)
+    #define PRINT(type,text) 
+    //fprintf(yyout, "( " #type " , %s )\n", text)
 %}
 
 %x COMMENT

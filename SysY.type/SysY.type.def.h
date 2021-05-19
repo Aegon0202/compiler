@@ -516,7 +516,7 @@ struct Ident
 
 struct String
 {
-    int type;
+    int type; // STRING
     char *content;
 };
 #endif

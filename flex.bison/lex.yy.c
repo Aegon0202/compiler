@@ -547,10 +547,11 @@ char *yytext;
     #include "../SysY.type/SysY.type.def.h"
     #include "../SysY.type/SysY.type.new.h"
     #include "./SysY.tab.h"
-    #define PRINT(type,text) fprintf(yyout, "( " #type " , %s )\n", text)
-#line 552 "flex.bison/lex.yy.c"
+    #define PRINT(type,text) 
+    //fprintf(yyout, "( " #type " , %s )\n", text)
+#line 553 "flex.bison/lex.yy.c"
 
-#line 554 "flex.bison/lex.yy.c"
+#line 555 "flex.bison/lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -768,10 +769,10 @@ YY_DECL
 		}
 
 	{
-#line 14 "flex.bison/SysY.l"
+#line 15 "flex.bison/SysY.l"
 
 
-#line 775 "flex.bison/lex.yy.c"
+#line 776 "flex.bison/lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -845,12 +846,12 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
-#line 17 "flex.bison/SysY.l"
-case 2:
 #line 18 "flex.bison/SysY.l"
+case 2:
+#line 19 "flex.bison/SysY.l"
 case 3:
 YY_RULE_SETUP
-#line 18 "flex.bison/SysY.l"
+#line 19 "flex.bison/SysY.l"
 {
     PRINT(INTCONST,yytext);
     yylval.intconst = newIntConst(INTCONST,yytext);
@@ -859,7 +860,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 24 "flex.bison/SysY.l"
+#line 25 "flex.bison/SysY.l"
 {
     PRINT(K_ADD,yytext);
     return K_ADD;
@@ -867,7 +868,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 29 "flex.bison/SysY.l"
+#line 30 "flex.bison/SysY.l"
 {
     PRINT(K_SUB,yytext);
     return K_SUB;
@@ -875,7 +876,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 34 "flex.bison/SysY.l"
+#line 35 "flex.bison/SysY.l"
 {
     PRINT(K_NOT,yytext);
     return K_NOT;
@@ -883,7 +884,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 39 "flex.bison/SysY.l"
+#line 40 "flex.bison/SysY.l"
 {
     PRINT(K_MUL,yytext);
     yylval.mulop=newMulOp(MULOP,K_MUL);
@@ -892,7 +893,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 45 "flex.bison/SysY.l"
+#line 46 "flex.bison/SysY.l"
 {
     PRINT(K_DIV,yytext);
     yylval.mulop=newMulOp(MULOP,K_DIV);
@@ -901,7 +902,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 51 "flex.bison/SysY.l"
+#line 52 "flex.bison/SysY.l"
 {
     PRINT(K_MOD,yytext);
     yylval.mulop=newMulOp(MULOP,K_MOD);
@@ -910,7 +911,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 57 "flex.bison/SysY.l"
+#line 58 "flex.bison/SysY.l"
 {
     PRINT(EQOP,yytext);
     yylval.eqop = newEqOp(EQOP,K_EQ);
@@ -919,7 +920,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 63 "flex.bison/SysY.l"
+#line 64 "flex.bison/SysY.l"
 {
     PRINT(EQOP,yytext);
     yylval.eqop = newEqOp(EQOP,K_NEQ);
@@ -928,7 +929,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 69 "flex.bison/SysY.l"
+#line 70 "flex.bison/SysY.l"
 {
     PRINT(ASSIGNOP,yytext);
     return K_ASSIGNOP;
@@ -936,7 +937,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 74 "flex.bison/SysY.l"
+#line 75 "flex.bison/SysY.l"
 {
     PRINT(RELOP,yytext);
     yylval.relop = newRelOp(RELOP,K_GT);
@@ -945,7 +946,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 80 "flex.bison/SysY.l"
+#line 81 "flex.bison/SysY.l"
 {
     PRINT(RELOP,yytext);
     yylval.relop = newRelOp(RELOP,K_LT);
@@ -954,7 +955,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 86 "flex.bison/SysY.l"
+#line 87 "flex.bison/SysY.l"
 {
     PRINT(RELOP,yytext);
     yylval.relop = newRelOp(RELOP,K_GTE);
@@ -963,7 +964,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 92 "flex.bison/SysY.l"
+#line 93 "flex.bison/SysY.l"
 {
     PRINT(RELOP,yytext);
     yylval.relop = newRelOp(RELOP,K_LTE);
@@ -972,7 +973,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 98 "flex.bison/SysY.l"
+#line 99 "flex.bison/SysY.l"
 {
     PRINT(LANDOP,yytext);
     return K_AND;
@@ -980,7 +981,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 103 "flex.bison/SysY.l"
+#line 104 "flex.bison/SysY.l"
 {
     PRINT(LOROP,yytext);
     return K_OR;
@@ -989,7 +990,7 @@ YY_RULE_SETUP
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 108 "flex.bison/SysY.l"
+#line 109 "flex.bison/SysY.l"
 {
     if(yytext[yyleng-2] == '\\'){
         yyless(yyleng-1);
@@ -1003,7 +1004,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 119 "flex.bison/SysY.l"
+#line 120 "flex.bison/SysY.l"
 {
     PRINT(K_CURLY_L,yytext);
     return K_CURLY_L;
@@ -1011,7 +1012,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 124 "flex.bison/SysY.l"
+#line 125 "flex.bison/SysY.l"
 {
     PRINT(K_CURLY_R,yytext);
     return K_CURLY_R;
@@ -1019,7 +1020,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 129 "flex.bison/SysY.l"
+#line 130 "flex.bison/SysY.l"
 {
     PRINT(K_SQUARE_L,yytext);
     return K_SQUARE_L;
@@ -1027,7 +1028,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 134 "flex.bison/SysY.l"
+#line 135 "flex.bison/SysY.l"
 {
     PRINT(K_SQUARE_R,yytext);
     return K_SQUARE_R;
@@ -1035,7 +1036,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 139 "flex.bison/SysY.l"
+#line 140 "flex.bison/SysY.l"
 {
     PRINT(K_PARENTHESES_L,yytext);
     return K_PARENTHESES_L;
@@ -1043,7 +1044,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 144 "flex.bison/SysY.l"
+#line 145 "flex.bison/SysY.l"
 {
     PRINT(K_PARENTHESES_R,yytext);
     return K_PARENTHESES_R;
@@ -1051,7 +1052,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 149 "flex.bison/SysY.l"
+#line 150 "flex.bison/SysY.l"
 {
     PRINT(K_COMMA,yytext);
     return K_COMMA;
@@ -1059,7 +1060,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 154 "flex.bison/SysY.l"
+#line 155 "flex.bison/SysY.l"
 {
     PRINT(K_SEMICOLON,yytext);
     return K_SEMICOLON;
@@ -1067,7 +1068,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 159 "flex.bison/SysY.l"
+#line 160 "flex.bison/SysY.l"
 {
     PRINT(K_CONST,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_CONST,yytext);
@@ -1076,7 +1077,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 165 "flex.bison/SysY.l"
+#line 166 "flex.bison/SysY.l"
 {
     PRINT(K_INT,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_INT,yytext);
@@ -1085,7 +1086,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 171 "flex.bison/SysY.l"
+#line 172 "flex.bison/SysY.l"
 {
     PRINT(K_VOID,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_VOID,yytext);
@@ -1094,7 +1095,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 177 "flex.bison/SysY.l"
+#line 178 "flex.bison/SysY.l"
 {
     PRINT(K_RETURN,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_RETURN,yytext);
@@ -1103,7 +1104,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 183 "flex.bison/SysY.l"
+#line 184 "flex.bison/SysY.l"
 {
     PRINT(K_IF,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_IF,yytext);
@@ -1112,7 +1113,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 189 "flex.bison/SysY.l"
+#line 190 "flex.bison/SysY.l"
 {
     PRINT(K_ELSE,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_ELSE,yytext);
@@ -1121,7 +1122,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 195 "flex.bison/SysY.l"
+#line 196 "flex.bison/SysY.l"
 {
     PRINT(K_RETURN,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_WHILE,yytext);
@@ -1130,7 +1131,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 201 "flex.bison/SysY.l"
+#line 202 "flex.bison/SysY.l"
 {
     PRINT(K_BREAK,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_BREAK,yytext);
@@ -1139,7 +1140,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 207 "flex.bison/SysY.l"
+#line 208 "flex.bison/SysY.l"
 {
     PRINT(K_CONTINUE,yytext);
     // yylval.keyword = newKeyword(KEYWORD,K_CONTINUE,yytext);
@@ -1148,7 +1149,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 213 "flex.bison/SysY.l"
+#line 214 "flex.bison/SysY.l"
 {
     PRINT(IDENT,yytext);
     yylval.ident = newIdent(IDENT,yytext);
@@ -1160,44 +1161,44 @@ case 38:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 219 "flex.bison/SysY.l"
+#line 220 "flex.bison/SysY.l"
 {}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 221 "flex.bison/SysY.l"
+#line 222 "flex.bison/SysY.l"
 {BEGIN COMMENT;}
 	YY_BREAK
 case 40:
-#line 224 "flex.bison/SysY.l"
+#line 225 "flex.bison/SysY.l"
 case 41:
 /* rule 41 can match eol */
 YY_RULE_SETUP
-#line 224 "flex.bison/SysY.l"
+#line 225 "flex.bison/SysY.l"
 {}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 225 "flex.bison/SysY.l"
+#line 226 "flex.bison/SysY.l"
 {BEGIN INITIAL;}
 	YY_BREAK
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 227 "flex.bison/SysY.l"
+#line 228 "flex.bison/SysY.l"
 {}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 229 "flex.bison/SysY.l"
+#line 230 "flex.bison/SysY.l"
 {fprintf(yyout,"ERROR HAPPEN %d %s\n",yylineno,yytext);exit(-1);}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 231 "flex.bison/SysY.l"
+#line 232 "flex.bison/SysY.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1201 "flex.bison/lex.yy.c"
+#line 1202 "flex.bison/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -2215,6 +2216,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 231 "flex.bison/SysY.l"
+#line 232 "flex.bison/SysY.l"
 
 

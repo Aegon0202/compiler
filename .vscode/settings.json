@@ -1,3 +1,7 @@
 {
-    "python.pythonPath": "/home/sf/software/miniconda3/bin/python"
+    "python.pythonPath": "/home/sf/software/miniconda3/bin/python",
+    "files.associations": {
+        "type_traits": "c",
+        "sysy.type.new.h": "c"
+    }
 }

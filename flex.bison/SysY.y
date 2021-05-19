@@ -1,10 +1,11 @@
 %{
-    #include "SysY.tab.h"
+    #include "./SysY.tab.h"
     #include "../SysY.type/SysY.type.def.h"
     #include "../SysY.type/SysY.type.new.h"
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    extern YYSTYPE result;
     int yylex();
     void yyerror(char*);
 %}
@@ -165,8 +166,8 @@
 COMPUNIT
     :   DECL    { $$ = newCompUnit(COMPUNIT,DECL,$1,NULL); }
     |   FUNCDEF { $$ = newCompUnit(COMPUNIT,FUNCDEF,$1,NULL); }
-    |   COMPUNIT DECL   { $$ = newCompUnit(COMPUNIT,DECL,$2,$1); }
-    |   COMPUNIT FUNCDEF    { $$ = newCompUnit(COMPUNIT,FUNCDEF,$2,$1); }
+    |   COMPUNIT DECL   { $$ = newCompUnit(COMPUNIT,DECL,$2,$1); result.compunit = $$->next; }
+    |   COMPUNIT FUNCDEF    { $$ = newCompUnit(COMPUNIT,FUNCDEF,$2,$1); result.compunit = $$->next; }
     ;
 
 DECL
@@ -175,7 +176,7 @@ DECL
     ;
 
 CONSTDECL
-    :   K_CONST K_INT CONSTDEFS K_SEMICOLON { $$ = newConstDecl(CONSTDECL,newBType(BTYPE,K_INT),$3); }
+    :   K_CONST K_INT CONSTDEFS K_SEMICOLON { $$ = newConstDecl(CONSTDECL,newBType(BTYPE,K_INT),$3->next); }
     ;
 
 CONSTDEFS
@@ -185,7 +186,7 @@ CONSTDEFS
 
 CONSTDEF
     :   IDENT K_ASSIGNOP CONSTINITVAL   { $$ = newConstDef(CONSTDEF,$1,NULL,$3); }
-    |   IDENT CONSTARRAYDEFS K_ASSIGNOP CONSTINITVAL    { $$ = newConstDef(CONSTDEF,$1,$2,$4); }
+    |   IDENT CONSTARRAYDEFS K_ASSIGNOP CONSTINITVAL    { $$ = newConstDef(CONSTDEF,$1,$2->next,$4); }
     ;
 
 CONSTARRAYDEFS
@@ -200,7 +201,7 @@ CONSTARRAYDEF
 CONSTINITVAL
     :   CONSTEXP    { $$ = newConstInitVal(CONSTINITVAL,CONSTEXP,$1); }
     |   K_CURLY_L K_CURLY_R { $$ = newConstInitVal(CONSTINITVAL,CONSTINITVALS,newConstInitVals(CONSTINITVALS,NULL,NULL)); }
-    |   K_CURLY_L CONSTINITVALS K_CURLY_R   { $$ = newConstInitVal(CONSTINITVAL,CONSTINITVALS,$2); }
+    |   K_CURLY_L CONSTINITVALS K_CURLY_R   { $$ = newConstInitVal(CONSTINITVAL,CONSTINITVALS,$2->next); }
     ;
 
 CONSTINITVALS
@@ -209,7 +210,7 @@ CONSTINITVALS
     ;
 
 VARDECL
-    :   K_INT VARDEFS K_SEMICOLON   { $$ = newVarDecl(VARDECL,newBType(BTYPE,K_INT),$2); }
+    :   K_INT VARDEFS K_SEMICOLON   { $$ = newVarDecl(VARDECL,newBType(BTYPE,K_INT),$2->next); }
     ;
 
 VARDEFS
@@ -219,15 +220,15 @@ VARDEFS
 
 VARDEF
     :   IDENT   { $$ = newVarDef(VARDEF,$1,NULL,NULL); }
-    |   IDENT CONSTARRAYDEFS    { $$ = newVarDef(VARDEF,$1,$2,NULL); }
+    |   IDENT CONSTARRAYDEFS    { $$ = newVarDef(VARDEF,$1,$2->next,NULL); }
     |   IDENT K_ASSIGNOP INITVAL    { $$ = newVarDef(VARDEF,$1,NULL,$3); }
-    |   IDENT CONSTARRAYDEFS K_ASSIGNOP INITVAL { $$ = newVarDef(VARDEF,$1,$2,$4); }
+    |   IDENT CONSTARRAYDEFS K_ASSIGNOP INITVAL { $$ = newVarDef(VARDEF,$1,$2->next,$4); }
     ;
 
 INITVAL
     :   EXP { $$ = newInitVal(INITVAL,EXP,$1); }
     |   K_CURLY_L K_CURLY_R { $$ = newInitVal(INITVAL,INITVAL,newInitVals(INITVALS,NULL,NULL)); }
-    |   K_CURLY_L INITVALS K_CURLY_R    { $$ = newInitVal(INITVAL,INITVAL,$2); }
+    |   K_CURLY_L INITVALS K_CURLY_R    { $$ = newInitVal(INITVAL,INITVAL,$2->next); }
     ;
 
 INITVALS
@@ -238,8 +239,8 @@ INITVALS
 FUNCDEF
     :   K_INT IDENT K_PARENTHESES_L K_PARENTHESES_R BLOCK   { $$ = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),$2,newFuncFParams(FUNCFPARAMS,NULL,NULL),$5); }
     |   K_VOID IDENT K_PARENTHESES_L K_PARENTHESES_R BLOCK  { $$ = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),$2,newFuncFParams(FUNCFPARAMS,NULL,NULL),$5); }
-    |   K_INT IDENT K_PARENTHESES_L FUNCFPARAMS K_PARENTHESES_R BLOCK   { $$ = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),$2,$4,$6); }
-    |   K_VOID IDENT K_PARENTHESES_L FUNCFPARAMS K_PARENTHESES_R BLOCK  { $$ = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),$2,$4,$6); }
+    |   K_INT IDENT K_PARENTHESES_L FUNCFPARAMS K_PARENTHESES_R BLOCK   { $$ = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),$2,$4->next,$6); }
+    |   K_VOID IDENT K_PARENTHESES_L FUNCFPARAMS K_PARENTHESES_R BLOCK  { $$ = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),$2,$4->next,$6); }
     ;
 
 FUNCFPARAMS
@@ -250,7 +251,7 @@ FUNCFPARAMS
 FUNCFPARAM
     :   K_INT IDENT { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,NULL); }
     |   K_INT IDENT K_SQUARE_L K_SQUARE_R   { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),NULL)); }
-    |   K_INT IDENT K_SQUARE_L K_SQUARE_R EXPARRAYDEFS  { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),$5)); }
+    |   K_INT IDENT K_SQUARE_L K_SQUARE_R EXPARRAYDEFS  { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),$5->next)); }
     ;
 
 EXPARRAYDEFS
@@ -264,7 +265,7 @@ EXPARRAYDEF
 
 BLOCK
     :   K_CURLY_L K_CURLY_R { $$ = newBlock(BLOCK,NULL); }
-    |   K_CURLY_L BLOCKITEMS K_CURLY_R  { $$ = newBlock(BLOCK,$2); }
+    |   K_CURLY_L BLOCKITEMS K_CURLY_R  { $$ = newBlock(BLOCK,$2->next); }
     ;
 
 BLOCKITEMS
@@ -292,16 +293,16 @@ STMT
     ;
 
 EXP
-    :   ADDEXP  { $$ = newExp(EXP,$1); }
+    :   ADDEXP  { $$ = newExp(EXP,$1->next); }
     ;
 
 COND
-    :   LOREXP  { $$ = newCond(COND,$1); }
+    :   LOREXP  { $$ = newCond(COND,$1->next); }
     ;
 
 LVAL
     :   IDENT   { $$ = newLVal(LVAL,IDENT,$1); }
-    |   IDENT EXPARRAYDEFS  { $$ = newLVal(LVAL,ARRAYIMPL,newArrayImpl(ARRAYIMPL,$1,$2)); }
+    |   IDENT EXPARRAYDEFS  { $$ = newLVal(LVAL,ARRAYIMPL,newArrayImpl(ARRAYIMPL,$1,$2->next)); }
     ;
 
 PRIMARYEXP
@@ -317,7 +318,7 @@ NUMBER
 UNARYEXP
     :   PRIMARYEXP  { $$ = newUnaryExp(UNARYEXP,PRIMARYEXP,$1); }
     |   IDENT K_PARENTHESES_L K_PARENTHESES_R   { $$ = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,$1,newFuncRParams(FUNCRPARAMS,NULL,NULL))); }
-    |   IDENT K_PARENTHESES_L FUNCRPARAMS K_PARENTHESES_R   { $$ = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,$1,$3)); }
+    |   IDENT K_PARENTHESES_L FUNCRPARAMS K_PARENTHESES_R   { $$ = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,$1,$3->next)); }
     |   UNARYOP UNARYEXP    { $$ = newUnaryExp(UNARYEXP,UNARYEXPS,newUnaryExps(UNARYEXPS,$1,$2)); }
     ;
 
@@ -342,32 +343,32 @@ MULEXP
     ;
 
 ADDEXP
-    :   MULEXP  { $$ = newAddExp(ADDEXP,NULL,$1,NULL); }
-    |   ADDEXP K_ADD MULEXP { $$ = newAddExp(ADDEXP,newAddOp(ADDOP,K_ADD),$3,$1); }
-    |   ADDEXP K_SUB MULEXP { $$ = newAddExp(ADDEXP,newAddOp(ADDOP,K_SUB),$3,$1); }
+    :   MULEXP  { $$ = newAddExp(ADDEXP,NULL,$1->next,NULL); }
+    |   ADDEXP K_ADD MULEXP { $$ = newAddExp(ADDEXP,newAddOp(ADDOP,K_ADD),$3->next,$1); }
+    |   ADDEXP K_SUB MULEXP { $$ = newAddExp(ADDEXP,newAddOp(ADDOP,K_SUB),$3->next,$1); }
     ;
 
 RELEXP
-    :   ADDEXP  { $$ = newRelExp(RELEXP,NULL,$1,NULL); }
-    |   RELEXP RELOP ADDEXP { $$ = newRelExp(RELEXP,$2,$3,$1); }
+    :   ADDEXP  { $$ = newRelExp(RELEXP,NULL,$1->next,NULL); }
+    |   RELEXP RELOP ADDEXP { $$ = newRelExp(RELEXP,$2,$3->next,$1); }
     ;
 
 EQEXP
-    :   RELEXP  { $$ = newEqExp(EQEXP,NULL,$1,NULL); }
-    |   EQEXP EQOP RELEXP   { $$ = newEqExp(EQEXP,$2,$3,$1); }
+    :   RELEXP  { $$ = newEqExp(EQEXP,NULL,$1->next,NULL); }
+    |   EQEXP EQOP RELEXP   { $$ = newEqExp(EQEXP,$2,$3->next,$1); }
     ;
 
 LANDEXP
-    :   EQEXP   { $$ = newLAndExp(LANDEXP,$1,NULL); }
-    |   LANDEXP K_AND EQEXP    { $$ = newLAndExp(LANDEXP,$3,$1); }
+    :   EQEXP   { $$ = newLAndExp(LANDEXP,$1->next,NULL); }
+    |   LANDEXP K_AND EQEXP    { $$ = newLAndExp(LANDEXP,$3->next,$1); }
     ;
 
 LOREXP
-    :   LANDEXP { $$ = newLOrExp(LOREXP,$1,NULL); }
-    |   LOREXP K_OR LANDEXP    { $$ = newLOrExp(LOREXP,$3,$1); }
+    :   LANDEXP { $$ = newLOrExp(LOREXP,$1->next,NULL); }
+    |   LOREXP K_OR LANDEXP    { $$ = newLOrExp(LOREXP,$3->next,$1); }
     ;
 
 CONSTEXP
-    :   ADDEXP  { $$ = newConstExp(CONSTEXP,$1); }
+    :   ADDEXP  { $$ = newConstExp(CONSTEXP,$1->next); }
     ;
 %%

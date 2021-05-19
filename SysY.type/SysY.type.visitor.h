@@ -254,6 +254,4 @@
     returntype funcname(void *token, struct interfacename *visitor, ##__VA_ARGS__) \
         VisitTokenFuncBody
 
-VisitorDeclGenerator(printToken, printTokenFunc, void);
-
 #endif
