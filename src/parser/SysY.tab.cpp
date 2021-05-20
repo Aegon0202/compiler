@@ -66,19 +66,23 @@
 
 
 /* First part of user prologue.  */
-#line 1 "flex.bison/SysY.y"
+#line 1 "src/parser/SysY.y"
 
-    #include "./SysY.tab.h"
-    #include "../SysY.type/SysY.type.def.h"
-    #include "../SysY.type/SysY.type.new.h"
+    #include "./SysY.tab.hpp"
+    #include "../SysY.type/SysY.type.def.hpp"
+    #include "../SysY.type/SysY.type.new.hpp"
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
     extern YYSTYPE result;
     int yylex();
-    void yyerror(char*);
+    int yyerror(char *msg)
+    {
+        fprintf(stderr, "%s", msg);
+        return 0;
+    }
 
-#line 82 "flex.bison/SysY.tab.c"
+#line 86 "src/parser/SysY.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -111,8 +115,8 @@
 
 /* Use api.header.include to #include this header
    instead of duplicating it here.  */
-#ifndef YY_YY_FLEX_BISON_SYSY_TAB_H_INCLUDED
-# define YY_YY_FLEX_BISON_SYSY_TAB_H_INCLUDED
+#ifndef YY_YY_SRC_PARSER_SYSY_TAB_HPP_INCLUDED
+# define YY_YY_SRC_PARSER_SYSY_TAB_HPP_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -175,7 +179,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 13 "flex.bison/SysY.y"
+#line 17 "src/parser/SysY.y"
 
     struct Keyword *keyword;
     struct CompUnit *compunit;
@@ -237,7 +241,7 @@ union YYSTYPE
     struct RefList *reflist;
     struct String* string;
 
-#line 241 "flex.bison/SysY.tab.c"
+#line 245 "src/parser/SysY.tab.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -250,7 +254,7 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_FLEX_BISON_SYSY_TAB_H_INCLUDED  */
+#endif /* !YY_YY_SRC_PARSER_SYSY_TAB_HPP_INCLUDED  */
 
 
 
@@ -616,16 +620,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   167,   167,   168,   169,   170,   174,   175,   179,   183,
-     184,   188,   189,   193,   194,   198,   202,   203,   204,   208,
-     209,   213,   217,   218,   222,   223,   224,   225,   229,   230,
-     231,   235,   236,   240,   241,   242,   243,   247,   248,   252,
-     253,   254,   258,   259,   263,   267,   268,   272,   273,   277,
-     278,   282,   283,   284,   285,   286,   287,   288,   289,   290,
-     291,   292,   296,   300,   304,   305,   309,   310,   311,   315,
-     319,   320,   321,   322,   326,   327,   328,   332,   333,   337,
-     338,   341,   342,   346,   347,   348,   352,   353,   357,   358,
-     362,   363,   367,   368,   372
+       0,   171,   171,   172,   173,   174,   178,   179,   183,   187,
+     188,   192,   193,   197,   198,   202,   206,   207,   208,   212,
+     213,   217,   221,   222,   226,   227,   228,   229,   233,   234,
+     235,   239,   240,   244,   245,   246,   247,   251,   252,   256,
+     257,   258,   262,   263,   267,   271,   272,   276,   277,   281,
+     282,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295,   296,   300,   304,   308,   309,   313,   314,   315,   319,
+     323,   324,   325,   326,   330,   331,   332,   336,   337,   341,
+     342,   345,   346,   350,   351,   352,   356,   357,   361,   362,
+     366,   367,   371,   372,   376
 };
 #endif
 
@@ -1553,565 +1557,565 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 167 "flex.bison/SysY.y"
-                { (yyval.compunit) = newCompUnit(COMPUNIT,DECL,(yyvsp[0].decl),NULL); }
-#line 1559 "flex.bison/SysY.tab.c"
+#line 171 "src/parser/SysY.y"
+                { (yyval.compunit) = newCompUnit(COMPUNIT,DECL,(yyvsp[0].decl),NULL); result.compunit = (yyval.compunit)->next; }
+#line 1563 "src/parser/SysY.tab.cpp"
     break;
 
   case 3:
-#line 168 "flex.bison/SysY.y"
-                { (yyval.compunit) = newCompUnit(COMPUNIT,FUNCDEF,(yyvsp[0].funcdef),NULL); }
-#line 1565 "flex.bison/SysY.tab.c"
+#line 172 "src/parser/SysY.y"
+                { (yyval.compunit) = newCompUnit(COMPUNIT,FUNCDEF,(yyvsp[0].funcdef),NULL); result.compunit = (yyval.compunit)->next; }
+#line 1569 "src/parser/SysY.tab.cpp"
     break;
 
   case 4:
-#line 169 "flex.bison/SysY.y"
+#line 173 "src/parser/SysY.y"
                         { (yyval.compunit) = newCompUnit(COMPUNIT,DECL,(yyvsp[0].decl),(yyvsp[-1].compunit)); result.compunit = (yyval.compunit)->next; }
-#line 1571 "flex.bison/SysY.tab.c"
+#line 1575 "src/parser/SysY.tab.cpp"
     break;
 
   case 5:
-#line 170 "flex.bison/SysY.y"
+#line 174 "src/parser/SysY.y"
                             { (yyval.compunit) = newCompUnit(COMPUNIT,FUNCDEF,(yyvsp[0].funcdef),(yyvsp[-1].compunit)); result.compunit = (yyval.compunit)->next; }
-#line 1577 "flex.bison/SysY.tab.c"
+#line 1581 "src/parser/SysY.tab.cpp"
     break;
 
   case 6:
-#line 174 "flex.bison/SysY.y"
+#line 178 "src/parser/SysY.y"
                     { (yyval.decl) = newDecl(DECL,CONSTDECL,(yyvsp[0].constdecl)); }
-#line 1583 "flex.bison/SysY.tab.c"
+#line 1587 "src/parser/SysY.tab.cpp"
     break;
 
   case 7:
-#line 175 "flex.bison/SysY.y"
+#line 179 "src/parser/SysY.y"
                 { (yyval.decl) = newDecl(DECL,VARDECL,(yyvsp[0].vardecl)); }
-#line 1589 "flex.bison/SysY.tab.c"
+#line 1593 "src/parser/SysY.tab.cpp"
     break;
 
   case 8:
-#line 179 "flex.bison/SysY.y"
+#line 183 "src/parser/SysY.y"
                                             { (yyval.constdecl) = newConstDecl(CONSTDECL,newBType(BTYPE,K_INT),(yyvsp[-1].constdefs)->next); }
-#line 1595 "flex.bison/SysY.tab.c"
+#line 1599 "src/parser/SysY.tab.cpp"
     break;
 
   case 9:
-#line 183 "flex.bison/SysY.y"
+#line 187 "src/parser/SysY.y"
                     { (yyval.constdefs) = newConstDefs(CONSTDEFS,(yyvsp[0].constdef),NULL); }
-#line 1601 "flex.bison/SysY.tab.c"
+#line 1605 "src/parser/SysY.tab.cpp"
     break;
 
   case 10:
-#line 184 "flex.bison/SysY.y"
+#line 188 "src/parser/SysY.y"
                                     { (yyval.constdefs) = newConstDefs(CONSTDEFS,(yyvsp[0].constdef),(yyvsp[-2].constdefs)); }
-#line 1607 "flex.bison/SysY.tab.c"
+#line 1611 "src/parser/SysY.tab.cpp"
     break;
 
   case 11:
-#line 188 "flex.bison/SysY.y"
+#line 192 "src/parser/SysY.y"
                                         { (yyval.constdef) = newConstDef(CONSTDEF,(yyvsp[-2].ident),NULL,(yyvsp[0].constinitval)); }
-#line 1613 "flex.bison/SysY.tab.c"
+#line 1617 "src/parser/SysY.tab.cpp"
     break;
 
   case 12:
-#line 189 "flex.bison/SysY.y"
+#line 193 "src/parser/SysY.y"
                                                         { (yyval.constdef) = newConstDef(CONSTDEF,(yyvsp[-3].ident),(yyvsp[-2].constarraydefs)->next,(yyvsp[0].constinitval)); }
-#line 1619 "flex.bison/SysY.tab.c"
+#line 1623 "src/parser/SysY.tab.cpp"
     break;
 
   case 13:
-#line 193 "flex.bison/SysY.y"
+#line 197 "src/parser/SysY.y"
                         { (yyval.constarraydefs) = newConstArrayDefs(CONSTARRAYDEFS,(yyvsp[0].constarraydef),NULL); }
-#line 1625 "flex.bison/SysY.tab.c"
+#line 1629 "src/parser/SysY.tab.cpp"
     break;
 
   case 14:
-#line 194 "flex.bison/SysY.y"
+#line 198 "src/parser/SysY.y"
                                         { (yyval.constarraydefs) = newConstArrayDefs(CONSTARRAYDEFS,(yyvsp[0].constarraydef),(yyvsp[-1].constarraydefs)); }
-#line 1631 "flex.bison/SysY.tab.c"
+#line 1635 "src/parser/SysY.tab.cpp"
     break;
 
   case 15:
-#line 198 "flex.bison/SysY.y"
+#line 202 "src/parser/SysY.y"
                                         { (yyval.constarraydef) = newConstArrayDef(CONSTARRAYDEF,(yyvsp[-1].constexp)); }
-#line 1637 "flex.bison/SysY.tab.c"
+#line 1641 "src/parser/SysY.tab.cpp"
     break;
 
   case 16:
-#line 202 "flex.bison/SysY.y"
+#line 206 "src/parser/SysY.y"
                     { (yyval.constinitval) = newConstInitVal(CONSTINITVAL,CONSTEXP,(yyvsp[0].constexp)); }
-#line 1643 "flex.bison/SysY.tab.c"
+#line 1647 "src/parser/SysY.tab.cpp"
     break;
 
   case 17:
-#line 203 "flex.bison/SysY.y"
+#line 207 "src/parser/SysY.y"
                             { (yyval.constinitval) = newConstInitVal(CONSTINITVAL,CONSTINITVALS,newConstInitVals(CONSTINITVALS,NULL,NULL)); }
-#line 1649 "flex.bison/SysY.tab.c"
+#line 1653 "src/parser/SysY.tab.cpp"
     break;
 
   case 18:
-#line 204 "flex.bison/SysY.y"
+#line 208 "src/parser/SysY.y"
                                             { (yyval.constinitval) = newConstInitVal(CONSTINITVAL,CONSTINITVALS,(yyvsp[-1].constinitvals)->next); }
-#line 1655 "flex.bison/SysY.tab.c"
+#line 1659 "src/parser/SysY.tab.cpp"
     break;
 
   case 19:
-#line 208 "flex.bison/SysY.y"
+#line 212 "src/parser/SysY.y"
                         { (yyval.constinitvals) = newConstInitVals(CONSTINITVALS,(yyvsp[0].constinitval),NULL); }
-#line 1661 "flex.bison/SysY.tab.c"
+#line 1665 "src/parser/SysY.tab.cpp"
     break;
 
   case 20:
-#line 209 "flex.bison/SysY.y"
+#line 213 "src/parser/SysY.y"
                                             { (yyval.constinitvals) = newConstInitVals(CONSTINITVALS,(yyvsp[0].constinitval),(yyvsp[-2].constinitvals)); }
-#line 1667 "flex.bison/SysY.tab.c"
+#line 1671 "src/parser/SysY.tab.cpp"
     break;
 
   case 21:
-#line 213 "flex.bison/SysY.y"
+#line 217 "src/parser/SysY.y"
                                     { (yyval.vardecl) = newVarDecl(VARDECL,newBType(BTYPE,K_INT),(yyvsp[-1].vardefs)->next); }
-#line 1673 "flex.bison/SysY.tab.c"
+#line 1677 "src/parser/SysY.tab.cpp"
     break;
 
   case 22:
-#line 217 "flex.bison/SysY.y"
+#line 221 "src/parser/SysY.y"
                 { (yyval.vardefs) = newVarDefs(VARDEFS,(yyvsp[0].vardef),NULL); }
-#line 1679 "flex.bison/SysY.tab.c"
+#line 1683 "src/parser/SysY.tab.cpp"
     break;
 
   case 23:
-#line 218 "flex.bison/SysY.y"
+#line 222 "src/parser/SysY.y"
                                 { (yyval.vardefs) = newVarDefs(VARDEFS,(yyvsp[0].vardef),(yyvsp[-2].vardefs)); }
-#line 1685 "flex.bison/SysY.tab.c"
+#line 1689 "src/parser/SysY.tab.cpp"
     break;
 
   case 24:
-#line 222 "flex.bison/SysY.y"
+#line 226 "src/parser/SysY.y"
                 { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[0].ident),NULL,NULL); }
-#line 1691 "flex.bison/SysY.tab.c"
+#line 1695 "src/parser/SysY.tab.cpp"
     break;
 
   case 25:
-#line 223 "flex.bison/SysY.y"
+#line 227 "src/parser/SysY.y"
                                 { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[-1].ident),(yyvsp[0].constarraydefs)->next,NULL); }
-#line 1697 "flex.bison/SysY.tab.c"
+#line 1701 "src/parser/SysY.tab.cpp"
     break;
 
   case 26:
-#line 224 "flex.bison/SysY.y"
+#line 228 "src/parser/SysY.y"
                                     { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[-2].ident),NULL,(yyvsp[0].initval)); }
-#line 1703 "flex.bison/SysY.tab.c"
+#line 1707 "src/parser/SysY.tab.cpp"
     break;
 
   case 27:
-#line 225 "flex.bison/SysY.y"
+#line 229 "src/parser/SysY.y"
                                                 { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[-3].ident),(yyvsp[-2].constarraydefs)->next,(yyvsp[0].initval)); }
-#line 1709 "flex.bison/SysY.tab.c"
+#line 1713 "src/parser/SysY.tab.cpp"
     break;
 
   case 28:
-#line 229 "flex.bison/SysY.y"
+#line 233 "src/parser/SysY.y"
             { (yyval.initval) = newInitVal(INITVAL,EXP,(yyvsp[0].exp)); }
-#line 1715 "flex.bison/SysY.tab.c"
+#line 1719 "src/parser/SysY.tab.cpp"
     break;
 
   case 29:
-#line 230 "flex.bison/SysY.y"
+#line 234 "src/parser/SysY.y"
                             { (yyval.initval) = newInitVal(INITVAL,INITVAL,newInitVals(INITVALS,NULL,NULL)); }
-#line 1721 "flex.bison/SysY.tab.c"
+#line 1725 "src/parser/SysY.tab.cpp"
     break;
 
   case 30:
-#line 231 "flex.bison/SysY.y"
+#line 235 "src/parser/SysY.y"
                                         { (yyval.initval) = newInitVal(INITVAL,INITVAL,(yyvsp[-1].initvals)->next); }
-#line 1727 "flex.bison/SysY.tab.c"
+#line 1731 "src/parser/SysY.tab.cpp"
     break;
 
   case 31:
-#line 235 "flex.bison/SysY.y"
+#line 239 "src/parser/SysY.y"
                 { (yyval.initvals) = newInitVals(INITVALS,(yyvsp[0].initval),NULL); }
-#line 1733 "flex.bison/SysY.tab.c"
+#line 1737 "src/parser/SysY.tab.cpp"
     break;
 
   case 32:
-#line 236 "flex.bison/SysY.y"
+#line 240 "src/parser/SysY.y"
                                     { (yyval.initvals) = newInitVals(INITVALS,(yyvsp[0].initval),(yyvsp[-2].initvals)); }
-#line 1739 "flex.bison/SysY.tab.c"
+#line 1743 "src/parser/SysY.tab.cpp"
     break;
 
   case 33:
-#line 240 "flex.bison/SysY.y"
+#line 244 "src/parser/SysY.y"
                                                             { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),(yyvsp[-3].ident),newFuncFParams(FUNCFPARAMS,NULL,NULL),(yyvsp[0].block)); }
-#line 1745 "flex.bison/SysY.tab.c"
+#line 1749 "src/parser/SysY.tab.cpp"
     break;
 
   case 34:
-#line 241 "flex.bison/SysY.y"
+#line 245 "src/parser/SysY.y"
                                                             { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),(yyvsp[-3].ident),newFuncFParams(FUNCFPARAMS,NULL,NULL),(yyvsp[0].block)); }
-#line 1751 "flex.bison/SysY.tab.c"
+#line 1755 "src/parser/SysY.tab.cpp"
     break;
 
   case 35:
-#line 242 "flex.bison/SysY.y"
+#line 246 "src/parser/SysY.y"
                                                                         { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),(yyvsp[-4].ident),(yyvsp[-2].funcfparams)->next,(yyvsp[0].block)); }
-#line 1757 "flex.bison/SysY.tab.c"
+#line 1761 "src/parser/SysY.tab.cpp"
     break;
 
   case 36:
-#line 243 "flex.bison/SysY.y"
+#line 247 "src/parser/SysY.y"
                                                                         { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),(yyvsp[-4].ident),(yyvsp[-2].funcfparams)->next,(yyvsp[0].block)); }
-#line 1763 "flex.bison/SysY.tab.c"
+#line 1767 "src/parser/SysY.tab.cpp"
     break;
 
   case 37:
-#line 247 "flex.bison/SysY.y"
+#line 251 "src/parser/SysY.y"
                     { (yyval.funcfparams) = newFuncFParams(FUNCFPARAMS,(yyvsp[0].funcfparam),NULL); }
-#line 1769 "flex.bison/SysY.tab.c"
+#line 1773 "src/parser/SysY.tab.cpp"
     break;
 
   case 38:
-#line 248 "flex.bison/SysY.y"
+#line 252 "src/parser/SysY.y"
                                         { (yyval.funcfparams) = newFuncFParams(FUNCFPARAMS,(yyvsp[0].funcfparam),(yyvsp[-2].funcfparams)); }
-#line 1775 "flex.bison/SysY.tab.c"
+#line 1779 "src/parser/SysY.tab.cpp"
     break;
 
   case 39:
-#line 252 "flex.bison/SysY.y"
+#line 256 "src/parser/SysY.y"
                     { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[0].ident),NULL); }
-#line 1781 "flex.bison/SysY.tab.c"
+#line 1785 "src/parser/SysY.tab.cpp"
     break;
 
   case 40:
-#line 253 "flex.bison/SysY.y"
+#line 257 "src/parser/SysY.y"
                                             { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[-2].ident),newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),NULL)); }
-#line 1787 "flex.bison/SysY.tab.c"
+#line 1791 "src/parser/SysY.tab.cpp"
     break;
 
   case 41:
-#line 254 "flex.bison/SysY.y"
+#line 258 "src/parser/SysY.y"
                                                         { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[-3].ident),newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),(yyvsp[0].exparraydefs)->next)); }
-#line 1793 "flex.bison/SysY.tab.c"
+#line 1797 "src/parser/SysY.tab.cpp"
     break;
 
   case 42:
-#line 258 "flex.bison/SysY.y"
+#line 262 "src/parser/SysY.y"
                     { (yyval.exparraydefs) = newExpArrayDefs(EXPARRAYDEFS,(yyvsp[0].exparraydef),NULL); }
-#line 1799 "flex.bison/SysY.tab.c"
+#line 1803 "src/parser/SysY.tab.cpp"
     break;
 
   case 43:
-#line 259 "flex.bison/SysY.y"
+#line 263 "src/parser/SysY.y"
                                     { (yyval.exparraydefs) = newExpArrayDefs(EXPARRAYDEFS,(yyvsp[0].exparraydef),(yyvsp[-1].exparraydefs)); }
-#line 1805 "flex.bison/SysY.tab.c"
+#line 1809 "src/parser/SysY.tab.cpp"
     break;
 
   case 44:
-#line 263 "flex.bison/SysY.y"
+#line 267 "src/parser/SysY.y"
                                     { (yyval.exparraydef) = newExpArrayDef(EXPARRAYDEF,(yyvsp[-1].exp)); }
-#line 1811 "flex.bison/SysY.tab.c"
+#line 1815 "src/parser/SysY.tab.cpp"
     break;
 
   case 45:
-#line 267 "flex.bison/SysY.y"
+#line 271 "src/parser/SysY.y"
                             { (yyval.block) = newBlock(BLOCK,NULL); }
-#line 1817 "flex.bison/SysY.tab.c"
+#line 1821 "src/parser/SysY.tab.cpp"
     break;
 
   case 46:
-#line 268 "flex.bison/SysY.y"
+#line 272 "src/parser/SysY.y"
                                         { (yyval.block) = newBlock(BLOCK,(yyvsp[-1].blockitems)->next); }
-#line 1823 "flex.bison/SysY.tab.c"
+#line 1827 "src/parser/SysY.tab.cpp"
     break;
 
   case 47:
-#line 272 "flex.bison/SysY.y"
+#line 276 "src/parser/SysY.y"
                     { (yyval.blockitems) = newBlockItems(BLOCKITEMS,(yyvsp[0].blockitem),NULL); }
-#line 1829 "flex.bison/SysY.tab.c"
+#line 1833 "src/parser/SysY.tab.cpp"
     break;
 
   case 48:
-#line 273 "flex.bison/SysY.y"
+#line 277 "src/parser/SysY.y"
                                 { (yyval.blockitems) = newBlockItems(BLOCKITEMS,(yyvsp[0].blockitem),(yyvsp[-1].blockitems)); }
-#line 1835 "flex.bison/SysY.tab.c"
+#line 1839 "src/parser/SysY.tab.cpp"
     break;
 
   case 49:
-#line 277 "flex.bison/SysY.y"
+#line 281 "src/parser/SysY.y"
                 { (yyval.blockitem) = newBlockItem(BLOCKITEM,DECL,(yyvsp[0].decl)); }
-#line 1841 "flex.bison/SysY.tab.c"
+#line 1845 "src/parser/SysY.tab.cpp"
     break;
 
   case 50:
-#line 278 "flex.bison/SysY.y"
+#line 282 "src/parser/SysY.y"
                 { (yyval.blockitem) = newBlockItem(BLOCKITEM,STMT,(yyvsp[0].stmt)); }
-#line 1847 "flex.bison/SysY.tab.c"
+#line 1851 "src/parser/SysY.tab.cpp"
     break;
 
   case 51:
-#line 282 "flex.bison/SysY.y"
+#line 286 "src/parser/SysY.y"
                                         { (yyval.stmt) = newStmt(STMT,ASSIGN,newAssign(ASSIGN,(yyvsp[-3].lval),(yyvsp[-1].exp))); }
-#line 1853 "flex.bison/SysY.tab.c"
+#line 1857 "src/parser/SysY.tab.cpp"
     break;
 
   case 52:
-#line 283 "flex.bison/SysY.y"
+#line 287 "src/parser/SysY.y"
                     { (yyval.stmt) = newStmt(STMT,EXP,newExp(EXP,NULL)); }
-#line 1859 "flex.bison/SysY.tab.c"
+#line 1863 "src/parser/SysY.tab.cpp"
     break;
 
   case 53:
-#line 284 "flex.bison/SysY.y"
+#line 288 "src/parser/SysY.y"
                         { (yyval.stmt) = newStmt(STMT,EXP,(yyvsp[-1].exp)); }
-#line 1865 "flex.bison/SysY.tab.c"
+#line 1869 "src/parser/SysY.tab.cpp"
     break;
 
   case 54:
-#line 285 "flex.bison/SysY.y"
+#line 289 "src/parser/SysY.y"
                 { (yyval.stmt) = newStmt(STMT,BLOCK,(yyvsp[0].block)); }
-#line 1871 "flex.bison/SysY.tab.c"
+#line 1875 "src/parser/SysY.tab.cpp"
     break;
 
   case 55:
-#line 286 "flex.bison/SysY.y"
+#line 290 "src/parser/SysY.y"
                                                                              { (yyval.stmt) = newStmt(STMT,IFSTMT,newIfStmt(IFSTMT,(yyvsp[-2].cond),(yyvsp[0].stmt),NULL)); }
-#line 1877 "flex.bison/SysY.tab.c"
+#line 1881 "src/parser/SysY.tab.cpp"
     break;
 
   case 56:
-#line 287 "flex.bison/SysY.y"
+#line 291 "src/parser/SysY.y"
                                                                     { (yyval.stmt) = newStmt(STMT,IFSTMT,newIfStmt(IFSTMT,(yyvsp[-4].cond),(yyvsp[-2].stmt),(yyvsp[0].stmt))); }
-#line 1883 "flex.bison/SysY.tab.c"
+#line 1887 "src/parser/SysY.tab.cpp"
     break;
 
   case 57:
-#line 288 "flex.bison/SysY.y"
+#line 292 "src/parser/SysY.y"
                                                             { (yyval.stmt) = newStmt(STMT,WHILESTMT,newWhileStmt(WHILESTMT,(yyvsp[-2].cond),(yyvsp[0].stmt))); }
-#line 1889 "flex.bison/SysY.tab.c"
+#line 1893 "src/parser/SysY.tab.cpp"
     break;
 
   case 58:
-#line 289 "flex.bison/SysY.y"
+#line 293 "src/parser/SysY.y"
                             { (yyval.stmt) = newStmt(STMT,BREAKSTMT,NULL); }
-#line 1895 "flex.bison/SysY.tab.c"
+#line 1899 "src/parser/SysY.tab.cpp"
     break;
 
   case 59:
-#line 290 "flex.bison/SysY.y"
+#line 294 "src/parser/SysY.y"
                                 { (yyval.stmt) = newStmt(STMT,CONTINUESTMT,NULL); }
-#line 1901 "flex.bison/SysY.tab.c"
+#line 1905 "src/parser/SysY.tab.cpp"
     break;
 
   case 60:
-#line 291 "flex.bison/SysY.y"
+#line 295 "src/parser/SysY.y"
                                 { (yyval.stmt) = newStmt(STMT,RETURNSTMT,newReturnStmt(RETURNSTMT,NULL)); }
-#line 1907 "flex.bison/SysY.tab.c"
+#line 1911 "src/parser/SysY.tab.cpp"
     break;
 
   case 61:
-#line 292 "flex.bison/SysY.y"
+#line 296 "src/parser/SysY.y"
                                     { (yyval.stmt) = newStmt(STMT,RETURNSTMT,newReturnStmt(RETURNSTMT,(yyvsp[-1].exp))); }
-#line 1913 "flex.bison/SysY.tab.c"
+#line 1917 "src/parser/SysY.tab.cpp"
     break;
 
   case 62:
-#line 296 "flex.bison/SysY.y"
+#line 300 "src/parser/SysY.y"
                 { (yyval.exp) = newExp(EXP,(yyvsp[0].addexp)->next); }
-#line 1919 "flex.bison/SysY.tab.c"
+#line 1923 "src/parser/SysY.tab.cpp"
     break;
 
   case 63:
-#line 300 "flex.bison/SysY.y"
+#line 304 "src/parser/SysY.y"
                 { (yyval.cond) = newCond(COND,(yyvsp[0].lorexp)->next); }
-#line 1925 "flex.bison/SysY.tab.c"
+#line 1929 "src/parser/SysY.tab.cpp"
     break;
 
   case 64:
-#line 304 "flex.bison/SysY.y"
+#line 308 "src/parser/SysY.y"
                 { (yyval.lval) = newLVal(LVAL,IDENT,(yyvsp[0].ident)); }
-#line 1931 "flex.bison/SysY.tab.c"
+#line 1935 "src/parser/SysY.tab.cpp"
     break;
 
   case 65:
-#line 305 "flex.bison/SysY.y"
+#line 309 "src/parser/SysY.y"
                             { (yyval.lval) = newLVal(LVAL,ARRAYIMPL,newArrayImpl(ARRAYIMPL,(yyvsp[-1].ident),(yyvsp[0].exparraydefs)->next)); }
-#line 1937 "flex.bison/SysY.tab.c"
+#line 1941 "src/parser/SysY.tab.cpp"
     break;
 
   case 66:
-#line 309 "flex.bison/SysY.y"
+#line 313 "src/parser/SysY.y"
                                             { (yyval.primaryexp) = newPrimaryExp(PRIMARYEXP,EXP,(yyvsp[-1].exp)); }
-#line 1943 "flex.bison/SysY.tab.c"
+#line 1947 "src/parser/SysY.tab.cpp"
     break;
 
   case 67:
-#line 310 "flex.bison/SysY.y"
+#line 314 "src/parser/SysY.y"
                 { (yyval.primaryexp) = newPrimaryExp(PRIMARYEXP,LVAL,(yyvsp[0].lval)); }
-#line 1949 "flex.bison/SysY.tab.c"
+#line 1953 "src/parser/SysY.tab.cpp"
     break;
 
   case 68:
-#line 311 "flex.bison/SysY.y"
+#line 315 "src/parser/SysY.y"
                 { (yyval.primaryexp) = newPrimaryExp(PRIMARYEXP,NUMBER,(yyvsp[0].number)); }
-#line 1955 "flex.bison/SysY.tab.c"
+#line 1959 "src/parser/SysY.tab.cpp"
     break;
 
   case 69:
-#line 315 "flex.bison/SysY.y"
+#line 319 "src/parser/SysY.y"
                     { (yyval.number) = newNumber(NUMBER,(yyvsp[0].intconst)); }
-#line 1961 "flex.bison/SysY.tab.c"
+#line 1965 "src/parser/SysY.tab.cpp"
     break;
 
   case 70:
-#line 319 "flex.bison/SysY.y"
+#line 323 "src/parser/SysY.y"
                     { (yyval.unaryexp) = newUnaryExp(UNARYEXP,PRIMARYEXP,(yyvsp[0].primaryexp)); }
-#line 1967 "flex.bison/SysY.tab.c"
+#line 1971 "src/parser/SysY.tab.cpp"
     break;
 
   case 71:
-#line 320 "flex.bison/SysY.y"
+#line 324 "src/parser/SysY.y"
                                                 { (yyval.unaryexp) = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,(yyvsp[-2].ident),newFuncRParams(FUNCRPARAMS,NULL,NULL))); }
-#line 1973 "flex.bison/SysY.tab.c"
+#line 1977 "src/parser/SysY.tab.cpp"
     break;
 
   case 72:
-#line 321 "flex.bison/SysY.y"
+#line 325 "src/parser/SysY.y"
                                                             { (yyval.unaryexp) = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,(yyvsp[-3].ident),(yyvsp[-1].funcrparams)->next)); }
-#line 1979 "flex.bison/SysY.tab.c"
+#line 1983 "src/parser/SysY.tab.cpp"
     break;
 
   case 73:
-#line 322 "flex.bison/SysY.y"
+#line 326 "src/parser/SysY.y"
                             { (yyval.unaryexp) = newUnaryExp(UNARYEXP,UNARYEXPS,newUnaryExps(UNARYEXPS,(yyvsp[-1].unaryop),(yyvsp[0].unaryexp))); }
-#line 1985 "flex.bison/SysY.tab.c"
+#line 1989 "src/parser/SysY.tab.cpp"
     break;
 
   case 74:
-#line 326 "flex.bison/SysY.y"
+#line 330 "src/parser/SysY.y"
                 { (yyval.unaryop) = newUnaryOp(UNARYOP,K_ADD); }
-#line 1991 "flex.bison/SysY.tab.c"
+#line 1995 "src/parser/SysY.tab.cpp"
     break;
 
   case 75:
-#line 327 "flex.bison/SysY.y"
+#line 331 "src/parser/SysY.y"
                 { (yyval.unaryop) = newUnaryOp(UNARYOP,K_SUB); }
-#line 1997 "flex.bison/SysY.tab.c"
+#line 2001 "src/parser/SysY.tab.cpp"
     break;
 
   case 76:
-#line 328 "flex.bison/SysY.y"
+#line 332 "src/parser/SysY.y"
                 { (yyval.unaryop) = newUnaryOp(UNARYOP,K_NOT); }
-#line 2003 "flex.bison/SysY.tab.c"
+#line 2007 "src/parser/SysY.tab.cpp"
     break;
 
   case 77:
-#line 332 "flex.bison/SysY.y"
+#line 336 "src/parser/SysY.y"
                     { (yyval.funcrparams) = newFuncRParams(FUNCRPARAMS,(yyvsp[0].funcrparam),NULL); }
-#line 2009 "flex.bison/SysY.tab.c"
+#line 2013 "src/parser/SysY.tab.cpp"
     break;
 
   case 78:
-#line 333 "flex.bison/SysY.y"
+#line 337 "src/parser/SysY.y"
                                         { (yyval.funcrparams) = newFuncRParams(FUNCRPARAMS,(yyvsp[0].funcrparam),(yyvsp[-2].funcrparams)); }
-#line 2015 "flex.bison/SysY.tab.c"
+#line 2019 "src/parser/SysY.tab.cpp"
     break;
 
   case 79:
-#line 337 "flex.bison/SysY.y"
+#line 341 "src/parser/SysY.y"
             { (yyval.funcrparam) = newFuncRParam(FUNCRPARAM,EXP,(yyvsp[0].exp)); }
-#line 2021 "flex.bison/SysY.tab.c"
+#line 2025 "src/parser/SysY.tab.cpp"
     break;
 
   case 80:
-#line 338 "flex.bison/SysY.y"
+#line 342 "src/parser/SysY.y"
                 { (yyval.funcrparam) = newFuncRParam(FUNCRPARAM,STRING,(yyvsp[0].string)); }
-#line 2027 "flex.bison/SysY.tab.c"
+#line 2031 "src/parser/SysY.tab.cpp"
     break;
 
   case 81:
-#line 341 "flex.bison/SysY.y"
+#line 345 "src/parser/SysY.y"
                     { (yyval.mulexp) = newMulExp(MULEXP,NULL,(yyvsp[0].unaryexp),NULL); }
-#line 2033 "flex.bison/SysY.tab.c"
+#line 2037 "src/parser/SysY.tab.cpp"
     break;
 
   case 82:
-#line 342 "flex.bison/SysY.y"
+#line 346 "src/parser/SysY.y"
                                 { (yyval.mulexp) = newMulExp(MULEXP,(yyvsp[-1].mulop),(yyvsp[0].unaryexp),(yyvsp[-2].mulexp)); }
-#line 2039 "flex.bison/SysY.tab.c"
+#line 2043 "src/parser/SysY.tab.cpp"
     break;
 
   case 83:
-#line 346 "flex.bison/SysY.y"
+#line 350 "src/parser/SysY.y"
                 { (yyval.addexp) = newAddExp(ADDEXP,NULL,(yyvsp[0].mulexp)->next,NULL); }
-#line 2045 "flex.bison/SysY.tab.c"
+#line 2049 "src/parser/SysY.tab.cpp"
     break;
 
   case 84:
-#line 347 "flex.bison/SysY.y"
+#line 351 "src/parser/SysY.y"
                             { (yyval.addexp) = newAddExp(ADDEXP,newAddOp(ADDOP,K_ADD),(yyvsp[0].mulexp)->next,(yyvsp[-2].addexp)); }
-#line 2051 "flex.bison/SysY.tab.c"
+#line 2055 "src/parser/SysY.tab.cpp"
     break;
 
   case 85:
-#line 348 "flex.bison/SysY.y"
+#line 352 "src/parser/SysY.y"
                             { (yyval.addexp) = newAddExp(ADDEXP,newAddOp(ADDOP,K_SUB),(yyvsp[0].mulexp)->next,(yyvsp[-2].addexp)); }
-#line 2057 "flex.bison/SysY.tab.c"
+#line 2061 "src/parser/SysY.tab.cpp"
     break;
 
   case 86:
-#line 352 "flex.bison/SysY.y"
+#line 356 "src/parser/SysY.y"
                 { (yyval.relexp) = newRelExp(RELEXP,NULL,(yyvsp[0].addexp)->next,NULL); }
-#line 2063 "flex.bison/SysY.tab.c"
+#line 2067 "src/parser/SysY.tab.cpp"
     break;
 
   case 87:
-#line 353 "flex.bison/SysY.y"
+#line 357 "src/parser/SysY.y"
                             { (yyval.relexp) = newRelExp(RELEXP,(yyvsp[-1].relop),(yyvsp[0].addexp)->next,(yyvsp[-2].relexp)); }
-#line 2069 "flex.bison/SysY.tab.c"
+#line 2073 "src/parser/SysY.tab.cpp"
     break;
 
   case 88:
-#line 357 "flex.bison/SysY.y"
+#line 361 "src/parser/SysY.y"
                 { (yyval.eqexp) = newEqExp(EQEXP,NULL,(yyvsp[0].relexp)->next,NULL); }
-#line 2075 "flex.bison/SysY.tab.c"
+#line 2079 "src/parser/SysY.tab.cpp"
     break;
 
   case 89:
-#line 358 "flex.bison/SysY.y"
+#line 362 "src/parser/SysY.y"
                             { (yyval.eqexp) = newEqExp(EQEXP,(yyvsp[-1].eqop),(yyvsp[0].relexp)->next,(yyvsp[-2].eqexp)); }
-#line 2081 "flex.bison/SysY.tab.c"
+#line 2085 "src/parser/SysY.tab.cpp"
     break;
 
   case 90:
-#line 362 "flex.bison/SysY.y"
+#line 366 "src/parser/SysY.y"
                 { (yyval.landexp) = newLAndExp(LANDEXP,(yyvsp[0].eqexp)->next,NULL); }
-#line 2087 "flex.bison/SysY.tab.c"
+#line 2091 "src/parser/SysY.tab.cpp"
     break;
 
   case 91:
-#line 363 "flex.bison/SysY.y"
+#line 367 "src/parser/SysY.y"
                                { (yyval.landexp) = newLAndExp(LANDEXP,(yyvsp[0].eqexp)->next,(yyvsp[-2].landexp)); }
-#line 2093 "flex.bison/SysY.tab.c"
+#line 2097 "src/parser/SysY.tab.cpp"
     break;
 
   case 92:
-#line 367 "flex.bison/SysY.y"
+#line 371 "src/parser/SysY.y"
                 { (yyval.lorexp) = newLOrExp(LOREXP,(yyvsp[0].landexp)->next,NULL); }
-#line 2099 "flex.bison/SysY.tab.c"
+#line 2103 "src/parser/SysY.tab.cpp"
     break;
 
   case 93:
-#line 368 "flex.bison/SysY.y"
+#line 372 "src/parser/SysY.y"
                                { (yyval.lorexp) = newLOrExp(LOREXP,(yyvsp[0].landexp)->next,(yyvsp[-2].lorexp)); }
-#line 2105 "flex.bison/SysY.tab.c"
+#line 2109 "src/parser/SysY.tab.cpp"
     break;
 
   case 94:
-#line 372 "flex.bison/SysY.y"
+#line 376 "src/parser/SysY.y"
                 { (yyval.constexp) = newConstExp(CONSTEXP,(yyvsp[0].addexp)->next); }
-#line 2111 "flex.bison/SysY.tab.c"
+#line 2115 "src/parser/SysY.tab.cpp"
     break;
 
 
-#line 2115 "flex.bison/SysY.tab.c"
+#line 2119 "src/parser/SysY.tab.cpp"
 
       default: break;
     }
@@ -2343,4 +2347,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 374 "flex.bison/SysY.y"
+#line 378 "src/parser/SysY.y"

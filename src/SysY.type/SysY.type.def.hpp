@@ -1,6 +1,6 @@
 #ifndef SYSY_TYPE_DEF_H
 #define SYSY_TYPE_DEF_H
-#include "../utils/NullPointMacro.h"
+#include "../utils/NullPointMacro.hpp"
 
 enum TYPE
 {

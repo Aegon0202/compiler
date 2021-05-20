@@ -1,7 +1,7 @@
-#include "SysY.type.toast.h"
-#include "SysY.type.symtab.h"
+#include "SysY.type.ast.hpp"
+#include "SysY.type.symtab.hpp"
 
-VisitorFuncImplGenerator(toAST, TokenToAST, void *)();
+void *TokenToAST(void *token, struct toAST *visitor);
 
 int level;
 int func_offset;
@@ -18,7 +18,7 @@ void *toASTCompUnit(struct CompUnit *cp)
         }
         else if (cp->valuetype == DECL)
         {
-            toASTDecl(cp->value.decl);
+            //toASTDecl(cp->value.decl);
         }
         cp = cp->next;
     } while (cp != head);
@@ -26,14 +26,19 @@ void *toASTCompUnit(struct CompUnit *cp)
 
 void *toASTFuncDef(struct FuncDef *funcdef)
 {
-    struct FuncSymEntry *fse = newFuncSymEntry(FUNCSYMENTRY, funcdef->ident->name, funcsymtable_p);
+    struct FuncSymEntry *fse = newFuncSymEntry(FUNCSYMENTRY, funcdef->ident->name, funcsymtable_p->head);
     fse->returntype = funcdef->functype->typevalue;
     if (funcdef->funcfparams->funcfparam == NULL)
     {
         fse->funcparamnum = 0;
-        fse->funcparam = NULL;
     }
     else
     {
+        struct FuncFParams *head = funcdef->funcfparams;
+        struct FuncFParams *fp = head;
+        do
+        {
+            struct VarSymEntry *vse = newVarSymEntry(fp->funcfparam->btype->typevalue, fp->funcfparam->ident->name, level, fse->funcparam_head);
+        } while (fp != head);
     }
 }

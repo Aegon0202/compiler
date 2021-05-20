@@ -1,15 +1,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../flex.bison/SysY.tab.h"
-#include "./SysY.type.def.h"
-#include "../utils/NullPointMacro.h"
+#include "../parser/SysY.tab.hpp"
+#include "./SysY.type.def.hpp"
+#include "../utils/NullPointMacro.hpp"
 //YYSTYPE yylval;
 
 #define ListLikeNewGenerator1(funcname, listype, datatype1, dataname1) \
     listype *funcname(int type, datatype1 dataname1, listype *prev)    \
     {                                                                  \
-        listype *nrtp = malloc(sizeof(listype));                       \
+        listype *nrtp = (listype *)malloc(sizeof(listype));            \
         EnsureNotNull(nrtp);                                           \
         nrtp->type = type;                                             \
         nrtp->dataname1 = dataname1;                                   \
@@ -31,7 +31,7 @@
 #define ListLikeNewGenerator2(funcname, listype, datatype1, dataname1, datatype2, dataname2) \
     listype *funcname(int type, datatype1 dataname1, datatype2 dataname2, listype *prev)     \
     {                                                                                        \
-        listype *nrtp = malloc(sizeof(listype));                                             \
+        listype *nrtp = (listype *)malloc(sizeof(listype));                                  \
         EnsureNotNull(nrtp);                                                                 \
         nrtp->type = type;                                                                   \
         nrtp->dataname1 = dataname1;                                                         \
@@ -54,7 +54,7 @@
 #define OnlyDataNewGenerator1(funcname, returntype, datatype1, dataname1) \
     returntype *funcname(int type, datatype1 dataname1)                   \
     {                                                                     \
-        returntype *rt = malloc(sizeof(returntype));                      \
+        returntype *rt = (returntype *)malloc(sizeof(returntype));        \
         EnsureNotNull(rt);                                                \
         rt->type = type;                                                  \
         rt->dataname1 = dataname1;                                        \
@@ -64,7 +64,7 @@
 #define OnlyDataNewGenerator2(funcname, returntype, datatype1, dataname1, datatype2, dataname2) \
     returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2)                    \
     {                                                                                           \
-        returntype *rt = malloc(sizeof(returntype));                                            \
+        returntype *rt = (returntype *)malloc(sizeof(returntype));                              \
         EnsureNotNull(rt);                                                                      \
         rt->type = type;                                                                        \
         rt->dataname1 = dataname1;                                                              \
@@ -75,7 +75,7 @@
 #define OnlyDataNewGenerator3(funcname, returntype, datatype1, dataname1, datatype2, dataname2, datatype3, dataname3) \
     returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2, datatype3 dataname3)                     \
     {                                                                                                                 \
-        returntype *rt = malloc(sizeof(returntype));                                                                  \
+        returntype *rt = (returntype *)malloc(sizeof(returntype));                                                    \
         EnsureNotNull(rt);                                                                                            \
         rt->type = type;                                                                                              \
         rt->dataname1 = dataname1;                                                                                    \
@@ -87,7 +87,7 @@
 #define OnlyDataNewGenerator4(funcname, returntype, datatype1, dataname1, datatype2, dataname2, datatype3, dataname3, datatype4, dataname4) \
     returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2, datatype3 dataname3, datatype4 dataname4)                      \
     {                                                                                                                                       \
-        returntype *rt = malloc(sizeof(returntype));                                                                                        \
+        returntype *rt = (returntype *)malloc(sizeof(returntype));                                                                          \
         EnsureNotNull(rt);                                                                                                                  \
         rt->type = type;                                                                                                                    \
         rt->dataname1 = dataname1;                                                                                                          \
@@ -97,20 +97,20 @@
         return rt;                                                                                                                          \
     }
 
-#define OnlyUnionNewGenerator(funcname, returntype, value_in_union_name)     \
-    returntype *funcname(int type, int valuetype, void *value_in_union_name) \
-    {                                                                        \
-        returntype *rt = malloc(sizeof(returntype));                         \
-        EnsureNotNull(rt);                                                   \
-        rt->type = type;                                                     \
-        rt->valuetype = valuetype;                                           \
-        rt->value.value_in_union_name = value_in_union_name;                 \
-        return rt;                                                           \
+#define OnlyUnionNewGenerator(funcname, returntype, value_in_union_type, value_in_union_name) \
+    returntype *funcname(int type, int valuetype, void *value_in_union_name)                  \
+    {                                                                                         \
+        returntype *rt = (returntype *)malloc(sizeof(returntype));                            \
+        EnsureNotNull(rt);                                                                    \
+        rt->type = type;                                                                      \
+        rt->valuetype = valuetype;                                                            \
+        rt->value.value_in_union_name = (value_in_union_type)value_in_union_name;             \
+        return rt;                                                                            \
     }
 
 struct Keyword *newKeyword(int type, int keytype, const char *keyword)
 {
-    struct Keyword *kp = malloc(sizeof(struct Keyword));
+    struct Keyword *kp = (struct Keyword *)malloc(sizeof(struct Keyword));
     EnsureNotNull(kp);
     kp->type = type;
     kp->keytype = keytype;
@@ -120,7 +120,7 @@ struct Keyword *newKeyword(int type, int keytype, const char *keyword)
 
 struct IntConst *newIntConst(int type, char *number)
 {
-    struct IntConst *intconst = malloc(sizeof(struct IntConst));
+    struct IntConst *intconst = (struct IntConst *)malloc(sizeof(struct IntConst));
     EnsureNotNull(intconst);
     int sum = 0, base = 10, n, k = 0;
     if (number[0] == '0')
@@ -157,11 +157,11 @@ struct IntConst *newIntConst(int type, char *number)
 
 struct CompUnit *newCompUnit(int type, int valuetype, void *value, struct CompUnit *reducecp)
 {
-    struct CompUnit *cp = malloc(sizeof(struct CompUnit));
+    struct CompUnit *cp = (struct CompUnit *)malloc(sizeof(struct CompUnit));
     EnsureNotNull(cp);
     cp->type = type;
     cp->valuetype = valuetype;
-    cp->value.decl = value;
+    cp->value.decl = (struct Decl *)value;
 
     if (reducecp == NULL)
     {
@@ -178,7 +178,7 @@ struct CompUnit *newCompUnit(int type, int valuetype, void *value, struct CompUn
     return cp;
 }
 
-OnlyUnionNewGenerator(newDecl, struct Decl, constdecl);
+OnlyUnionNewGenerator(newDecl, struct Decl, struct ConstDecl *, constdecl);
 
 OnlyDataNewGenerator2(newConstDecl, struct ConstDecl, struct BType *, btype, struct ConstDefs *, constdefs);
 
@@ -192,7 +192,7 @@ ListLikeNewGenerator1(newConstArrayDefs, struct ConstArrayDefs, struct ConstArra
 
 OnlyDataNewGenerator1(newConstArrayDef, struct ConstArrayDef, struct ConstExp *, constexp);
 
-OnlyUnionNewGenerator(newConstInitVal, struct ConstInitVal, constexp);
+OnlyUnionNewGenerator(newConstInitVal, struct ConstInitVal, struct ConstExp *, constexp);
 
 ListLikeNewGenerator1(newConstInitVals, struct ConstInitVals, struct ConstInitVal *, constinitval);
 
@@ -202,7 +202,7 @@ ListLikeNewGenerator1(newVarDefs, struct VarDefs, struct VarDef *, vardef);
 
 OnlyDataNewGenerator3(newVarDef, struct VarDef, struct Ident *, ident, struct ConstArrayDefs *, constarraydefs, struct InitVal *, initval);
 
-OnlyUnionNewGenerator(newInitVal, struct InitVal, exp);
+OnlyUnionNewGenerator(newInitVal, struct InitVal, struct Exp *, exp);
 
 ListLikeNewGenerator1(newInitVals, struct InitVals, struct InitVal *, initval);
 
@@ -222,9 +222,9 @@ OnlyDataNewGenerator1(newBlock, struct Block, struct BlockItems *, blockitems);
 
 ListLikeNewGenerator1(newBlockItems, struct BlockItems, struct BlockItem *, blockitem);
 
-OnlyUnionNewGenerator(newBlockItem, struct BlockItem, decl);
+OnlyUnionNewGenerator(newBlockItem, struct BlockItem, struct Decl *, decl);
 
-OnlyUnionNewGenerator(newStmt, struct Stmt, assign);
+OnlyUnionNewGenerator(newStmt, struct Stmt, struct Assign *, assign);
 
 OnlyDataNewGenerator2(newAssign, struct Assign, struct LVal *, lval, struct Exp *, exp);
 
@@ -238,15 +238,15 @@ OnlyDataNewGenerator1(newExp, struct Exp, struct AddExp *, addexp);
 
 OnlyDataNewGenerator1(newCond, struct Cond, struct LOrExp *, lorexp);
 
-OnlyUnionNewGenerator(newLVal, struct LVal, ident);
+OnlyUnionNewGenerator(newLVal, struct LVal, struct Ident *, ident);
 
 OnlyDataNewGenerator2(newArrayImpl, struct ArrayImpl, struct Ident *, ident, struct ExpArrayDefs *, exparraydefs);
 
-OnlyUnionNewGenerator(newPrimaryExp, struct PrimaryExp, exp);
+OnlyUnionNewGenerator(newPrimaryExp, struct PrimaryExp, struct Exp *, exp);
 
 OnlyDataNewGenerator1(newNumber, struct Number, struct IntConst *, intconst);
 
-OnlyUnionNewGenerator(newUnaryExp, struct UnaryExp, primaryexp);
+OnlyUnionNewGenerator(newUnaryExp, struct UnaryExp, struct PrimaryExp *, primaryexp);
 
 OnlyDataNewGenerator2(newFuncImpl, struct FuncImpl, struct Ident *, ident, struct FuncRParams *, funcrparams);
 
@@ -256,7 +256,7 @@ OnlyDataNewGenerator1(newUnaryOp, struct UnaryOp, int, typevalue);
 
 ListLikeNewGenerator1(newFuncRParams, struct FuncRParams, struct FuncRParam *, funcrparam);
 
-OnlyUnionNewGenerator(newFuncRParam, struct FuncRParam, exp);
+OnlyUnionNewGenerator(newFuncRParam, struct FuncRParam, struct Exp *, exp);
 
 ListLikeNewGenerator2(newMulExp, struct MulExp, struct MulOp *, mulop, struct UnaryExp *, unaryexp);
 
@@ -282,7 +282,7 @@ OnlyDataNewGenerator1(newConstExp, struct ConstExp, struct AddExp *, addexp);
 
 struct Ident *newIdent(int type, const char *name)
 {
-    struct Ident *ident_p = malloc(sizeof(struct Ident));
+    struct Ident *ident_p = (struct Ident *)malloc(sizeof(struct Ident));
     EnsureNotNull(ident_p);
     ident_p->type = type;
     ident_p->name = strdup(name);
@@ -291,7 +291,7 @@ struct Ident *newIdent(int type, const char *name)
 
 struct String *newString(int type, const char *content)
 {
-    struct String *sp = malloc(sizeof(struct String));
+    struct String *sp = (struct String *)malloc(sizeof(struct String));
     EnsureNotNull(sp);
     sp->type = type;
     sp->content = strdup(content);

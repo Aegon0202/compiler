@@ -1,13 +1,17 @@
 %{
-    #include "./SysY.tab.h"
-    #include "../SysY.type/SysY.type.def.h"
-    #include "../SysY.type/SysY.type.new.h"
+    #include "./SysY.tab.hpp"
+    #include "../SysY.type/SysY.type.def.hpp"
+    #include "../SysY.type/SysY.type.new.hpp"
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
     extern YYSTYPE result;
     int yylex();
-    void yyerror(char*);
+    int yyerror(char *msg)
+    {
+        fprintf(stderr, "%s", msg);
+        return 0;
+    }
 %}
 
 %union {
@@ -164,8 +168,8 @@
 
 %%
 COMPUNIT
-    :   DECL    { $$ = newCompUnit(COMPUNIT,DECL,$1,NULL); }
-    |   FUNCDEF { $$ = newCompUnit(COMPUNIT,FUNCDEF,$1,NULL); }
+    :   DECL    { $$ = newCompUnit(COMPUNIT,DECL,$1,NULL); result.compunit = $$->next; }
+    |   FUNCDEF { $$ = newCompUnit(COMPUNIT,FUNCDEF,$1,NULL); result.compunit = $$->next; }
     |   COMPUNIT DECL   { $$ = newCompUnit(COMPUNIT,DECL,$2,$1); result.compunit = $$->next; }
     |   COMPUNIT FUNCDEF    { $$ = newCompUnit(COMPUNIT,FUNCDEF,$2,$1); result.compunit = $$->next; }
     ;

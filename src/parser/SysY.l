@@ -3,9 +3,9 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "../SysY.type/SysY.type.def.h"
-    #include "../SysY.type/SysY.type.new.h"
-    #include "./SysY.tab.h"
+    #include "../SysY.type/SysY.type.def.hpp"
+    #include "../SysY.type/SysY.type.new.hpp"
+    #include "./SysY.tab.hpp"
     #define PRINT(type,text) 
     //fprintf(yyout, "( " #type " , %s )\n", text)
 %}

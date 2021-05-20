@@ -1,5 +1,4 @@
-#include "./SysY.type.free.h"
-VisitorFuncImplGenerator(freeToken_t, freeToken, void, int recusive)(recusive);
+#include "./SysY.type.free.hpp"
 struct freeToken_t *freeToken_p;
 
 #define ListLikeFreeGenerator1(funcname, listype, dataname1) \
@@ -289,7 +288,7 @@ void freeString(struct String *string, int recusive)
 
 void initFreeToken()
 {
-    freeToken_p = malloc(sizeof(struct freeToken_t));
+    freeToken_p = (struct freeToken_t *)malloc(sizeof(struct freeToken_t));
     EnsureNotNull(freeToken_p);
     freeToken_p->visitKeyword = freeKeyword;
     freeToken_p->visitIntConst = freeIntConst;
@@ -347,4 +346,184 @@ void initFreeToken()
     freeToken_p->visitConstExp = freeConstExp;
     freeToken_p->visitIdent = freeIdent;
     freeToken_p->visitString = freeString;
+}
+
+void freeToken(void *token, struct freeToken_t *visitor, int recusive)
+{
+    EnsureNotNull(token);
+    EnsureNotNull(visitor);
+    switch (*(int *)token)
+    {
+    case KEYWORD:
+        EnsureNotNull(visitor->visitKeyword);
+        return visitor->visitKeyword((struct Keyword *)token, recusive);
+    case INTCONST:
+        EnsureNotNull(visitor->visitIntConst);
+        return visitor->visitIntConst((struct IntConst *)token, recusive);
+    case COMPUNIT:
+        EnsureNotNull(visitor->visitCompUnit);
+        return visitor->visitCompUnit((struct CompUnit *)token, recusive);
+    case DECL:
+        EnsureNotNull(visitor->visitDecl);
+        return visitor->visitDecl((struct Decl *)token, recusive);
+    case CONSTDECL:
+        EnsureNotNull(visitor->visitConstDecl);
+        return visitor->visitConstDecl((struct ConstDecl *)token, recusive);
+    case BTYPE:
+        EnsureNotNull(visitor->visitBType);
+        return visitor->visitBType((struct BType *)token, recusive);
+    case CONSTDEFS:
+        EnsureNotNull(visitor->visitConstDefs);
+        return visitor->visitConstDefs((struct ConstDefs *)token, recusive);
+    case CONSTDEF:
+        EnsureNotNull(visitor->visitConstDef);
+        return visitor->visitConstDef((struct ConstDef *)token, recusive);
+    case CONSTARRAYDEFS:
+        EnsureNotNull(visitor->visitConstArrayDefs);
+        return visitor->visitConstArrayDefs((struct ConstArrayDefs *)token, recusive);
+    case CONSTARRAYDEF:
+        EnsureNotNull(visitor->visitConstArrayDef);
+        return visitor->visitConstArrayDef((struct ConstArrayDef *)token, recusive);
+    case CONSTINITVAL:
+        EnsureNotNull(visitor->visitConstInitVal);
+        return visitor->visitConstInitVal((struct ConstInitVal *)token, recusive);
+    case CONSTINITVALS:
+        EnsureNotNull(visitor->visitConstInitVals);
+        return visitor->visitConstInitVals((struct ConstInitVals *)token, recusive);
+    case VARDECL:
+        EnsureNotNull(visitor->visitVarDecl);
+        return visitor->visitVarDecl((struct VarDecl *)token, recusive);
+    case VARDEFS:
+        EnsureNotNull(visitor->visitVarDefs);
+        return visitor->visitVarDefs((struct VarDefs *)token, recusive);
+    case VARDEF:
+        EnsureNotNull(visitor->visitVarDef);
+        return visitor->visitVarDef((struct VarDef *)token, recusive);
+    case INITVAL:
+        EnsureNotNull(visitor->visitInitVal);
+        return visitor->visitInitVal((struct InitVal *)token, recusive);
+    case INITVALS:
+        EnsureNotNull(visitor->visitInitVals);
+        return visitor->visitInitVals((struct InitVals *)token, recusive);
+    case FUNCDEF:
+        EnsureNotNull(visitor->visitFuncDef);
+        return visitor->visitFuncDef((struct FuncDef *)token, recusive);
+    case FUNCTYPE:
+        EnsureNotNull(visitor->visitFuncType);
+        return visitor->visitFuncType((struct FuncType *)token, recusive);
+    case FUNCFPARAMS:
+        EnsureNotNull(visitor->visitFuncFParams);
+        return visitor->visitFuncFParams((struct FuncFParams *)token, recusive);
+    case FUNCFPARAM:
+        EnsureNotNull(visitor->visitFuncFParam);
+        return visitor->visitFuncFParam((struct FuncFParam *)token, recusive);
+    case EXPARRAYDEFS:
+        EnsureNotNull(visitor->visitExpArrayDefs);
+        return visitor->visitExpArrayDefs((struct ExpArrayDefs *)token, recusive);
+    case EXPARRAYDEF:
+        EnsureNotNull(visitor->visitExpArrayDef);
+        return visitor->visitExpArrayDef((struct ExpArrayDef *)token, recusive);
+    case BLOCK:
+        EnsureNotNull(visitor->visitBlock);
+        return visitor->visitBlock((struct Block *)token, recusive);
+    case BLOCKITEMS:
+        EnsureNotNull(visitor->visitBlockItems);
+        return visitor->visitBlockItems((struct BlockItems *)token, recusive);
+    case BLOCKITEM:
+        EnsureNotNull(visitor->visitBlockItem);
+        return visitor->visitBlockItem((struct BlockItem *)token, recusive);
+    case STMT:
+        EnsureNotNull(visitor->visitStmt);
+        return visitor->visitStmt((struct Stmt *)token, recusive);
+    case ASSIGN:
+        EnsureNotNull(visitor->visitAssign);
+        return visitor->visitAssign((struct Assign *)token, recusive);
+    case IFSTMT:
+        EnsureNotNull(visitor->visitIfStmt);
+        return visitor->visitIfStmt((struct IfStmt *)token, recusive);
+    case WHILESTMT:
+        EnsureNotNull(visitor->visitWhileStmt);
+        return visitor->visitWhileStmt((struct WhileStmt *)token, recusive);
+    case RETURNSTMT:
+        EnsureNotNull(visitor->visitReturnStmt);
+        return visitor->visitReturnStmt((struct ReturnStmt *)token, recusive);
+    case EXP:
+        EnsureNotNull(visitor->visitExp);
+        return visitor->visitExp((struct Exp *)token, recusive);
+    case COND:
+        EnsureNotNull(visitor->visitCond);
+        return visitor->visitCond((struct Cond *)token, recusive);
+    case LVAL:
+        EnsureNotNull(visitor->visitLVal);
+        return visitor->visitLVal((struct LVal *)token, recusive);
+    case ARRAYIMPL:
+        EnsureNotNull(visitor->visitArrayImpl);
+        return visitor->visitArrayImpl((struct ArrayImpl *)token, recusive);
+    case PRIMARYEXP:
+        EnsureNotNull(visitor->visitPrimaryExp);
+        return visitor->visitPrimaryExp((struct PrimaryExp *)token, recusive);
+    case NUMBER:
+        EnsureNotNull(visitor->visitNumber);
+        return visitor->visitNumber((struct Number *)token, recusive);
+    case UNARYEXP:
+        EnsureNotNull(visitor->visitUnaryExp);
+        return visitor->visitUnaryExp((struct UnaryExp *)token, recusive);
+    case FUNCIMPL:
+        EnsureNotNull(visitor->visitFuncImpl);
+        return visitor->visitFuncImpl((struct FuncImpl *)token, recusive);
+    case UNARYEXPS:
+        EnsureNotNull(visitor->visitUnaryExps);
+        return visitor->visitUnaryExps((struct UnaryExps *)token, recusive);
+    case UNARYOP:
+        EnsureNotNull(visitor->visitUnaryOp);
+        return visitor->visitUnaryOp((struct UnaryOp *)token, recusive);
+    case FUNCRPARAMS:
+        EnsureNotNull(visitor->visitFuncRParams);
+        return visitor->visitFuncRParams((struct FuncRParams *)token, recusive);
+    case FUNCRPARAM:
+        EnsureNotNull(visitor->visitFuncRParam);
+        return visitor->visitFuncRParam((struct FuncRParam *)token, recusive);
+    case MULEXP:
+        EnsureNotNull(visitor->visitMulExp);
+        return visitor->visitMulExp((struct MulExp *)token, recusive);
+    case MULOP:
+        EnsureNotNull(visitor->visitMulOp);
+        return visitor->visitMulOp((struct MulOp *)token, recusive);
+    case ADDEXP:
+        EnsureNotNull(visitor->visitAddExp);
+        return visitor->visitAddExp((struct AddExp *)token, recusive);
+    case ADDOP:
+        EnsureNotNull(visitor->visitAddOp);
+        return visitor->visitAddOp((struct AddOp *)token, recusive);
+    case RELEXP:
+        EnsureNotNull(visitor->visitRelExp);
+        return visitor->visitRelExp((struct RelExp *)token, recusive);
+    case RELOP:
+        EnsureNotNull(visitor->visitRelOp);
+        return visitor->visitRelOp((struct RelOp *)token, recusive);
+    case EQEXP:
+        EnsureNotNull(visitor->visitEqExp);
+        return visitor->visitEqExp((struct EqExp *)token, recusive);
+    case EQOP:
+        EnsureNotNull(visitor->visitEqOp);
+        return visitor->visitEqOp((struct EqOp *)token, recusive);
+    case LANDEXP:
+        EnsureNotNull(visitor->visitLAndExp);
+        return visitor->visitLAndExp((struct LAndExp *)token, recusive);
+    case LOREXP:
+        EnsureNotNull(visitor->visitLOrExp);
+        return visitor->visitLOrExp((struct LOrExp *)token, recusive);
+    case CONSTEXP:
+        EnsureNotNull(visitor->visitConstExp);
+        return visitor->visitConstExp((struct ConstExp *)token, recusive);
+    case IDENT:
+        EnsureNotNull(visitor->visitIdent);
+        return visitor->visitIdent((struct Ident *)token, recusive);
+    case STRING:
+        EnsureNotNull(visitor->visitString);
+        return visitor->visitString((struct String *)token, recusive);
+    default:
+        fprintf(stderr, "NOT VALID TOKEN TYPE %dn", *(int *)token);
+        exit(-1);
+    }
 }

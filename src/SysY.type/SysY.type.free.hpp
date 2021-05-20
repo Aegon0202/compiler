@@ -2,9 +2,70 @@
 #define SYSY_TYPE_FREE_H
 #include <stdio.h>
 #include <stdlib.h>
-#include "../utils/NullPointMacro.h"
-#include "./SysY.type.visitor.h"
-VisitorDeclGenerator(freeToken_t, freeToken, void, int);
+#include "../utils/NullPointMacro.hpp"
+#include "./SysY.type.visitor.hpp"
+
+struct freeToken_t
+{
+    void (*visitKeyword)(struct Keyword *, int);
+    void (*visitIntConst)(struct IntConst *, int);
+    void (*visitCompUnit)(struct CompUnit *, int);
+    void (*visitDecl)(struct Decl *, int);
+    void (*visitConstDecl)(struct ConstDecl *, int);
+    void (*visitBType)(struct BType *, int);
+    void (*visitConstDefs)(struct ConstDefs *, int);
+    void (*visitConstDef)(struct ConstDef *, int);
+    void (*visitConstArrayDefs)(struct ConstArrayDefs *, int);
+    void (*visitConstArrayDef)(struct ConstArrayDef *, int);
+    void (*visitConstInitVal)(struct ConstInitVal *, int);
+    void (*visitConstInitVals)(struct ConstInitVals *, int);
+    void (*visitVarDecl)(struct VarDecl *, int);
+    void (*visitVarDefs)(struct VarDefs *, int);
+    void (*visitVarDef)(struct VarDef *, int);
+    void (*visitInitVal)(struct InitVal *, int);
+    void (*visitInitVals)(struct InitVals *, int);
+    void (*visitFuncDef)(struct FuncDef *, int);
+    void (*visitFuncType)(struct FuncType *, int);
+    void (*visitFuncFParams)(struct FuncFParams *, int);
+    void (*visitFuncFParam)(struct FuncFParam *, int);
+    void (*visitExpArrayDefs)(struct ExpArrayDefs *, int);
+    void (*visitExpArrayDef)(struct ExpArrayDef *, int);
+    void (*visitBlock)(struct Block *, int);
+    void (*visitBlockItems)(struct BlockItems *, int);
+    void (*visitBlockItem)(struct BlockItem *, int);
+    void (*visitStmt)(struct Stmt *, int);
+    void (*visitAssign)(struct Assign *, int);
+    void (*visitIfStmt)(struct IfStmt *, int);
+    void (*visitWhileStmt)(struct WhileStmt *, int);
+    void (*visitReturnStmt)(struct ReturnStmt *, int);
+    void (*visitExp)(struct Exp *, int);
+    void (*visitCond)(struct Cond *, int);
+    void (*visitLVal)(struct LVal *, int);
+    void (*visitArrayImpl)(struct ArrayImpl *, int);
+    void (*visitPrimaryExp)(struct PrimaryExp *, int);
+    void (*visitNumber)(struct Number *, int);
+    void (*visitUnaryExp)(struct UnaryExp *, int);
+    void (*visitFuncImpl)(struct FuncImpl *, int);
+    void (*visitUnaryExps)(struct UnaryExps *, int);
+    void (*visitUnaryOp)(struct UnaryOp *, int);
+    void (*visitFuncRParams)(struct FuncRParams *, int);
+    void (*visitFuncRParam)(struct FuncRParam *, int);
+    void (*visitMulExp)(struct MulExp *, int);
+    void (*visitMulOp)(struct MulOp *, int);
+    void (*visitAddExp)(struct AddExp *, int);
+    void (*visitAddOp)(struct AddOp *, int);
+    void (*visitRelExp)(struct RelExp *, int);
+    void (*visitRelOp)(struct RelOp *, int);
+    void (*visitEqExp)(struct EqExp *, int);
+    void (*visitEqOp)(struct EqOp *, int);
+    void (*visitLAndExp)(struct LAndExp *, int);
+    void (*visitLOrExp)(struct LOrExp *, int);
+    void (*visitConstExp)(struct ConstExp *, int);
+    void (*visitIdent)(struct Ident *, int);
+    void (*visitString)(struct String *, int);
+};
+void freeToken(void *token, struct freeToken_t *visitor, int);
+
 void initFreeToken();
 
 void freeKeyword(struct Keyword *, int recusive);

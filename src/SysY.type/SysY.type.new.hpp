@@ -1,6 +1,6 @@
 #ifndef SYSY_TYPE_NEW_H
 #define SYSY_TYPE_NEW_H
-#include "./SysY.type.def.h"
+#include "./SysY.type.def.hpp"
 
 struct Keyword *newKeyword(int type, int keytype, const char *keyword);
 

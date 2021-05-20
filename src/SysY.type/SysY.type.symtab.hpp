@@ -30,10 +30,11 @@ struct FuncSymEntry
 {
     int type; // FUNCSYMENTRY
     char *name;
-    int returntype; // K_VOID K_INT
-    int funcparamnum;
     int offset;
-    struct VarSymEntry *funcparam;
+    int returntype; // K_VOID K_INT
+    int has_effect; // 1 or 0
+    int funcparamnum;
+    struct VarSymEntry *funcparam_head;
     struct FuncSymEntry *prev;
     struct FuncSymEntry *next;
 };
