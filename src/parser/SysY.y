@@ -1,17 +1,13 @@
 %{
-    #include "./SysY.tab.hpp"
-    #include "../SysY.type/SysY.type.def.hpp"
-    #include "../SysY.type/SysY.type.new.hpp"
+    #include "./SysY.tab.h"
+    #include "../SysY.type/SysY.type.def.h"
+    #include "../SysY.type/SysY.type.new.h"
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
     extern YYSTYPE result;
     int yylex();
-    int yyerror(char *msg)
-    {
-        fprintf(stderr, "%s", msg);
-        return 0;
-    }
+    void yyerror(const char *s);
 %}
 
 %union {

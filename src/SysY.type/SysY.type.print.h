@@ -2,8 +2,8 @@
 #define SYSY_TYPE_PRINT_H
 #include <stdio.h>
 #include <stdlib.h>
-#include "../utils/NullPointMacro.hpp"
-#include "./SysY.type.visitor.hpp"
+#include "../utils/NullPointMacro.h"
+#include "./SysY.type.visitor.h"
 
 struct printToken_t
 {

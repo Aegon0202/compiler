@@ -34,8 +34,8 @@
 /* Undocumented macros, especially those whose name start with YY_,
    are private implementation details.  Do not rely on them.  */
 
-#ifndef YY_YY_SRC_PARSER_SYSY_TAB_HPP_INCLUDED
-# define YY_YY_SRC_PARSER_SYSY_TAB_HPP_INCLUDED
+#ifndef YY_YY_SRC_PARSER_SYSY_TAB_H_INCLUDED
+# define YY_YY_SRC_PARSER_SYSY_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -98,7 +98,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 17 "src/parser/SysY.y"
+#line 13 "src/parser/SysY.y"
 
     struct Keyword *keyword;
     struct CompUnit *compunit;
@@ -160,7 +160,7 @@ union YYSTYPE
     struct RefList *reflist;
     struct String* string;
 
-#line 164 "src/parser/SysY.tab.hpp"
+#line 164 "src/parser/SysY.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -173,4 +173,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_SRC_PARSER_SYSY_TAB_HPP_INCLUDED  */
+#endif /* !YY_YY_SRC_PARSER_SYSY_TAB_H_INCLUDED  */

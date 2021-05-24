@@ -1,7 +1,7 @@
 #ifndef SYSY_TYPE_TOSSA_H
 #define SYSY_TYPE_TOSSA_H
 
-#include "SysY.type.visitor.hpp"
+#include "SysY.type.visitor.h"
 
 struct toAST
 {

@@ -1,4 +1,4 @@
-#include "./SysY.type.free.hpp"
+#include "./SysY.type.free.h"
 struct freeToken_t *freeToken_p;
 
 #define ListLikeFreeGenerator1(funcname, listype, dataname1) \

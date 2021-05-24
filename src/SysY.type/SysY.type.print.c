@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../parser/SysY.tab.hpp"
-#include "SysY.type.def.hpp"
-#include "SysY.type.new.hpp"
-#include "SysY.type.visitor.hpp"
-#include "SysY.type.print.hpp"
+#include "../parser/SysY.tab.h"
+#include "SysY.type.def.h"
+#include "SysY.type.new.h"
+#include "SysY.type.visitor.h"
+#include "SysY.type.print.h"
 
 static int identation;
 #define LEVEL_IDENT 1

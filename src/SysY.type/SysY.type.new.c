@@ -1,9 +1,15 @@
-#include <string.h>
-#include <stdlib.h>
+#ifdef __STDC_ALLOC_LIB__
+#define __STDC_WANT_LIB_EXT2__ 1
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <stdio.h>
-#include "../parser/SysY.tab.hpp"
-#include "./SysY.type.def.hpp"
-#include "../utils/NullPointMacro.hpp"
+#include <stdlib.h>
+#include <string.h>
+#include "../parser/SysY.tab.h"
+#include "./SysY.type.def.h"
+#include "../utils/NullPointMacro.h"
 //YYSTYPE yylval;
 
 #define ListLikeNewGenerator1(funcname, listype, datatype1, dataname1) \

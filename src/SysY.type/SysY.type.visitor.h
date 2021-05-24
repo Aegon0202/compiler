@@ -2,9 +2,9 @@
 #define SYSY_TYPE_VISITOR_H
 #include <stdio.h>
 #include <stdlib.h>
-#include "./SysY.type.def.hpp"
-#include "../parser/SysY.tab.hpp"
-#include "../utils/NullPointMacro.hpp"
+#include "./SysY.type.def.h"
+#include "../parser/SysY.tab.h"
+#include "../utils/NullPointMacro.h"
 
 // not use direct. it is used by VisitorDeclGenerator macro
 #define VisitTokenFuncBody(...)                                                                             \

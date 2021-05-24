@@ -1,8 +1,15 @@
-#include <string.h>
+#ifdef __STDC_ALLOC_LIB__
+#define __STDC_WANT_LIB_EXT2__ 1
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <stdio.h>
-#include "SysY.type.symtab.hpp"
-#include "SysY.type.def.hpp"
-#include "SysY.type.visitor.hpp"
+#include <stdlib.h>
+#include <string.h>
+#include "SysY.type.symtab.h"
+#include "SysY.type.def.h"
+#include "SysY.type.visitor.h"
 
 struct FuncSymTable *funcsymtable_p;
 struct VarSymTable *varsymtable_active_p, *varsymtable_deactive_p;
@@ -106,6 +113,7 @@ struct VarSymEntry *findVarInTable(const char *name)
         }
         vse = vse->prev;
     }
+    return NULL;
 }
 
 void removeVarFromSymTable(int level)
