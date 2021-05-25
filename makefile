@@ -13,8 +13,10 @@ BISON_GEN_C = $(BISON_DIR)/SysY.tab.c
 SYSY_DEF_DIR = src/SysY.type
 SYSY_DEF_SRC = 	$(SYSY_DEF_DIR)/*.c
 
+SYSY_AST_DIR = src/SysY.AST
+SYSY_AST_SRC = $(SYSY_AST_DIR)/*.c
 
-parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) src/main.c
+parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(SYSY_AST_SRC) src/main.c
 	$(CC) $(CFLAGS) $^ 
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)

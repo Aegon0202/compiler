@@ -22,14 +22,14 @@ struct FuncImplAST {
     int type;
     struct FuncSymEntry *function;
     int param_num;
-    struct ExpAST **param;  // optional null when funtion doesn't need param
+    struct Operand **param;  // optional null when funtion doesn't need param
 };
 
 struct ArrayImplAST {
     int type;
     struct VarSymEntry *array_varsymentry;
     int array_impl_size;
-    struct ExpAST **array_impl;  // optional null;
+    struct Operand **array_impl;  // optional null;
 };
 
 struct Operand {
@@ -42,6 +42,7 @@ struct Operand {
         struct ArrayImplAST *array;
         struct IntConst *intconst;
         struct ExpAST *exp;
+        struct String *string;
     } value;
 };
 

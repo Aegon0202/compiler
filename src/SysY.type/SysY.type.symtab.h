@@ -13,14 +13,14 @@ struct VarSymEntry {
     int type;  // VARSYMENTRY
     char *name;
     int offset;
-    int size;                     // Variable size
-    int level;                    // global is zero; prefer to use on high level
-    int typevalue;                // K_INT STRING(const char *)
-    int is_array;                 // 1 or 0
-    int is_const;                 // 1 or 0
-    int array_dimensional_num;    // if not is array, this is 0
-    struct ExpAST **array_shape;  // if not is array, this is NULL
-    struct ExpAST **initval;      // if not have init value, this is NULL. Otherwise, the occupied space is the same as the variable
+    int size;                      // Variable size
+    int level;                     // global is zero; prefer to use on high level
+    int typevalue;                 // K_INT STRING(const char *)
+    int is_array;                  // 1 or 0
+    int is_const;                  // 1 or 0
+    int array_dimensional_num;     // if not is array, this is 0
+    struct Operand **array_shape;  // if not is array, this is NULL
+    struct Operand **initval;      // if not have init value, this is NULL. Otherwise, the occupied space is the same as the variable
     struct VarSymEntry *prev;
     struct VarSymEntry *next;
 };

@@ -28,3 +28,23 @@ struct IntConst* newIntConstAST(int value) {
     intconst->value = value;
     return intconst;
 }
+
+struct FuncImplAST* newFuncImplAST(struct FuncSymEntry* function, int param_num, struct Operand** param) {
+    struct FuncImplAST* funcimpl = (struct FuncImplAST*)malloc(sizeof(struct FuncImplAST));
+    EnsureNotNull(funcimpl);
+    funcimpl->type = FUNCIMPLAST;
+    funcimpl->function = function;
+    funcimpl->param = param;
+    funcimpl->param_num = param_num;
+    return funcimpl;
+}
+
+struct ArrayImplAST* newArrayImplAST(struct VarSymEntry* array_varsymentry, int array_impl_size, struct Operand** array_impl) {
+    struct ArrayImplAST* arrayimpl = (struct ArrayImplAST*)malloc(sizeof(struct ArrayImplAST));
+    EnsureNotNull(arrayimpl);
+    arrayimpl->type = ARRAYIMPLAST;
+    arrayimpl->array_impl = array_impl;
+    arrayimpl->array_impl_size = array_impl_size;
+    arrayimpl->array_varsymentry = array_varsymentry;
+    return arrayimpl;
+}

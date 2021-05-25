@@ -32,6 +32,13 @@ struct FuncSymEntry *newFuncSymEntry(const char *name, struct FuncSymEntry *head
     fse->type = FUNCSYMENTRY;
     IfNullElse(name, fse->name = getUniquieName();, fse->name = strdup(name););
     fse->funcparam_head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
+
+    fse->func_body = NULL;
+    fse->funcparamnum = 0;
+    fse->has_effect = 0;
+    fse->offset = 0;
+    fse->returntype = 0;
+
     if (head != NULL) {
         fse->prev = head->prev;
         head->prev->next = fse;
@@ -75,16 +82,19 @@ struct VarSymEntry *newVarSymEntry(const char *name, int level, struct VarSymEnt
 
 void initSymTable() {
     funcsymtable_p = (struct FuncSymTable *)malloc(sizeof(struct FuncSymTable));
+    EnsureNotNull(funcsymtable_p);
     funcsymtable_p->type = FUNCSYMTABLE;
     funcsymtable_p->num = 0;
     funcsymtable_p->head = newFuncSymEntry("%%INVALIDENTRY", NULL);
 
     varsymtable_active_p = (struct VarSymTable *)malloc(sizeof(struct VarSymTable));
+    EnsureNotNull(varsymtable_active_p);
     varsymtable_active_p->type = VARSYMTABLE;
     varsymtable_active_p->num = 0;
     varsymtable_active_p->head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
 
     varsymtable_deactive_p = (struct VarSymTable *)malloc(sizeof(struct VarSymTable));
+    EnsureNotNull(varsymtable_deactive_p);
     varsymtable_deactive_p->type = VARSYMTABLE;
     varsymtable_deactive_p->num = 0;
     varsymtable_deactive_p->head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
