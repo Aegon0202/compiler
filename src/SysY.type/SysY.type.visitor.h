@@ -5,6 +5,7 @@
 #include "./SysY.type.def.h"
 #include "../parser/SysY.tab.h"
 #include "../utils/NullPointMacro.h"
+#include "../utils/PrintHelper.h"
 
 // not use direct. it is used by VisitorDeclGenerator macro
 #define VisitTokenFuncBody(...)                                                                             \
@@ -182,8 +183,8 @@
             EnsureNotNull(visitor->visitString);                                                            \
             return visitor->visitString((struct String *)token __VA_OPT__(, ) __VA_ARGS__);                 \
         default:                                                                                            \
-            fprintf(stderr, "NOT VALID TOKEN TYPE %d\n", *(int *)token);                                    \
-            exit(-1);                                                                                       \
+            PrintErrExit("NOT VALID TOKEN TYPE %d\n", *(int *)token);                                       \
+            \                                                                                               \
         }                                                                                                   \
     }
 

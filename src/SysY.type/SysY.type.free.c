@@ -1,4 +1,5 @@
 #include "./SysY.type.free.h"
+#include "../utils/PrintHelper.h"
 struct freeToken_t *freeToken_p;
 
 #define ListLikeFreeGenerator1(funcname, listype, dataname1) \
@@ -523,7 +524,6 @@ void freeToken(void *token, struct freeToken_t *visitor, int recusive)
         EnsureNotNull(visitor->visitString);
         return visitor->visitString((struct String *)token, recusive);
     default:
-        fprintf(stderr, "NOT VALID TOKEN TYPE %dn", *(int *)token);
-        exit(-1);
+        PrintErrExit("NOT VALID TOKEN TYPE %dn", *(int *)token);
     }
 }

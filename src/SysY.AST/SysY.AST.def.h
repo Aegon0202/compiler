@@ -4,52 +4,45 @@
 #include "../SysY.type/SysY.type.def.h"
 #include "../SysY.type/SysY.type.symtab.h"
 
-enum
-{
-    CONST = 700,
-    VARIABLE,
-    LABEL,
-    FUNCTION,
-    LABELSYMENTRY,
+enum {
+    LABELSYMENTRY = 700,
     LABELSYMTABLE,
     FUNCIMPLAST,
     ARRAYIMPLAST,
+    EXPAST,
+    OPREAND
 };
 
-struct LabelSymEntry
-{
+struct LabelSymEntry {
     int type;
     char *label;
 };
 
-struct FuncImplAST
-{
+struct FuncImplAST {
     int type;
     struct FuncSymEntry *function;
     int param_num;
-    struct ExpAST **param; // optional null when funtion doesn't need param
+    struct ExpAST **param;  // optional null when funtion doesn't need param
 };
 
-struct ArrayImplAST
-{
+struct ArrayImplAST {
     int type;
-    struct VarSymTable *array;
-    struct ExpAST **array_impl; // optional null;
+    struct VarSymEntry *array_varsymentry;
+    int array_impl_size;
+    struct ExpAST **array_impl;  // optional null;
 };
 
-struct Operand
-{
-    int type;      // OPERAND
-    int valuetype; //
-    union
-    {
+struct Operand {
+    int type;       // OPERAND
+    int valuetype;  // INTCONST, LABELSYMENTRY, VARSYMENTRY, FUNCIMPLAST, ARRAYIMPLAST,EXPAST
+    union {
         struct LabelSymEntry *label;
         struct VarSymEntry *variable;
         struct FuncImpl *function;
         struct ArrayImplAST *array;
         struct IntConst *intconst;
         struct ExpAST *exp;
-    } vaule;
+    } value;
 };
 
 /*
@@ -62,13 +55,13 @@ struct Operand
  *
  * label: op1: label entry
  */
-struct ExpAST
-{
+
+struct ExpAST {
     int type;
-    int op;
+    int op;  //
     struct Operand *op1;
-    struct Operand *op2; // optional:  null
-    struct Operand *op3; // optional:  null
+    struct Operand *op2;  // optional:  null
+    struct Operand *op3;  // optional:  null
     struct ExpAST *next;
 };
 

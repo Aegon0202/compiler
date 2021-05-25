@@ -10,6 +10,7 @@
 #include "../parser/SysY.tab.h"
 #include "./SysY.type.def.h"
 #include "../utils/NullPointMacro.h"
+#include "../utils/PrintHelper.h"
 //YYSTYPE yylval;
 
 #define ListLikeNewGenerator1(funcname, listype, datatype1, dataname1) \
@@ -306,5 +307,5 @@ struct String *newString(int type, const char *content)
 
 void yyerror(char const *s)
 {
-    fprintf(stderr, "%s\n", s);
+    PrintErrExit("%s\n", s);
 }

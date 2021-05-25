@@ -442,7 +442,7 @@ struct AddExp
 struct AddOp
 {
     int type;      // ADDOP
-    int typevalue; // K_ADD K_SUBs
+    int typevalue; // K_ADD K_SUB
 };
 
 struct RelExp

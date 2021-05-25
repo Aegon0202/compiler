@@ -4,10 +4,12 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+#include "SysY.type.symtab.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "SysY.type.symtab.h"
+
 #include "SysY.type.def.h"
 #include "SysY.type.visitor.h"
 
@@ -15,8 +17,7 @@ struct FuncSymTable *funcsymtable_p;
 struct VarSymTable *varsymtable_active_p, *varsymtable_deactive_p;
 
 // need free
-char *getUniquieName()
-{
+char *getUniquieName() {
     static int index = 0;
     char *r = (char *)malloc(64);
     EnsureNotNull(r);
@@ -25,22 +26,18 @@ char *getUniquieName()
 }
 
 // new a FuncSymEntry and add to list end
-struct FuncSymEntry *newFuncSymEntry(int type, const char *name, struct FuncSymEntry *head)
-{
+struct FuncSymEntry *newFuncSymEntry(const char *name, struct FuncSymEntry *head) {
     struct FuncSymEntry *fse = (struct FuncSymEntry *)malloc(sizeof(struct FuncSymEntry));
     EnsureNotNull(fse);
-    fse->type = type;
+    fse->type = FUNCSYMENTRY;
     IfNullElse(name, fse->name = getUniquieName();, fse->name = strdup(name););
-    fse->funcparam_head = newVarSymEntry(VARSYMENTRY, "%INVALIDNAME", -1, NULL);
-    if (head != NULL)
-    {
+    fse->funcparam_head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
+    if (head != NULL) {
         fse->prev = head->prev;
         head->prev->next = fse;
         fse->next = head;
         head->prev = fse;
-    }
-    else
-    {
+    } else {
         fse->prev = fse;
         fse->next = fse;
     }
@@ -48,53 +45,55 @@ struct FuncSymEntry *newFuncSymEntry(int type, const char *name, struct FuncSymE
 }
 
 // new a VarSymEntry and add to list end
-struct VarSymEntry *newVarSymEntry(int type, const char *name, int level, struct VarSymEntry *head)
-{
+struct VarSymEntry *newVarSymEntry(const char *name, int level, struct VarSymEntry *head) {
     struct VarSymEntry *vse = (struct VarSymEntry *)malloc(sizeof(struct VarSymEntry));
     EnsureNotNull(vse);
-    vse->type = type;
+    vse->type = VARSYMENTRY;
     IfNullElse(name, vse->name = getUniquieName();, vse->name = strdup(name););
     vse->level = level;
-    if (head != NULL)
-    {
+
+    vse->offset = 0;
+    vse->size = 0;
+    vse->typevalue = 0;
+    vse->is_array = 0;
+    vse->is_const = 0;
+    vse->array_dimensional_num = 0;
+    vse->array_shape = NULL;
+    vse->initval = NULL;
+
+    if (head != NULL) {
         vse->prev = head->prev;
         head->prev->next = vse;
         vse->next = head;
         head->prev = vse;
-    }
-    else
-    {
+    } else {
         vse->prev = vse;
         vse->next = vse;
     }
     return vse;
 }
 
-void initSymTable()
-{
+void initSymTable() {
     funcsymtable_p = (struct FuncSymTable *)malloc(sizeof(struct FuncSymTable));
     funcsymtable_p->type = FUNCSYMTABLE;
     funcsymtable_p->num = 0;
-    funcsymtable_p->head = newFuncSymEntry(FUNCSYMENTRY, "%%INVALIDENTRY", NULL);
+    funcsymtable_p->head = newFuncSymEntry("%%INVALIDENTRY", NULL);
 
     varsymtable_active_p = (struct VarSymTable *)malloc(sizeof(struct VarSymTable));
     varsymtable_active_p->type = VARSYMTABLE;
     varsymtable_active_p->num = 0;
-    varsymtable_active_p->head = newVarSymEntry(VARSYMENTRY, "%%INVALIDNAME", -1, NULL);
+    varsymtable_active_p->head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
 
     varsymtable_deactive_p = (struct VarSymTable *)malloc(sizeof(struct VarSymTable));
     varsymtable_deactive_p->type = VARSYMTABLE;
     varsymtable_deactive_p->num = 0;
-    varsymtable_deactive_p->head = newVarSymEntry(VARSYMENTRY, "%%INVALIDNAME", -1, NULL);
+    varsymtable_deactive_p->head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
 }
 
-struct FuncSymEntry *findFuncInTable(const char *name)
-{
+struct FuncSymEntry *findFuncInTable(const char *name) {
     struct FuncSymEntry *fse = funcsymtable_p->head->prev;
-    while (fse != funcsymtable_p->head)
-    {
-        if (strcmp(fse->name, name) == 0)
-        {
+    while (fse != funcsymtable_p->head) {
+        if (strcmp(fse->name, name) == 0) {
             return fse;
         }
         fse = fse->prev;
@@ -102,13 +101,10 @@ struct FuncSymEntry *findFuncInTable(const char *name)
     return NULL;
 }
 
-struct VarSymEntry *findVarInTable(const char *name)
-{
+struct VarSymEntry *findVarInTable(const char *name) {
     struct VarSymEntry *vse = varsymtable_active_p->head->prev;
-    while (vse != varsymtable_active_p->head)
-    {
-        if (strcmp(vse->name, name) == 0)
-        {
+    while (vse != varsymtable_active_p->head) {
+        if (strcmp(vse->name, name) == 0) {
             return vse;
         }
         vse = vse->prev;
@@ -116,14 +112,12 @@ struct VarSymEntry *findVarInTable(const char *name)
     return NULL;
 }
 
-void removeVarFromSymTable(int level)
-{
+void removeVarFromSymTable(int level) {
     struct VarSymEntry *head = varsymtable_active_p->head;
     struct VarSymEntry *dhead = varsymtable_deactive_p->head;
     struct VarSymEntry *vse = head->prev;
 
-    while (vse != head && vse->level == level)
-    {
+    while (vse != head && vse->level == level) {
         head->prev = vse->prev;
         head->prev->next = head;
 

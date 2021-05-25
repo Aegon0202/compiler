@@ -6,6 +6,7 @@
 #include "SysY.type.new.h"
 #include "SysY.type.visitor.h"
 #include "SysY.type.print.h"
+#include "../utils/PrintHelper.h"
 
 static int identation;
 #define LEVEL_IDENT 1
@@ -764,7 +765,6 @@ void printToken(void *token, struct printToken_t *visitor)
         EnsureNotNull(visitor->visitString);
         return visitor->visitString((struct String *)token);
     default:
-        fprintf(stderr, "NOT VALID TOKEN TYPE %dn", *(int *)token);
-        exit(-1);
+        PrintErrExit("NOT VALID TOKEN TYPE %dn", *(int *)token);
     }
 }

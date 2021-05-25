@@ -1,6 +1,10 @@
 {
     "python.pythonPath": "/home/sf/software/miniconda3/bin/python",
     "files.associations": {
-        "type_traits": "c++"
-    }
+        "type_traits": "c",
+        "PrintHelper.h": "c",
+        "sysy.type.symtab.h": "c",
+        "stdlib.h": "c"
+    },
+    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}"
 }
