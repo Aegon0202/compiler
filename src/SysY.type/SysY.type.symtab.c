@@ -31,9 +31,9 @@ struct FuncSymEntry *newFuncSymEntry(const char *name, struct FuncSymEntry *head
     EnsureNotNull(fse);
     fse->type = FUNCSYMENTRY;
     IfNullElse(name, fse->name = getUniquieName();, fse->name = strdup(name););
-    fse->funcparam_head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
+    fse->funcfparam = NULL;
 
-    fse->func_body = NULL;
+    fse->funcbody = NULL;
     fse->funcparamnum = 0;
     fse->has_effect = 0;
     fse->offset = 0;

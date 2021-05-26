@@ -17,7 +17,7 @@ int func_offset;
 int global_data_offset;
 
 void *toASTCompUnit(struct CompUnit *cp) {
-    // not complele
+    IfNull(cp, return NULL;);
     struct CompUnit *head = cp;
     level = 0;
     do {
@@ -32,6 +32,7 @@ void *toASTCompUnit(struct CompUnit *cp) {
 }
 
 struct Operand *toASTString(struct String *string) {
+    IfNull(string, return NULL;);
     struct String *s = (struct String *)malloc(sizeof(struct String));
     EnsureNotNull(s);
     s->type = STRING;
@@ -42,6 +43,7 @@ struct Operand *toASTString(struct String *string) {
 }
 
 struct Operand *toASTFuncRParam(struct FuncRParam *funcrparam) {
+    IfNull(funcrparam, return NULL;);
     switch (funcrparam->valuetype) {
         case EXP:
             return toASTExp(funcrparam->value.exp);
@@ -53,6 +55,7 @@ struct Operand *toASTFuncRParam(struct FuncRParam *funcrparam) {
 }
 
 struct Operand *toASTFuncImpl(struct FuncImpl *funcimpl) {
+    IfNull(funcimpl, return NULL;);
     struct FuncSymEntry *fse = findFuncInTable(funcimpl->ident->name);
     IfNull(fse, PrintErrExit("NOT FOUND FUNCTION NAME"););
     struct Operand **param = NULL;
@@ -74,6 +77,7 @@ struct Operand *toASTFuncImpl(struct FuncImpl *funcimpl) {
 }
 
 struct Operand *toASTNumber(struct Number *number) {
+    IfNull(number, return NULL;);
     struct IntConst *intconst = newIntConstAST(number->intconst->value);
     EnsureNotNull(intconst);
     struct Operand *operand = newOperand(INTCONST, intconst);
@@ -82,6 +86,7 @@ struct Operand *toASTNumber(struct Number *number) {
 }
 
 struct Operand *toASTIdent(struct Ident *ident) {
+    IfNull(ident, return NULL;);
     struct VarSymEntry *vse = findVarInTable(ident->name);
     IfNull(vse, PrintErrExit("NOT FOUND VARIABLE %s IN SYMBOL TABLE", ident->name));
     struct Operand *operand = newOperand(VARSYMENTRY, vse);
@@ -90,6 +95,7 @@ struct Operand *toASTIdent(struct Ident *ident) {
 }
 
 struct Operand *toASTArrayImpl(struct ArrayImpl *arrayimpl) {
+    IfNull(arrayimpl, return NULL;);
     struct VarSymEntry *vse = findVarInTable(arrayimpl->ident->name);
     IfNull(vse, PrintErrExit("NOT FOUND VARIABLE %s IN SYMBOL TABLE", arrayimpl->ident->name));
     struct Operand **impl = (struct Operand **)malloc(sizeof(struct Operand *) * vse->array_dimensional_num);
@@ -116,6 +122,7 @@ struct Operand *toASTArrayImpl(struct ArrayImpl *arrayimpl) {
 }
 
 struct Operand *toASTLVal(struct LVal *lval) {
+    IfNull(lval, return NULL;);
     switch (lval->valuetype) {
         case IDENT:
             return toASTIdent(lval->value.ident);
@@ -127,6 +134,7 @@ struct Operand *toASTLVal(struct LVal *lval) {
 }
 
 struct Operand *toASTPrimaryExp(struct PrimaryExp *primaryexp) {
+    IfNull(primaryexp, return NULL;);
     switch (primaryexp->valuetype) {
         case EXP:
             return toASTExp(primaryexp->value.exp);
@@ -140,6 +148,7 @@ struct Operand *toASTPrimaryExp(struct PrimaryExp *primaryexp) {
 }
 
 struct Operand *toASTUnaryExps(struct UnaryExps *unaryexps) {
+    IfNull(unaryexps, return NULL;);
     struct Operand *op1 = toASTUnaryExp(unaryexps->unaryexp);
     IfNull(unaryexps->unaryexp, return op1;);
     switch (unaryexps->unaryop->type) {
@@ -155,6 +164,7 @@ struct Operand *toASTUnaryExps(struct UnaryExps *unaryexps) {
 }
 
 struct Operand *toASTUnaryExp(struct UnaryExp *unaryexp) {
+    IfNull(unaryexp, return NULL;);
     switch (unaryexp->valuetype) {
         case PRIMARYEXP:
             return toASTPrimaryExp(unaryexp->value.primaryexp);
@@ -168,6 +178,7 @@ struct Operand *toASTUnaryExp(struct UnaryExp *unaryexp) {
 }
 
 struct Operand *toASTMulExp(struct MulExp *mulexp) {
+    IfNull(mulexp, return NULL;);
     struct MulExp *head = mulexp;
     struct Operand *exp_ast;
     head->prev->next = NULL;
@@ -182,6 +193,7 @@ struct Operand *toASTMulExp(struct MulExp *mulexp) {
 }
 
 struct Operand *toASTAddExp(struct AddExp *addexp) {
+    IfNull(addexp, return NULL;);
     struct AddExp *head = addexp;
     struct Operand *exp_ast;
     head->prev->next = NULL;
@@ -196,39 +208,85 @@ struct Operand *toASTAddExp(struct AddExp *addexp) {
 }
 
 struct Operand *toASTExp(struct Exp *exp) {
+    IfNull(exp, return NULL;);
     return toASTAddExp(exp->addexp);
 }
 
-struct Operand **toASTInitVal(struct InitVal *initval, struct Operand **array_shape, int array_size, int array_dimensional_num) {
-    // not complete
-    switch (initval->valuetype) {
-        case EXP:
-            struct Operand **operand = (struct Operand **)malloc(sizeof(struct Operand *));
-            EnsureNotNull(operand);
-            operand[0] = toASTExp(initval->value.exp);
-            return operand;
-        case INITVALS:
-            int i;
-            int length = calcConstOperand(array_shape[0]);
-            struct Operand **init = (struct Operand **)malloc(sizeof(struct Operand *) * array_size);
-            if (initval->value.initvals == NULL) {
-                for (i = 0; i < array_size; i++) {
-                    init[i] = newOperand(INTCONST, newIntConstAST(0));
-                }
-            } else {
-                for (i = 0; i < array_size;) {
-                }
-            }
-            return init;
-        default:
-            PrintErrExit("TO AST INITVAL UNKNOWN VALUE TYPE\n");
+struct Operand *toASTRelExp(struct RelExp *relexp) {
+    IfNull(relexp, return NULL;);
+    struct RelExp *head = relexp;
+    struct Operand *operand;
+    head->prev->next = NULL;
+    if (head->next != NULL) {
+        operand = newOperand(EXPAST, newExpAST(head->next->relop->typevalue, toASTAddExp(head->addexp), toASTRelExp(head->next), NULL, NULL));
+    } else {
+        operand = toASTAddExp(head->addexp);
     }
+    EnsureNotNull(operand);
+    head->prev->next = head;
+    return operand;
+}
+
+struct Operand *toASTEqExp(struct EqExp *eqexp) {
+    IfNull(eqexp, return NULL;);
+    struct EqExp *head = eqexp;
+    struct Operand *operand;
+    head->prev->next = NULL;
+    if (head->next != NULL) {
+        operand = newOperand(EXPAST, newExpAST(head->next->eqop->typevalue, toASTRelExp(head->relexp), toASTEqExp(head->next), NULL, NULL));
+    } else {
+        operand = toASTRelExp(head->relexp);
+    }
+    EnsureNotNull(operand);
+    head->prev->next = head;
+    return operand;
+}
+
+struct Operand *toASTLAndExp(struct LAndExp *landexp) {
+    IfNull(landexp, return NULL;);
+    struct LAndExp *head = landexp;
+    struct Operand *operand;
+    head->prev->next = NULL;
+    if (head->next != NULL) {
+        operand = newOperand(EXPAST, newExpAST(K_AND, toASTEqExp(head->eqexp), toASTLAndExp(head->next), NULL, NULL));
+    } else {
+        operand = toASTEqExp(head->eqexp);
+    }
+    EnsureNotNull(operand);
+    head->prev->next = head;
+    return operand;
+}
+
+struct Operand *toASTLOrExp(struct LOrExp *lorexp) {
+    IfNull(lorexp, return NULL;);
+    struct LOrExp *head = lorexp;
+    struct Operand *operand;
+    head->prev->next = NULL;
+    if (head->next != NULL) {
+        operand = newOperand(EXPAST, newExpAST(K_OR, toASTLAndExp(head->landexp), toASTLOrExp(head->next), NULL, NULL));
+    } else {
+        operand = toASTLAndExp(head->landexp);
+    }
+    EnsureNotNull(operand);
+    head->prev->next = head;
+    return operand;
+}
+
+struct Operand *toASTCond(struct Cond *cond) {
+    IfNull(cond, return NULL;);
+    return toASTLOrExp(cond->lorexp);
+}
+
+void *toASTInitVal(struct InitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num) {
+    IfNull(initval, return NULL;);
+    IfNull(array_shape, return NULL;);
+    // not complete
+    return NULL;
 }
 
 struct VarSymEntry *toASTVarDef(struct VarDef *vardef) {
-    // not complele
-    struct VarSymEntry vse_stack;
-    struct VarSymEntry *var = &vse_stack;  //newVarSymEntry(vardef->ident->name, level, varsymtable_active_p->head);
+    IfNull(vardef, return NULL;);
+    struct VarSymEntry *var = newVarSymEntry(vardef->ident->name, level, varsymtable_active_p->head);
     var->size = 1;
     var->is_const = 0;
     if (vardef->constarraydefs != NULL) {
@@ -255,7 +313,7 @@ struct VarSymEntry *toASTVarDef(struct VarDef *vardef) {
         var->initval = (struct Operand **)malloc(sizeof(struct Operand *) * var->size);
         EnsureNotNull(var->initval);
         if (var->is_array) {
-            var->initval = ;
+            toASTInitVal(vardef->initval, var->initval, var->array_shape, var->size, var->array_dimensional_num);
         } else {
             if (vardef->initval->valuetype == INITVALS) {
                 PrintErrExit("TO AST VAR DECL INTI VAL TYPE ERROR\n");
@@ -263,11 +321,11 @@ struct VarSymEntry *toASTVarDef(struct VarDef *vardef) {
             var->initval[0] = toASTExp(vardef->initval->value.exp);
         }
     }
-    return NULL;
+    return var;
 }
 
 void *toASTVarDecl(struct VarDecl *vardecl) {
-    // not complele
+    IfNull(vardecl, return NULL;);
     int type_value = vardecl->btype->typevalue;
     struct VarDefs *head = vardecl->vardefs;
     struct VarDefs *vardefs = head;
@@ -280,8 +338,69 @@ void *toASTVarDecl(struct VarDecl *vardecl) {
     return NULL;
 }
 
+void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num) {
+    IfNull(initval, return NULL;);
+    IfNull(array_shape, return NULL;);
+    // not complete
+    return NULL;
+}
+
+struct VarSymEntry *toASTConstDef(struct ConstDef *constdef) {
+    IfNull(constdef, return NULL;);
+    struct VarSymEntry *var = newVarSymEntry(constdef->ident->name, level, varsymtable_active_p->head);
+    var->size = 1;
+    var->is_const = 0;
+    if (constdef->constarraydefs != NULL) {
+        var->is_array = 1;
+        var->array_dimensional_num = 0;
+        struct ConstArrayDefs *head = constdef->constarraydefs;
+        struct ConstArrayDefs *exparraydefs = constdef->constarraydefs;
+        do {
+            var->array_dimensional_num++;
+            exparraydefs = exparraydefs->next;
+        } while (head != exparraydefs);
+        var->array_shape = (struct Operand **)malloc(sizeof(struct Operand *) * var->array_dimensional_num);
+        EnsureNotNull(var->array_shape);
+        int i = 0;
+        do {
+            int s = calcConstConstExp(exparraydefs->constarraydef->constexp);
+            var->array_shape[i] = newOperand(INTCONST, newIntConstAST(s));
+            var->size *= s;
+            exparraydefs = exparraydefs->next;
+            i++;
+        } while (head != exparraydefs);
+    }
+    IfNull(constdef->constinitval, PrintErrExit("CONST DECL NOT HAVE CONST INIT VALUE"));
+    var->initval = (struct Operand **)malloc(sizeof(struct Operand *) * var->size);
+    EnsureNotNull(var->initval);
+    if (var->is_array) {
+        toASTConstInitVal(constdef->constinitval, var->initval, var->array_shape, var->size, var->array_dimensional_num);
+    } else {
+        if (constdef->constinitval->valuetype == CONSTINITVALS) {
+            PrintErrExit("TO AST VAR DECL INTI VAL TYPE ERROR\n");
+        }
+        var->initval[0] = newOperand(INTCONST, newIntConstAST(calcConstConstExp(constdef->constinitval->value.constexp)));
+    }
+
+    return var;
+}
+
+void *toASTConstDecl(struct ConstDecl *constdecl) {
+    IfNull(constdecl, return NULL;);
+    int type_value = constdecl->btype->typevalue;
+    struct ConstDefs *head = constdecl->constdefs;
+    struct ConstDefs *constdefs = head;
+    do {
+        struct VarSymEntry *vse = toASTConstDef(constdefs->constdef);
+        vse->typevalue = type_value;
+        vse->size *= 4;
+        constdefs = constdefs->next;
+    } while (constdefs != head);
+    return NULL;
+}
+
 void *toASTDecl(struct Decl *decl) {
-    int is_const = 0;
+    IfNull(decl, return NULL;);
     switch (decl->valuetype) {
         case VARDECL:
             return toASTVarDecl(decl->value.vardecl);
@@ -293,20 +412,26 @@ void *toASTDecl(struct Decl *decl) {
     return NULL;
 }
 
-struct FuncSymEntry *toASTFuncDef(struct FuncDef *funcdef) {
-    // not complele
-    level++;
-    struct FuncSymEntry *fse = newFuncSymEntry(funcdef->ident->name, funcsymtable_p->head);
-    fse->returntype = funcdef->functype->typevalue;
-    if (funcdef->funcfparams->funcfparam == NULL) {
+void *toASTFuncFParams(struct FuncFParams *funcfparams, struct FuncSymEntry *fse) {
+    IfNull(funcfparams, return NULL;);
+    IfNull(fse, return NULL;);
+    if (funcfparams->funcfparam == NULL) {
         fse->funcparamnum = 0;
     } else {
-        struct FuncFParams *head = funcdef->funcfparams;
+        struct FuncFParams *head = funcfparams;
         struct FuncFParams *fp = head;
         // int offset = 0;
         do {
-            struct VarSymEntry *vse = newVarSymEntry(fp->funcfparam->ident->name, level, fse->funcparam_head);
             fse->funcparamnum++;
+            fp = fp->next;
+        } while (fp != head);
+
+        fse->funcfparam = (struct VarSymEntry **)malloc(sizeof(struct VarSymEntry *) * fse->funcparamnum);
+        int i = 0;
+        do {
+            struct VarSymEntry *vse = newVarSymEntry(fp->funcfparam->ident->name, level, varsymtable_active_p->head);
+            fse->funcfparam[i] = vse;
+            i++;
             vse->typevalue = fp->funcfparam->btype->typevalue;
             vse->is_const = 0;
             vse->is_array = 0;
@@ -324,11 +449,115 @@ struct FuncSymEntry *toASTFuncDef(struct FuncDef *funcdef) {
                 EnsureNotNull(vse->array_shape);
                 int i = 0;
                 do {
-                    IfNullElse(eadfs->exparraydef->exp, vse->array_shape[i] = 0;, ;);
+                    IfNullElse(eadfs->exparraydef->exp, vse->array_shape[i] = NULL;, vse->array_shape[i] = toASTExp(eadfs->exparraydef->exp););
+                    eadfs = eadfs->next;
                 } while (eadfs != eadfs_head);
             }
         } while (fp != head);
     }
+    return NULL;
+}
+
+struct ExpAST *toASTIfStmt(struct IfStmt *ifstmt) {
+    IfNull(ifstmt, return NULL;);
+    struct Operand *cond = toASTCond(ifstmt->cond);
+    EnsureNotNull(cond);
+    struct Operand *then_o = NULL;
+    struct Operand *other_o = NULL;
+    struct ExpAST *then = toASTStmt(ifstmt->then);
+    IfNotNull(then, then_o = newOperand(EXPAST, then););
+    struct ExpAST *other = toASTStmt(ifstmt->otherwise);
+    IfNotNull(other, other_o = newOperand(EXPAST, other););
+    return newExpAST(IFSTMT, cond, then_o, other_o, NULL);
+}
+
+struct ExpAST *toASTWhileStmt(struct WhileStmt *whilestmt) {
+    IfNull(whilestmt, return NULL;);
+    struct Operand *cond = toASTCond(whilestmt->cond);
+    EnsureNotNull(cond);
+    struct Operand *then_o = NULL;
+    struct ExpAST *then = toASTStmt(whilestmt->stmt);
+    IfNotNull(then, then_o = newOperand(EXPAST, then););
+    return newExpAST(IFSTMT, cond, then_o, NULL, NULL);
+}
+
+struct ExpAST *toASTStmt(struct Stmt *stmt) {
+    IfNull(stmt, return NULL;);
+    struct Operand *operand;
+    switch (stmt->valuetype) {
+        case ASSIGN:
+            return newExpAST(ASSIGN, toASTLVal(stmt->value.assign->lval), toASTExp(stmt->value.assign->exp), NULL, NULL);
+        case BLOCK:
+            return toASTBlock(stmt->value.block);
+        case IFSTMT:
+            return toASTIfStmt(stmt->value.ifstmt);
+        case WHILESTMT:
+            return toASTWhileStmt(stmt->value.whilestmt);
+        case RETURNSTMT:
+            return newExpAST(RETURNSTMT, toASTExp(stmt->value.returnstmt->exp), NULL, NULL, NULL);
+        case EXP:
+            operand = toASTExp(stmt->value.exp);
+            if (operand->valuetype == EXPAST) {
+                return operand->value.exp;
+            }
+            return newExpAST(OPREAND, operand, NULL, NULL, NULL);
+        case BREAKSTMT:
+            return newExpAST(BREAKSTMT, NULL, NULL, NULL, NULL);
+        case CONTINUESTMT:
+            return newExpAST(CONTINUESTMT, NULL, NULL, NULL, NULL);
+
+        default:
+            PrintErrExit("TO AST STMT UNKNOWN VALUE TYPE\n");
+    }
+}
+
+struct ExpAST *toASTBlockItem(struct BlockItem *blockitem) {
+    IfNull(blockitem, return NULL;);
+    switch (blockitem->valuetype) {
+        case DECL:
+            return toASTDecl(blockitem->value.decl);
+        case STMT:
+            return toASTStmt(blockitem->value.stmt);
+
+        default:
+            PrintErrExit("TO AST BLOCK ITEM UNKNOWN VALUE TYPE\n");
+    }
+}
+
+struct ExpAST *toASTBlockItems(struct BlockItems *blockitems) {
+    IfNull(blockitems, return NULL;);
+    struct BlockItems *head = blockitems;
+
+    head->prev->next = NULL;
+    struct ExpAST *expast = toASTBlockItem(blockitems->blockitem);
+    struct ExpAST *rest = toASTBlockItems(head->next);
+    head->prev->next = head;
+
+    if (expast != NULL) {
+        expast->next = rest;
+    } else {
+        expast = rest;
+    }
+    return expast;
+}
+
+struct ExpAST *toASTBlock(struct Block *block) {
+    IfNull(block, return NULL;);
+    level++;
+    struct ExpAST *expast = toASTBlockItems(block->blockitems);
+    removeVarFromSymTable(level);
+    level--;
+    return expast;
+}
+
+struct FuncSymEntry *toASTFuncDef(struct FuncDef *funcdef) {
+    IfNull(funcdef, return NULL;);
+    level++;
+    struct FuncSymEntry *fse = newFuncSymEntry(funcdef->ident->name, funcsymtable_p->head);
+    fse->returntype = funcdef->functype->typevalue;
+    toASTFuncFParams(funcdef->funcfparams, fse);
+    fse->funcbody = toASTBlock(funcdef->block);
+    removeVarFromSymTable(level);
     level--;
     return NULL;
 }

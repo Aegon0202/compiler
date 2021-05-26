@@ -32,8 +32,8 @@ struct FuncSymEntry {
     int returntype;  // K_VOID K_INT
     int has_effect;  // 1 or 0
     int funcparamnum;
-    struct VarSymEntry *funcparam_head;
-    struct ExpAST *func_body;
+    struct VarSymEntry **funcfparam;
+    struct ExpAST *funcbody;
     struct FuncSymEntry *prev;
     struct FuncSymEntry *next;
 };
