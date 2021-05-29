@@ -4,7 +4,8 @@
         "type_traits": "c",
         "PrintHelper.h": "c",
         "sysy.type.symtab.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "ssa.h": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}"
 }

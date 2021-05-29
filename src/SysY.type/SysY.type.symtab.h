@@ -7,7 +7,6 @@ enum {
     FUNCSYMTABLE,
     VARSYMTABLE
 };
-struct ExpAST;
 
 struct VarSymEntry {
     int type;  // VARSYMENTRY
@@ -51,6 +50,7 @@ struct VarSymTable {
 };
 
 void initSymTable();
+void addLibraryFuncDef();
 struct VarSymEntry *newVarSymEntry(const char *name, int level, struct VarSymEntry *head);
 struct FuncSymEntry *newFuncSymEntry(const char *name, struct FuncSymEntry *head);
 struct FuncSymEntry *findFuncInTable(const char *name);
@@ -60,5 +60,6 @@ char *getUniquieName();
 
 extern struct FuncSymTable *funcsymtable_p;
 extern struct VarSymTable *varsymtable_active_p, *varsymtable_deactive_p;
-
+extern const char *buildin_funcname[];
+extern const int buildin_funcnum;
 #endif

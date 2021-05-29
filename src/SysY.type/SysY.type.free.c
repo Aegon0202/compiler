@@ -1,16 +1,14 @@
 #include "./SysY.type.free.h"
+
 #include "../utils/PrintHelper.h"
 struct freeToken_t *freeToken_p;
 
 #define ListLikeFreeGenerator1(funcname, listype, dataname1) \
-    void funcname(listype *list, int recusive)               \
-    {                                                        \
+    void funcname(listype *list, int recusive) {             \
         IfNull(list, return;);                               \
         listype *head = list;                                \
-        if (recusive)                                        \
-        {                                                    \
-            while (head->next != head)                       \
-            {                                                \
+        if (recusive) {                                      \
+            while (head->next != head) {                     \
                 listype *tmp = head->next;                   \
                 head->next = tmp->next;                      \
                 freeToken(tmp->dataname1, freeToken_p, 1);   \
@@ -22,14 +20,11 @@ struct freeToken_t *freeToken_p;
     }
 
 #define ListLikeFreeGenerator2(funcname, listype, dataname1, dataname2) \
-    void funcname(listype *list, int recusive)                          \
-    {                                                                   \
+    void funcname(listype *list, int recusive) {                        \
         IfNull(list, return;);                                          \
         listype *head = list;                                           \
-        if (recusive)                                                   \
-        {                                                               \
-            while (head->next != head)                                  \
-            {                                                           \
+        if (recusive) {                                                 \
+            while (head->next != head) {                                \
                 listype *tmp = head->next;                              \
                 head->next = tmp->next;                                 \
                 freeToken(tmp->dataname1, freeToken_p, 1);              \
@@ -43,22 +38,18 @@ struct freeToken_t *freeToken_p;
     }
 
 #define OnlyDataFreeGenerator1(funcname, freetype, dataname1) \
-    void funcname(freetype *token, int recusive)              \
-    {                                                         \
+    void funcname(freetype *token, int recusive) {            \
         IfNull(token, return;);                               \
-        if (recusive)                                         \
-        {                                                     \
+        if (recusive) {                                       \
             freeToken(token->dataname1, freeToken_p, 1);      \
         }                                                     \
         free(token);                                          \
     }
 
 #define OnlyDataFreeGenerator2(funcname, freetype, dataname1, dataname2) \
-    void funcname(freetype *token, int recusive)                         \
-    {                                                                    \
+    void funcname(freetype *token, int recusive) {                       \
         IfNull(token, return;);                                          \
-        if (recusive)                                                    \
-        {                                                                \
+        if (recusive) {                                                  \
             freeToken(token->dataname1, freeToken_p, 1);                 \
             freeToken(token->dataname2, freeToken_p, 1);                 \
         }                                                                \
@@ -66,11 +57,9 @@ struct freeToken_t *freeToken_p;
     }
 
 #define OnlyDataFreeGenerator3(funcname, freetype, dataname1, dataname2, dataname3) \
-    void funcname(freetype *token, int recusive)                                    \
-    {                                                                               \
+    void funcname(freetype *token, int recusive) {                                  \
         IfNull(token, return;);                                                     \
-        if (recusive)                                                               \
-        {                                                                           \
+        if (recusive) {                                                             \
             freeToken(token->dataname1, freeToken_p, 1);                            \
             freeToken(token->dataname2, freeToken_p, 1);                            \
             freeToken(token->dataname3, freeToken_p, 1);                            \
@@ -79,11 +68,9 @@ struct freeToken_t *freeToken_p;
     }
 
 #define OnlyDataFreeGenerator4(funcname, freetype, dataname1, dataname2, dataname3, dataname4) \
-    void funcname(freetype *token, int recusive)                                               \
-    {                                                                                          \
+    void funcname(freetype *token, int recusive) {                                             \
         IfNull(token, return;);                                                                \
-        if (recusive)                                                                          \
-        {                                                                                      \
+        if (recusive) {                                                                        \
             freeToken(token->dataname1, freeToken_p, 1);                                       \
             freeToken(token->dataname2, freeToken_p, 1);                                       \
             freeToken(token->dataname3, freeToken_p, 1);                                       \
@@ -93,40 +80,32 @@ struct freeToken_t *freeToken_p;
     }
 
 #define OnlyUnionFreeGenerator(funcname, freetype, value_in_union_name)  \
-    void funcname(freetype *token, int recusive)                         \
-    {                                                                    \
+    void funcname(freetype *token, int recusive) {                       \
         IfNull(token, return;);                                          \
-        if (recusive)                                                    \
-        {                                                                \
+        if (recusive) {                                                  \
             freeToken(token->value.value_in_union_name, freeToken_p, 1); \
         }                                                                \
         free(token);                                                     \
     }
 
-void freeKeyword(struct Keyword *keyword, int recusive)
-{
+void freeKeyword(struct Keyword *keyword, int recusive) {
     IfNull(keyword, return;);
-    if (recusive)
-    {
+    if (recusive) {
         free(keyword->value);
     }
     free(keyword);
 }
 
-void freeIntConst(struct IntConst *intconst, int recusive)
-{
+void freeIntConst(struct IntConst *intconst, int recusive) {
     IfNull(intconst, return;);
     free(intconst);
 }
 
-void freeCompUnit(struct CompUnit *cp, int recusive)
-{
+void freeCompUnit(struct CompUnit *cp, int recusive) {
     IfNull(cp, return;);
     struct CompUnit *head = cp;
-    if (recusive)
-    {
-        while (head->next != head)
-        {
+    if (recusive) {
+        while (head->next != head) {
             struct CompUnit *tmp = head;
             head->next = tmp->next;
             freeToken(tmp->value.decl, freeToken_p, 1);
@@ -141,8 +120,7 @@ OnlyUnionFreeGenerator(freeDecl, struct Decl, constdecl);
 
 OnlyDataFreeGenerator2(freeConstDecl, struct ConstDecl, btype, constdefs);
 
-void freeBType(struct BType *btype, int recusive)
-{
+void freeBType(struct BType *btype, int recusive) {
     IfNull(btype, return;);
     free(btype);
 }
@@ -171,8 +149,7 @@ ListLikeFreeGenerator1(freeInitVals, struct InitVals, initval);
 
 OnlyDataFreeGenerator4(freeFuncDef, struct FuncDef, functype, ident, funcfparams, block);
 
-void freeFuncType(struct FuncType *functype, int recusive)
-{
+void freeFuncType(struct FuncType *functype, int recusive) {
     IfNull(functype, return;);
     free(functype);
 }
@@ -219,8 +196,7 @@ OnlyDataFreeGenerator2(freeFuncImpl, struct FuncImpl, ident, funcrparams);
 
 OnlyDataFreeGenerator2(freeUnaryExps, struct UnaryExps, unaryop, unaryexp);
 
-void freeUnaryOp(struct UnaryOp *op, int recusive)
-{
+void freeUnaryOp(struct UnaryOp *op, int recusive) {
     IfNull(op, return;);
     free(op);
 }
@@ -231,32 +207,28 @@ OnlyUnionFreeGenerator(freeFuncRParam, struct FuncRParam, exp);
 
 ListLikeFreeGenerator2(freeMulExp, struct MulExp, mulop, unaryexp);
 
-void freeMulOp(struct MulOp *op, int recusive)
-{
+void freeMulOp(struct MulOp *op, int recusive) {
     IfNull(op, return;);
     free(op);
 }
 
 ListLikeFreeGenerator2(freeAddExp, struct AddExp, addop, mulexp);
 
-void freeAddOp(struct AddOp *op, int recusive)
-{
+void freeAddOp(struct AddOp *op, int recusive) {
     IfNull(op, return;);
     free(op);
 }
 
 ListLikeFreeGenerator2(freeRelExp, struct RelExp, relop, addexp);
 
-void freeRelOp(struct RelOp *op, int recusive)
-{
+void freeRelOp(struct RelOp *op, int recusive) {
     IfNull(op, return;);
     free(op);
 }
 
 ListLikeFreeGenerator2(freeEqExp, struct EqExp, eqop, relexp);
 
-void freeEqOp(struct EqOp *op, int recusive)
-{
+void freeEqOp(struct EqOp *op, int recusive) {
     IfNull(op, return;);
     free(op);
 }
@@ -267,28 +239,23 @@ ListLikeFreeGenerator1(freeLOrExp, struct LOrExp, landexp);
 
 OnlyDataFreeGenerator1(freeConstExp, struct ConstExp, addexp);
 
-void freeIdent(struct Ident *ident, int recusive)
-{
+void freeIdent(struct Ident *ident, int recusive) {
     IfNull(ident, return;);
-    if (recusive)
-    {
+    if (recusive) {
         free(ident->name);
     }
     free(ident);
 }
 
-void freeString(struct String *string, int recusive)
-{
+void freeString(struct String *string, int recusive) {
     IfNull(string, return;);
-    if (recusive)
-    {
+    if (recusive) {
         free(string->content);
     }
     free(string);
 }
 
-void initFreeToken()
-{
+void initFreeToken() {
     freeToken_p = (struct freeToken_t *)malloc(sizeof(struct freeToken_t));
     EnsureNotNull(freeToken_p);
     freeToken_p->visitKeyword = freeKeyword;
@@ -349,181 +316,179 @@ void initFreeToken()
     freeToken_p->visitString = freeString;
 }
 
-void freeToken(void *token, struct freeToken_t *visitor, int recusive)
-{
-    EnsureNotNull(token);
+void freeToken(void *token, struct freeToken_t *visitor, int recusive) {
+    IfNull(token, return;);
     EnsureNotNull(visitor);
-    switch (*(int *)token)
-    {
-    case KEYWORD:
-        EnsureNotNull(visitor->visitKeyword);
-        return visitor->visitKeyword((struct Keyword *)token, recusive);
-    case INTCONST:
-        EnsureNotNull(visitor->visitIntConst);
-        return visitor->visitIntConst((struct IntConst *)token, recusive);
-    case COMPUNIT:
-        EnsureNotNull(visitor->visitCompUnit);
-        return visitor->visitCompUnit((struct CompUnit *)token, recusive);
-    case DECL:
-        EnsureNotNull(visitor->visitDecl);
-        return visitor->visitDecl((struct Decl *)token, recusive);
-    case CONSTDECL:
-        EnsureNotNull(visitor->visitConstDecl);
-        return visitor->visitConstDecl((struct ConstDecl *)token, recusive);
-    case BTYPE:
-        EnsureNotNull(visitor->visitBType);
-        return visitor->visitBType((struct BType *)token, recusive);
-    case CONSTDEFS:
-        EnsureNotNull(visitor->visitConstDefs);
-        return visitor->visitConstDefs((struct ConstDefs *)token, recusive);
-    case CONSTDEF:
-        EnsureNotNull(visitor->visitConstDef);
-        return visitor->visitConstDef((struct ConstDef *)token, recusive);
-    case CONSTARRAYDEFS:
-        EnsureNotNull(visitor->visitConstArrayDefs);
-        return visitor->visitConstArrayDefs((struct ConstArrayDefs *)token, recusive);
-    case CONSTARRAYDEF:
-        EnsureNotNull(visitor->visitConstArrayDef);
-        return visitor->visitConstArrayDef((struct ConstArrayDef *)token, recusive);
-    case CONSTINITVAL:
-        EnsureNotNull(visitor->visitConstInitVal);
-        return visitor->visitConstInitVal((struct ConstInitVal *)token, recusive);
-    case CONSTINITVALS:
-        EnsureNotNull(visitor->visitConstInitVals);
-        return visitor->visitConstInitVals((struct ConstInitVals *)token, recusive);
-    case VARDECL:
-        EnsureNotNull(visitor->visitVarDecl);
-        return visitor->visitVarDecl((struct VarDecl *)token, recusive);
-    case VARDEFS:
-        EnsureNotNull(visitor->visitVarDefs);
-        return visitor->visitVarDefs((struct VarDefs *)token, recusive);
-    case VARDEF:
-        EnsureNotNull(visitor->visitVarDef);
-        return visitor->visitVarDef((struct VarDef *)token, recusive);
-    case INITVAL:
-        EnsureNotNull(visitor->visitInitVal);
-        return visitor->visitInitVal((struct InitVal *)token, recusive);
-    case INITVALS:
-        EnsureNotNull(visitor->visitInitVals);
-        return visitor->visitInitVals((struct InitVals *)token, recusive);
-    case FUNCDEF:
-        EnsureNotNull(visitor->visitFuncDef);
-        return visitor->visitFuncDef((struct FuncDef *)token, recusive);
-    case FUNCTYPE:
-        EnsureNotNull(visitor->visitFuncType);
-        return visitor->visitFuncType((struct FuncType *)token, recusive);
-    case FUNCFPARAMS:
-        EnsureNotNull(visitor->visitFuncFParams);
-        return visitor->visitFuncFParams((struct FuncFParams *)token, recusive);
-    case FUNCFPARAM:
-        EnsureNotNull(visitor->visitFuncFParam);
-        return visitor->visitFuncFParam((struct FuncFParam *)token, recusive);
-    case EXPARRAYDEFS:
-        EnsureNotNull(visitor->visitExpArrayDefs);
-        return visitor->visitExpArrayDefs((struct ExpArrayDefs *)token, recusive);
-    case EXPARRAYDEF:
-        EnsureNotNull(visitor->visitExpArrayDef);
-        return visitor->visitExpArrayDef((struct ExpArrayDef *)token, recusive);
-    case BLOCK:
-        EnsureNotNull(visitor->visitBlock);
-        return visitor->visitBlock((struct Block *)token, recusive);
-    case BLOCKITEMS:
-        EnsureNotNull(visitor->visitBlockItems);
-        return visitor->visitBlockItems((struct BlockItems *)token, recusive);
-    case BLOCKITEM:
-        EnsureNotNull(visitor->visitBlockItem);
-        return visitor->visitBlockItem((struct BlockItem *)token, recusive);
-    case STMT:
-        EnsureNotNull(visitor->visitStmt);
-        return visitor->visitStmt((struct Stmt *)token, recusive);
-    case ASSIGN:
-        EnsureNotNull(visitor->visitAssign);
-        return visitor->visitAssign((struct Assign *)token, recusive);
-    case IFSTMT:
-        EnsureNotNull(visitor->visitIfStmt);
-        return visitor->visitIfStmt((struct IfStmt *)token, recusive);
-    case WHILESTMT:
-        EnsureNotNull(visitor->visitWhileStmt);
-        return visitor->visitWhileStmt((struct WhileStmt *)token, recusive);
-    case RETURNSTMT:
-        EnsureNotNull(visitor->visitReturnStmt);
-        return visitor->visitReturnStmt((struct ReturnStmt *)token, recusive);
-    case EXP:
-        EnsureNotNull(visitor->visitExp);
-        return visitor->visitExp((struct Exp *)token, recusive);
-    case COND:
-        EnsureNotNull(visitor->visitCond);
-        return visitor->visitCond((struct Cond *)token, recusive);
-    case LVAL:
-        EnsureNotNull(visitor->visitLVal);
-        return visitor->visitLVal((struct LVal *)token, recusive);
-    case ARRAYIMPL:
-        EnsureNotNull(visitor->visitArrayImpl);
-        return visitor->visitArrayImpl((struct ArrayImpl *)token, recusive);
-    case PRIMARYEXP:
-        EnsureNotNull(visitor->visitPrimaryExp);
-        return visitor->visitPrimaryExp((struct PrimaryExp *)token, recusive);
-    case NUMBER:
-        EnsureNotNull(visitor->visitNumber);
-        return visitor->visitNumber((struct Number *)token, recusive);
-    case UNARYEXP:
-        EnsureNotNull(visitor->visitUnaryExp);
-        return visitor->visitUnaryExp((struct UnaryExp *)token, recusive);
-    case FUNCIMPL:
-        EnsureNotNull(visitor->visitFuncImpl);
-        return visitor->visitFuncImpl((struct FuncImpl *)token, recusive);
-    case UNARYEXPS:
-        EnsureNotNull(visitor->visitUnaryExps);
-        return visitor->visitUnaryExps((struct UnaryExps *)token, recusive);
-    case UNARYOP:
-        EnsureNotNull(visitor->visitUnaryOp);
-        return visitor->visitUnaryOp((struct UnaryOp *)token, recusive);
-    case FUNCRPARAMS:
-        EnsureNotNull(visitor->visitFuncRParams);
-        return visitor->visitFuncRParams((struct FuncRParams *)token, recusive);
-    case FUNCRPARAM:
-        EnsureNotNull(visitor->visitFuncRParam);
-        return visitor->visitFuncRParam((struct FuncRParam *)token, recusive);
-    case MULEXP:
-        EnsureNotNull(visitor->visitMulExp);
-        return visitor->visitMulExp((struct MulExp *)token, recusive);
-    case MULOP:
-        EnsureNotNull(visitor->visitMulOp);
-        return visitor->visitMulOp((struct MulOp *)token, recusive);
-    case ADDEXP:
-        EnsureNotNull(visitor->visitAddExp);
-        return visitor->visitAddExp((struct AddExp *)token, recusive);
-    case ADDOP:
-        EnsureNotNull(visitor->visitAddOp);
-        return visitor->visitAddOp((struct AddOp *)token, recusive);
-    case RELEXP:
-        EnsureNotNull(visitor->visitRelExp);
-        return visitor->visitRelExp((struct RelExp *)token, recusive);
-    case RELOP:
-        EnsureNotNull(visitor->visitRelOp);
-        return visitor->visitRelOp((struct RelOp *)token, recusive);
-    case EQEXP:
-        EnsureNotNull(visitor->visitEqExp);
-        return visitor->visitEqExp((struct EqExp *)token, recusive);
-    case EQOP:
-        EnsureNotNull(visitor->visitEqOp);
-        return visitor->visitEqOp((struct EqOp *)token, recusive);
-    case LANDEXP:
-        EnsureNotNull(visitor->visitLAndExp);
-        return visitor->visitLAndExp((struct LAndExp *)token, recusive);
-    case LOREXP:
-        EnsureNotNull(visitor->visitLOrExp);
-        return visitor->visitLOrExp((struct LOrExp *)token, recusive);
-    case CONSTEXP:
-        EnsureNotNull(visitor->visitConstExp);
-        return visitor->visitConstExp((struct ConstExp *)token, recusive);
-    case IDENT:
-        EnsureNotNull(visitor->visitIdent);
-        return visitor->visitIdent((struct Ident *)token, recusive);
-    case STRING:
-        EnsureNotNull(visitor->visitString);
-        return visitor->visitString((struct String *)token, recusive);
-    default:
-        PrintErrExit("NOT VALID TOKEN TYPE %dn", *(int *)token);
+    switch (*(int *)token) {
+        case KEYWORD:
+            EnsureNotNull(visitor->visitKeyword);
+            return visitor->visitKeyword((struct Keyword *)token, recusive);
+        case INTCONST:
+            EnsureNotNull(visitor->visitIntConst);
+            return visitor->visitIntConst((struct IntConst *)token, recusive);
+        case COMPUNIT:
+            EnsureNotNull(visitor->visitCompUnit);
+            return visitor->visitCompUnit((struct CompUnit *)token, recusive);
+        case DECL:
+            EnsureNotNull(visitor->visitDecl);
+            return visitor->visitDecl((struct Decl *)token, recusive);
+        case CONSTDECL:
+            EnsureNotNull(visitor->visitConstDecl);
+            return visitor->visitConstDecl((struct ConstDecl *)token, recusive);
+        case BTYPE:
+            EnsureNotNull(visitor->visitBType);
+            return visitor->visitBType((struct BType *)token, recusive);
+        case CONSTDEFS:
+            EnsureNotNull(visitor->visitConstDefs);
+            return visitor->visitConstDefs((struct ConstDefs *)token, recusive);
+        case CONSTDEF:
+            EnsureNotNull(visitor->visitConstDef);
+            return visitor->visitConstDef((struct ConstDef *)token, recusive);
+        case CONSTARRAYDEFS:
+            EnsureNotNull(visitor->visitConstArrayDefs);
+            return visitor->visitConstArrayDefs((struct ConstArrayDefs *)token, recusive);
+        case CONSTARRAYDEF:
+            EnsureNotNull(visitor->visitConstArrayDef);
+            return visitor->visitConstArrayDef((struct ConstArrayDef *)token, recusive);
+        case CONSTINITVAL:
+            EnsureNotNull(visitor->visitConstInitVal);
+            return visitor->visitConstInitVal((struct ConstInitVal *)token, recusive);
+        case CONSTINITVALS:
+            EnsureNotNull(visitor->visitConstInitVals);
+            return visitor->visitConstInitVals((struct ConstInitVals *)token, recusive);
+        case VARDECL:
+            EnsureNotNull(visitor->visitVarDecl);
+            return visitor->visitVarDecl((struct VarDecl *)token, recusive);
+        case VARDEFS:
+            EnsureNotNull(visitor->visitVarDefs);
+            return visitor->visitVarDefs((struct VarDefs *)token, recusive);
+        case VARDEF:
+            EnsureNotNull(visitor->visitVarDef);
+            return visitor->visitVarDef((struct VarDef *)token, recusive);
+        case INITVAL:
+            EnsureNotNull(visitor->visitInitVal);
+            return visitor->visitInitVal((struct InitVal *)token, recusive);
+        case INITVALS:
+            EnsureNotNull(visitor->visitInitVals);
+            return visitor->visitInitVals((struct InitVals *)token, recusive);
+        case FUNCDEF:
+            EnsureNotNull(visitor->visitFuncDef);
+            return visitor->visitFuncDef((struct FuncDef *)token, recusive);
+        case FUNCTYPE:
+            EnsureNotNull(visitor->visitFuncType);
+            return visitor->visitFuncType((struct FuncType *)token, recusive);
+        case FUNCFPARAMS:
+            EnsureNotNull(visitor->visitFuncFParams);
+            return visitor->visitFuncFParams((struct FuncFParams *)token, recusive);
+        case FUNCFPARAM:
+            EnsureNotNull(visitor->visitFuncFParam);
+            return visitor->visitFuncFParam((struct FuncFParam *)token, recusive);
+        case EXPARRAYDEFS:
+            EnsureNotNull(visitor->visitExpArrayDefs);
+            return visitor->visitExpArrayDefs((struct ExpArrayDefs *)token, recusive);
+        case EXPARRAYDEF:
+            EnsureNotNull(visitor->visitExpArrayDef);
+            return visitor->visitExpArrayDef((struct ExpArrayDef *)token, recusive);
+        case BLOCK:
+            EnsureNotNull(visitor->visitBlock);
+            return visitor->visitBlock((struct Block *)token, recusive);
+        case BLOCKITEMS:
+            EnsureNotNull(visitor->visitBlockItems);
+            return visitor->visitBlockItems((struct BlockItems *)token, recusive);
+        case BLOCKITEM:
+            EnsureNotNull(visitor->visitBlockItem);
+            return visitor->visitBlockItem((struct BlockItem *)token, recusive);
+        case STMT:
+            EnsureNotNull(visitor->visitStmt);
+            return visitor->visitStmt((struct Stmt *)token, recusive);
+        case ASSIGN:
+            EnsureNotNull(visitor->visitAssign);
+            return visitor->visitAssign((struct Assign *)token, recusive);
+        case IFSTMT:
+            EnsureNotNull(visitor->visitIfStmt);
+            return visitor->visitIfStmt((struct IfStmt *)token, recusive);
+        case WHILESTMT:
+            EnsureNotNull(visitor->visitWhileStmt);
+            return visitor->visitWhileStmt((struct WhileStmt *)token, recusive);
+        case RETURNSTMT:
+            EnsureNotNull(visitor->visitReturnStmt);
+            return visitor->visitReturnStmt((struct ReturnStmt *)token, recusive);
+        case EXP:
+            EnsureNotNull(visitor->visitExp);
+            return visitor->visitExp((struct Exp *)token, recusive);
+        case COND:
+            EnsureNotNull(visitor->visitCond);
+            return visitor->visitCond((struct Cond *)token, recusive);
+        case LVAL:
+            EnsureNotNull(visitor->visitLVal);
+            return visitor->visitLVal((struct LVal *)token, recusive);
+        case ARRAYIMPL:
+            EnsureNotNull(visitor->visitArrayImpl);
+            return visitor->visitArrayImpl((struct ArrayImpl *)token, recusive);
+        case PRIMARYEXP:
+            EnsureNotNull(visitor->visitPrimaryExp);
+            return visitor->visitPrimaryExp((struct PrimaryExp *)token, recusive);
+        case NUMBER:
+            EnsureNotNull(visitor->visitNumber);
+            return visitor->visitNumber((struct Number *)token, recusive);
+        case UNARYEXP:
+            EnsureNotNull(visitor->visitUnaryExp);
+            return visitor->visitUnaryExp((struct UnaryExp *)token, recusive);
+        case FUNCIMPL:
+            EnsureNotNull(visitor->visitFuncImpl);
+            return visitor->visitFuncImpl((struct FuncImpl *)token, recusive);
+        case UNARYEXPS:
+            EnsureNotNull(visitor->visitUnaryExps);
+            return visitor->visitUnaryExps((struct UnaryExps *)token, recusive);
+        case UNARYOP:
+            EnsureNotNull(visitor->visitUnaryOp);
+            return visitor->visitUnaryOp((struct UnaryOp *)token, recusive);
+        case FUNCRPARAMS:
+            EnsureNotNull(visitor->visitFuncRParams);
+            return visitor->visitFuncRParams((struct FuncRParams *)token, recusive);
+        case FUNCRPARAM:
+            EnsureNotNull(visitor->visitFuncRParam);
+            return visitor->visitFuncRParam((struct FuncRParam *)token, recusive);
+        case MULEXP:
+            EnsureNotNull(visitor->visitMulExp);
+            return visitor->visitMulExp((struct MulExp *)token, recusive);
+        case MULOP:
+            EnsureNotNull(visitor->visitMulOp);
+            return visitor->visitMulOp((struct MulOp *)token, recusive);
+        case ADDEXP:
+            EnsureNotNull(visitor->visitAddExp);
+            return visitor->visitAddExp((struct AddExp *)token, recusive);
+        case ADDOP:
+            EnsureNotNull(visitor->visitAddOp);
+            return visitor->visitAddOp((struct AddOp *)token, recusive);
+        case RELEXP:
+            EnsureNotNull(visitor->visitRelExp);
+            return visitor->visitRelExp((struct RelExp *)token, recusive);
+        case RELOP:
+            EnsureNotNull(visitor->visitRelOp);
+            return visitor->visitRelOp((struct RelOp *)token, recusive);
+        case EQEXP:
+            EnsureNotNull(visitor->visitEqExp);
+            return visitor->visitEqExp((struct EqExp *)token, recusive);
+        case EQOP:
+            EnsureNotNull(visitor->visitEqOp);
+            return visitor->visitEqOp((struct EqOp *)token, recusive);
+        case LANDEXP:
+            EnsureNotNull(visitor->visitLAndExp);
+            return visitor->visitLAndExp((struct LAndExp *)token, recusive);
+        case LOREXP:
+            EnsureNotNull(visitor->visitLOrExp);
+            return visitor->visitLOrExp((struct LOrExp *)token, recusive);
+        case CONSTEXP:
+            EnsureNotNull(visitor->visitConstExp);
+            return visitor->visitConstExp((struct ConstExp *)token, recusive);
+        case IDENT:
+            EnsureNotNull(visitor->visitIdent);
+            return visitor->visitIdent((struct Ident *)token, recusive);
+        case STRING:
+            EnsureNotNull(visitor->visitString);
+            return visitor->visitString((struct String *)token, recusive);
+        default:
+            PrintErrExit("NOT VALID TOKEN TYPE %dn", *(int *)token);
     }
 }

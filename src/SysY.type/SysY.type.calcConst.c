@@ -65,6 +65,7 @@ int calcConstOperand(struct Operand *operand) {
         default:
             PrintErrExit("CALCED CONST OPERAND IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstExpAST(struct ExpAST *exp) {
@@ -102,6 +103,7 @@ int calcConstExpAST(struct ExpAST *exp) {
         default:
             PrintErrExit("CALCED CONST EXP AST IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstIdent(struct Ident *ident) {
@@ -125,6 +127,7 @@ int calcConstLVal(struct LVal *lval) {
         default:
             PrintErrExit("CALCED CONST LVAL IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstExp(struct Exp *exp) {
@@ -146,6 +149,7 @@ int calcConstPrimaryExp(struct PrimaryExp *primaryexp) {
         default:
             PrintErrExit("CALCED CONST PRIMARY EXP IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstUnaryExps(struct UnaryExps *unaryexps) {
@@ -178,6 +182,7 @@ int calcConstUnaryExp(struct UnaryExp *unaryexp) {
         default:
             PrintErrExit("CALCED CONST UNARY EXP IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstMulExp(struct MulExp *mulexp) {

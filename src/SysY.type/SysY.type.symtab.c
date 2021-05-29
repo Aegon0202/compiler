@@ -10,18 +10,34 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "SysY.type.ast.h"
 #include "SysY.type.def.h"
+#include "SysY.type.free.h"
+#include "SysY.type.new.h"
 #include "SysY.type.visitor.h"
 
 struct FuncSymTable *funcsymtable_p;
 struct VarSymTable *varsymtable_active_p, *varsymtable_deactive_p;
-
+const char *buildin_funcname[] = {"getint", "getch", "putint", "putch", "putarray", "putf", "starttime", "stoptime"};
+const int buildin_funcnum = 9;
 // need free
 char *getUniquieName() {
     static int index = 0;
     char *r = (char *)malloc(64);
     EnsureNotNull(r);
+    memset(r, 0, 64);
     snprintf(r, 63, "uniquie#%d", index);
+    index++;
+    return r;
+}
+
+char *getUniquieNameStaic() {
+    static int index = 0;
+    static char r[64];
+    //EnsureNotNull(r);
+    memset(r, 0, 64);
+    snprintf(r, 63, "uniquie#s#%d", index);
+    index++;
     return r;
 }
 
@@ -98,6 +114,8 @@ void initSymTable() {
     varsymtable_deactive_p->type = VARSYMTABLE;
     varsymtable_deactive_p->num = 0;
     varsymtable_deactive_p->head = newVarSymEntry("%%INVALIDNAME", -1, NULL);
+
+    addLibraryFuncDef();
 }
 
 struct FuncSymEntry *findFuncInTable(const char *name) {
@@ -132,8 +150,71 @@ void removeVarFromSymTable(int level) {
         head->prev->next = head;
 
         vse->prev = dhead->prev;
-        vse->next = head;
-        head->prev->next = vse;
-        head->prev = vse;
+        vse->next = dhead;
+        dhead->prev->next = vse;
+        dhead->prev = vse;
+        vse = head->prev;
     }
+}
+
+void addLibraryFuncDef() {
+    struct FuncFParams *ffparams = NULL;
+    struct FuncSymEntry *fse;
+
+    fse = newFuncSymEntry("getint", funcsymtable_p->head);
+    fse->returntype = K_INT;
+
+    fse = newFuncSymEntry("getch", funcsymtable_p->head);
+    fse->returntype = K_INT;
+
+    fse = newFuncSymEntry("getarray", funcsymtable_p->head);
+    fse->returntype = K_INT;
+    fse->funcparamnum = 1;
+    ffparams = newFuncFParams(FUNCFPARAMS,
+                              newFuncFParam(FUNCFPARAM, newBType(BTYPE, K_INT), newIdent(IDENT, getUniquieNameStaic()), newExpArrayDefs(EXPARRAYDEFS, newExpArrayDef(EXPARRAYDEF, NULL), NULL)),
+                              NULL);
+    toASTFuncFParams(ffparams, fse);
+    freeFuncFParams(ffparams, 1);
+
+    fse = newFuncSymEntry("putint", funcsymtable_p->head);
+    fse->returntype = K_VOID;
+    fse->funcparamnum = 1;
+    ffparams = newFuncFParams(FUNCFPARAMS, newFuncFParam(FUNCFPARAM, newBType(BTYPE, K_INT), newIdent(IDENT, getUniquieNameStaic()), NULL), NULL);
+    toASTFuncFParams(ffparams, fse);
+    freeFuncFParams(ffparams, 1);
+
+    fse = newFuncSymEntry("putch", funcsymtable_p->head);
+    fse->returntype = K_VOID;
+    fse->funcparamnum = 1;
+    ffparams = newFuncFParams(FUNCFPARAMS, newFuncFParam(FUNCFPARAM, newBType(BTYPE, K_INT), newIdent(IDENT, getUniquieNameStaic()), NULL), NULL);
+    toASTFuncFParams(ffparams->next, fse);
+    freeFuncFParams(ffparams, 1);
+
+    fse = newFuncSymEntry("putarray", funcsymtable_p->head);
+    fse->returntype = K_VOID;
+    fse->funcparamnum = 2;
+    ffparams = newFuncFParams(FUNCFPARAMS,
+                              newFuncFParam(FUNCFPARAM, newBType(BTYPE, K_INT), newIdent(IDENT, getUniquieNameStaic()), newExpArrayDefs(EXPARRAYDEFS, newExpArrayDef(EXPARRAYDEF, NULL), NULL)),
+                              newFuncFParams(FUNCFPARAMS,
+                                             newFuncFParam(FUNCFPARAM, newBType(BTYPE, K_INT), newIdent(IDENT, getUniquieNameStaic()), newExpArrayDefs(EXPARRAYDEFS, newExpArrayDef(EXPARRAYDEF, NULL), NULL)),
+                                             NULL));
+    toASTFuncFParams(ffparams->next, fse);
+    freeFuncFParams(ffparams, 1);
+
+    fse = newFuncSymEntry("putf", funcsymtable_p->head);
+    fse->returntype = K_VOID;
+    fse->funcparamnum = 2;
+    ffparams = newFuncFParams(FUNCFPARAMS,
+                              newFuncFParam(FUNCFPARAM, newBType(BTYPE, K_INT), newIdent(IDENT, getUniquieNameStaic()), NULL),
+                              newFuncFParams(FUNCFPARAMS,
+                                             newFuncFParam(FUNCFPARAM, newBType(BTYPE, STRING), newIdent(IDENT, getUniquieNameStaic()), NULL),
+                                             NULL));
+    toASTFuncFParams(ffparams->next, fse);
+    freeFuncFParams(ffparams, 1);
+
+    fse = newFuncSymEntry("starttime", funcsymtable_p->head);
+    fse->returntype = K_VOID;
+
+    fse = newFuncSymEntry("stoptime", funcsymtable_p->head);
+    fse->returntype = K_VOID;
 }

@@ -52,6 +52,7 @@ struct Operand *toASTFuncRParam(struct FuncRParam *funcrparam) {
         default:
             PrintErrExit("TO AST FUNCR PARAM UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct Operand *toASTFuncImpl(struct FuncImpl *funcimpl) {
@@ -59,18 +60,27 @@ struct Operand *toASTFuncImpl(struct FuncImpl *funcimpl) {
     struct FuncSymEntry *fse = findFuncInTable(funcimpl->ident->name);
     IfNull(fse, PrintErrExit("NOT FOUND FUNCTION NAME"););
     struct Operand **param = NULL;
-    if (fse->funcparamnum > 0) {
-        param = (struct Operand **)malloc(sizeof(struct Operand *) * fse->funcparamnum);
-        struct FuncRParams *head = funcimpl->funcrparams;
-        struct FuncRParams *funcrparams = funcimpl->funcrparams;
-        for (int i = 0; i < fse->funcparamnum; i++, funcrparams = funcrparams->next) {
+    int paramnum = 0;
+    struct FuncRParams *head = funcimpl->funcrparams;
+    struct FuncRParams *funcrparams = funcimpl->funcrparams;
+    if (head->funcrparam != NULL) {
+        do {
+            paramnum++;
+            funcrparams = funcrparams->next;
+        } while (funcrparams != head);
+        param = (struct Operand **)malloc(sizeof(struct Operand *) * paramnum);
+        for (int i = 0; i < paramnum; i++, funcrparams = funcrparams->next) {
             if (i > 0 && funcrparams == head) {
                 PrintErrExit("TO AST FUNC IMPL PARAM PROVIDE NOT MATCH NEED\n");
             }
             param[i] = toASTFuncRParam(funcrparams->funcrparam);
         }
+
+    } else {
+        param = NULL;
+        paramnum = 0;
     }
-    struct FuncImplAST *func_impl_ast = newFuncImplAST(fse, fse->funcparamnum, param);
+    struct FuncImplAST *func_impl_ast = newFuncImplAST(fse, paramnum, param);
     EnsureNotNull(func_impl_ast);
     struct Operand *operand = newOperand(FUNCIMPLAST, func_impl_ast);
     return operand;
@@ -131,6 +141,7 @@ struct Operand *toASTLVal(struct LVal *lval) {
         default:
             PrintErrExit("TO AST LVAL UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct Operand *toASTPrimaryExp(struct PrimaryExp *primaryexp) {
@@ -145,13 +156,14 @@ struct Operand *toASTPrimaryExp(struct PrimaryExp *primaryexp) {
         default:
             PrintErrExit("TO AST PRIMARY EXP UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct Operand *toASTUnaryExps(struct UnaryExps *unaryexps) {
     IfNull(unaryexps, return NULL;);
     struct Operand *op1 = toASTUnaryExp(unaryexps->unaryexp);
     IfNull(unaryexps->unaryexp, return op1;);
-    switch (unaryexps->unaryop->type) {
+    switch (unaryexps->unaryop->typevalue) {
         case K_ADD:
             return newOperand(EXPAST, newExpAST(K_ADD, newOperand(INTCONST, newIntConstAST(0)), op1, NULL, NULL));
         case K_SUB:
@@ -161,6 +173,7 @@ struct Operand *toASTUnaryExps(struct UnaryExps *unaryexps) {
         default:
             PrintErrExit("TO AST UNARY EXPS UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct Operand *toASTUnaryExp(struct UnaryExp *unaryexp) {
@@ -175,6 +188,7 @@ struct Operand *toASTUnaryExp(struct UnaryExp *unaryexp) {
         default:
             PrintErrExit("TO AST UNARY EXP UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct Operand *toASTMulExp(struct MulExp *mulexp) {
@@ -305,8 +319,8 @@ struct VarSymEntry *toASTVarDef(struct VarDef *vardef) {
             int s = calcConstConstExp(exparraydefs->constarraydef->constexp);
             var->array_shape[i] = newOperand(INTCONST, newIntConstAST(s));
             var->size *= s;
-            exparraydefs = exparraydefs->next;
             i++;
+            exparraydefs = exparraydefs->next;
         } while (head != exparraydefs);
     }
     if (vardef->initval != NULL) {
@@ -394,6 +408,7 @@ void *toASTConstDecl(struct ConstDecl *constdecl) {
         struct VarSymEntry *vse = toASTConstDef(constdefs->constdef);
         vse->typevalue = type_value;
         vse->size *= 4;
+        vse->is_const = 1;
         constdefs = constdefs->next;
     } while (constdefs != head);
     return NULL;
@@ -415,9 +430,8 @@ void *toASTDecl(struct Decl *decl) {
 void *toASTFuncFParams(struct FuncFParams *funcfparams, struct FuncSymEntry *fse) {
     IfNull(funcfparams, return NULL;);
     IfNull(fse, return NULL;);
-    if (funcfparams->funcfparam == NULL) {
-        fse->funcparamnum = 0;
-    } else {
+    fse->funcparamnum = 0;
+    if (funcfparams->funcfparam != NULL) {
         struct FuncFParams *head = funcfparams;
         struct FuncFParams *fp = head;
         // int offset = 0;
@@ -453,6 +467,7 @@ void *toASTFuncFParams(struct FuncFParams *funcfparams, struct FuncSymEntry *fse
                     eadfs = eadfs->next;
                 } while (eadfs != eadfs_head);
             }
+            fp = fp->next;
         } while (fp != head);
     }
     return NULL;
@@ -478,7 +493,7 @@ struct ExpAST *toASTWhileStmt(struct WhileStmt *whilestmt) {
     struct Operand *then_o = NULL;
     struct ExpAST *then = toASTStmt(whilestmt->stmt);
     IfNotNull(then, then_o = newOperand(EXPAST, then););
-    return newExpAST(IFSTMT, cond, then_o, NULL, NULL);
+    return newExpAST(WHILESTMT, cond, then_o, NULL, NULL);
 }
 
 struct ExpAST *toASTStmt(struct Stmt *stmt) {
@@ -509,6 +524,7 @@ struct ExpAST *toASTStmt(struct Stmt *stmt) {
         default:
             PrintErrExit("TO AST STMT UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct ExpAST *toASTBlockItem(struct BlockItem *blockitem) {
@@ -522,6 +538,7 @@ struct ExpAST *toASTBlockItem(struct BlockItem *blockitem) {
         default:
             PrintErrExit("TO AST BLOCK ITEM UNKNOWN VALUE TYPE\n");
     }
+    return NULL;
 }
 
 struct ExpAST *toASTBlockItems(struct BlockItems *blockitems) {

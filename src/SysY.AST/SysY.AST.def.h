@@ -39,7 +39,7 @@ struct Operand {
     union {
         struct LabelEntry *label;
         struct VarSymEntry *variable;
-        struct FuncImpl *function;
+        struct FuncImplAST *function;
         struct ArrayImplAST *array;
         struct IntConst *intconst;
         struct ExpAST *exp;
@@ -51,13 +51,13 @@ struct Operand {
  * op: 
  * IFSTMT: op1: conditionAST, op2: trueAST, op3: falseAST
  * WHILESTMT: op1: conditionAST, op2: loopAST
- * BREAKATMT: no op
- * CONTINUESTMT: no op
+ * BREAKATMT: no operand
+ * CONTINUESTMT: no operand
  * RETURNSTMT: op1: returnAST
  * 
  * ASSIGN: op1: LVAL, op2: EXPAST
  *
- * LABELENTRY: op1: label operand
+ * // not use LABELENTRY: op1: label operand
  * K_NOT: only op1
  * 
  * INTCONST: intconst operand
