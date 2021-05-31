@@ -2,77 +2,56 @@
 #include<stdlib.h>
 #include<stdio.h>
 
-def_use_node* init_user_chain(){
-    def_use_node* head = (def_use_node*)malloc(sizeof def_use_value);
-    if(!head){
-        printf("memory allocate failed at init!");
-        exit(0);
-    }
-    head->next = NULL;
-    head->value = NULL;
-    return head;
+Ir* create_new_ir(){
+
 }
 
-void addUser(Operand_def* operand, Ir* value){
-    if(check_if_exist(operand, Ir)) return ;
-    //将新的user加在开头
-    def_use_node* tmp = (def_use_node*)malloc(sizeof def_use_node);
-    if(!tmp){
-        printf("memory allocate failed at addUser!\n");
-        exit(0);
-    }
-    tmp->value = value;
-    tmp->next = operand->users->next;
-    operand->users->next =  tmp;
+Phi* create_new_phi(){
+
 }
 
-void deleteUser(Operand_def* operand, Ir* value){
-    if(!check_if_exist(operand, Ir)) return ;
-    def_use_node* tmp,delete;
-    tmp = operand->users;
-    while(tmp->next){
-        def_use_node* next_node = tmp->next;
-        if(next->value==value){
-            tmp->next = next->next;
-            next->next = NULL;
-            free(next);
-            return ;
-        }
-        tmp = tmp->next;
-    }
+Operand_def* create_new_definition(){
+
 }
 
+def_use_node* create_new_def_use_chain(){
 
+}
+
+void add_user(Operand_def* operand, Ir* value){
+
+}
+
+void delete_user(Operand_def* operand, Ir* value){
+
+}
+
+//创建一个新的block
 BasicBlock* create_new_block(){
     BasicBlock* block = (BasicBlock*)malloc(sizeof BasicBlock);
+    block->is_sealed = 0;
+    block->is_full = 0;
+    block->predecessors.value=NULL;
+    block->successors.value=NULL;
+    list_init(&(block->predecessors.block_link));
+    list_init(&(block->successors.block_link));
+    return block;
 }
 
-BasicBlockNode* init_block_list(){
-    BasicBlockNode* head = (BasicBlockNode*)malloc(sizeof BasicBlockNode);
-    if(!head){
-        printf("memory allocate failed at init!");
-        exit(0);
-    }
-    head->next = NULL;
-    head->value = NULL;
-    return head;
-}
 
-void add_predecessor(BasicBlock* block, BasicBlock* value){
+//为两个block建立祖先和后继的关系
+void connect_block(BasicBlock* pre, BasicBlock* suc){
     BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof BasicBlockNode);
-    tmp->value = value;
+    tmp->value = suc;
+    list_add(&(tmp->block_link), &(pre->successors->block_link));
 
-    tmp->next = block->predecessors->next;
-    block->predecessors->next = tmp;
-}
-
-void add_successor(BasicBlock* block, BasicBlock* value){
     BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof BasicBlockNode);
-    tmp->value = value;
+    tmp->value = pre;
+    list_add(&(tmp->block_link), &(suc->predecessors->block_link));
 
-    tmp->next = block->successors->next;
-    block->successors->next = tmp;
 }
+
+
 
 BasicBlock* generate_ssa(Program p){
 
