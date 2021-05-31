@@ -5,57 +5,69 @@
 #include "../SysY.type/SysY.type.symtab.h"
 
 enum {
-    LABELSYMENTRY = 700,
-    LABELSYMTABLE,
+    LABELENTRY = 700,
+    //LABELSYMTABLE,
     FUNCIMPLAST,
     ARRAYIMPLAST,
     EXPAST,
     OPREAND
 };
 
-struct LabelSymEntry {
+struct LabelEntry {
     int type;
     char *label;
+    struct ExpAST *position;
 };
 
 struct FuncImplAST {
     int type;
     struct FuncSymEntry *function;
     int param_num;
-    struct ExpAST **param;  // optional null when funtion doesn't need param
+    struct Operand **param;  // optional null when funtion doesn't need param
 };
 
 struct ArrayImplAST {
     int type;
     struct VarSymEntry *array_varsymentry;
     int array_impl_size;
-    struct ExpAST **array_impl;  // optional null;
+    struct Operand **array_impl;  // optional null;
 };
 
 struct Operand {
     int type;       // OPERAND
-    int valuetype;  // INTCONST, LABELSYMENTRY, VARSYMENTRY, FUNCIMPLAST, ARRAYIMPLAST,EXPAST
+    int valuetype;  // INTCONST, LABELENTRY, VARSYMENTRY, FUNCIMPLAST, ARRAYIMPLAST,EXPAST
     union {
-        struct LabelSymEntry *label;
+        struct LabelEntry *label;
         struct VarSymEntry *variable;
-        struct FuncImpl *function;
+        struct FuncImplAST *function;
         struct ArrayImplAST *array;
         struct IntConst *intconst;
         struct ExpAST *exp;
+        struct String *string;
     } value;
 };
 
 /*
  * op: 
- * if: op1: conditionAST, op2: trueAST, op3: falseAST
- * while: op1: conditionAST, op2: loopAST
- * break: op1: goto label
- * continue: op1: goto label
- * return: op1: returnAST
+ * IFSTMT: op1: conditionAST, op2: trueAST, op3: falseAST
+ * WHILESTMT: op1: conditionAST, op2: loopAST
+ * BREAKATMT: no operand
+ * CONTINUESTMT: no operand
+ * RETURNSTMT: op1: returnAST
+ * 
+ * ASSIGN: op1: LVAL, op2: EXPAST
  *
- * label: op1: label entry
+ * // not use LABELENTRY: op1: label operand
+ * K_NOT: only op1
+ * 
+ * INTCONST: intconst operand
+ * 
+ * K_ADD, K_SUB, K_MUL, K_DIV, K_MOD, 
+ * K_AND, K_OR, K_EQ, K_NEQ, 
+ * K_LT, K_LTE, K_GT, K_GTE,
+ * 
+ * OPERAND: only op1
  */
-
 struct ExpAST {
     int type;
     int op;  //

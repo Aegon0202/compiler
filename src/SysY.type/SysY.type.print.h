@@ -2,11 +2,11 @@
 #define SYSY_TYPE_PRINT_H
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "../utils/NullPointMacro.h"
 #include "./SysY.type.visitor.h"
 
-struct printToken_t
-{
+struct printToken_t {
     void (*visitKeyword)(struct Keyword *);
     void (*visitIntConst)(struct IntConst *);
     void (*visitCompUnit)(struct CompUnit *);
@@ -66,7 +66,6 @@ struct printToken_t
 };
 void printToken(void *token, struct printToken_t *visitor);
 
-const char *EnumTypeToString(int type);
 void printFresh();
 void initPrintToken();
 extern struct printToken_t *printToken_p;

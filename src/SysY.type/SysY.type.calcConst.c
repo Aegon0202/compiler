@@ -14,10 +14,10 @@
 int calcConstArrayImpl(struct ArrayImpl *array) {
     struct VarSymEntry *vse = findVarInTable(array->ident->name);
     if (vse == NULL) {
-        PrintErrExit("NOT FOUND VARIABLE %s \r\n", array->ident->name);
+        PrintErrExit("NOT FOUND VARIABLE %s \n", array->ident->name);
     }
     if (vse->is_const == 0) {
-        PrintErrExit("CALC CONST ARRAY IMPL MUST BE CONST\r\n");
+        PrintErrExit("CALC CONST ARRAY IMPL MUST BE CONST\n");
     }
     struct ExpArrayDefs *head = array->exparraydefs;
     struct ExpArrayDefs *exparraydefs = array->exparraydefs;
@@ -26,25 +26,25 @@ int calcConstArrayImpl(struct ArrayImpl *array) {
     int i;
     for (i = vse->array_dimensional_num; i && exparraydefs != head; i--, exparraydefs = exparraydefs->next) {
         r += calcConstExp(exparraydefs->exparraydef->exp) * offset_array;
-        offset_array *= calcConstExpAST(vse->array_shape[i]);
+        offset_array *= calcConstOperand(vse->array_shape[i]);
     }
     if (i) {
-        PrintErrExit("CALC CONST ARRAY IMPL AST MUST BE COMPELELY IMPLETMENT\r\n");
+        PrintErrExit("CALC CONST ARRAY IMPL AST MUST BE COMPELELY IMPLETMENT\n");
     }
-    return calcConstExpAST(vse->initval[r]);
+    return calcConstOperand(vse->initval[r]);
 }
 
 int calcConstArrayImplAST(struct ArrayImplAST *array) {
     if (array->array_impl_size != array->array_varsymentry->array_dimensional_num) {
-        PrintErrExit("CALC CONST ARRAY IMPL AST MUST BE COMPELELY IMPLETMENT\r\n");
+        PrintErrExit("CALC CONST ARRAY IMPL AST MUST BE COMPELELY IMPLETMENT\n");
     }
     int offset_array = 1;
     int r = 0;
     for (int i = array->array_impl_size; i; i--) {
-        r += calcConstExpAST(array->array_impl[i - 1]) * offset_array;
-        offset_array *= calcConstExpAST(array->array_varsymentry->array_shape[i]);
+        r += calcConstOperand(array->array_impl[i - 1]) * offset_array;
+        offset_array *= calcConstOperand(array->array_varsymentry->array_shape[i]);
     }
-    return calcConstExpAST(array->array_varsymentry->initval[r]);
+    return calcConstOperand(array->array_varsymentry->initval[r]);
 }
 
 int calcConstOperand(struct Operand *operand) {
@@ -55,16 +55,17 @@ int calcConstOperand(struct Operand *operand) {
         case VARSYMENTRY:
             vse = operand->value.variable;
             if (vse->is_const == 0) {
-                PrintErrExit("CALC CONST IDNET VARIABLE MUST BE CONST\r\n");
+                PrintErrExit("CALC CONST IDNET VARIABLE MUST BE CONST\n");
             }
-            return calcConstExpAST((vse->initval)[0]);
+            return calcConstOperand((vse->initval)[0]);
         case ARRAYIMPLAST:
             return calcConstArrayImplAST(operand->value.array);
         case EXPAST:
             return calcConstExpAST(operand->value.exp);
         default:
-            PrintErrExit("CALCED CONST OPERAND IS NOT BE A UNKNOWN TYPE\r\n");
+            PrintErrExit("CALCED CONST OPERAND IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstExpAST(struct ExpAST *exp) {
@@ -100,20 +101,21 @@ int calcConstExpAST(struct ExpAST *exp) {
         case INTCONST:
             return calcConstOperand(exp->op1);
         default:
-            PrintErrExit("CALCED CONST EXP AST IS NOT BE A UNKNOWN TYPE\r\n");
+            PrintErrExit("CALCED CONST EXP AST IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstIdent(struct Ident *ident) {
     struct VarSymEntry *vse = findVarInTable(ident->name);
     if (vse == NULL) {
-        PrintErrExit("NOT FOUND VARIABLE %s \r\n", ident->name);
+        PrintErrExit("NOT FOUND VARIABLE %s \n", ident->name);
     }
     if (vse->is_const == 0) {
-        PrintErrExit("CALC CONST IDNET VARIABLE MUST BE CONST\r\n");
+        PrintErrExit("CALC CONST IDNET VARIABLE MUST BE CONST\n");
     }
 
-    return calcConstExpAST((vse->initval)[0]);
+    return calcConstOperand((vse->initval)[0]);
 }
 
 int calcConstLVal(struct LVal *lval) {
@@ -123,8 +125,9 @@ int calcConstLVal(struct LVal *lval) {
         case ARRAYIMPL:
             return calcConstArrayImpl(lval->value.arrayimpl);
         default:
-            PrintErrExit("CALCED CONST LVAL IS NOT BE A UNKNOWN TYPE\r\n");
+            PrintErrExit("CALCED CONST LVAL IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstExp(struct Exp *exp) {
@@ -144,8 +147,9 @@ int calcConstPrimaryExp(struct PrimaryExp *primaryexp) {
         case NUMBER:
             return calcConstNumber(primaryexp->value.number);
         default:
-            PrintErrExit("CALCED CONST PRIMARY EXP IS NOT BE A UNKNOWN TYPE\r\n");
+            PrintErrExit("CALCED CONST PRIMARY EXP IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstUnaryExps(struct UnaryExps *unaryexps) {
@@ -161,7 +165,7 @@ int calcConstUnaryExps(struct UnaryExps *unaryexps) {
                 r = !r;
                 break;
             default:
-                PrintErrExit("CALCED CONST ADD OP IS NOT BE A UNKNOWN TYPE\r\n");
+                PrintErrExit("CALCED CONST ADD OP IS NOT BE A UNKNOWN TYPE\n");
         }
     }
     return r;
@@ -172,12 +176,13 @@ int calcConstUnaryExp(struct UnaryExp *unaryexp) {
         case PRIMARYEXP:
             return calcConstPrimaryExp(unaryexp->value.primaryexp);
         case FUNCIMPL:
-            PrintErrExit("CALCED CONST UNARY EXP IS NOT BE A FUNCTION IMPLEMENT\r\n");
+            PrintErrExit("CALCED CONST UNARY EXP IS NOT BE A FUNCTION IMPLEMENT\n");
         case UNARYEXPS:
             return calcConstUnaryExps(unaryexp->value.unaryexps);
         default:
-            PrintErrExit("CALCED CONST UNARY EXP IS NOT BE A UNKNOWN TYPE\r\n");
+            PrintErrExit("CALCED CONST UNARY EXP IS NOT BE A UNKNOWN TYPE\n");
     }
+    return 0;
 }
 
 int calcConstMulExp(struct MulExp *mulexp) {
@@ -197,7 +202,7 @@ int calcConstMulExp(struct MulExp *mulexp) {
                     result %= t;
                     break;
                 default:
-                    PrintErrExit("CALCED CONST MUL OP IS NOT BE A UNKNOWN TYPE\r\n");
+                    PrintErrExit("CALCED CONST MUL OP IS NOT BE A UNKNOWN TYPE\n");
             }
         } else {
             result *= t;
@@ -221,7 +226,7 @@ int calcConstAddExp(struct AddExp *addexp) {
                     result += t;
                     break;
                 default:
-                    PrintErrExit("CALCED CONST ADD OP IS NOT BE A UNKNOWN TYPE\r\n");
+                    PrintErrExit("CALCED CONST ADD OP IS NOT BE A UNKNOWN TYPE\n");
             }
         } else {
             result += t;
