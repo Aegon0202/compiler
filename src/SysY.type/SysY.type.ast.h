@@ -27,7 +27,7 @@ struct Operand *toASTEqExp(struct EqExp *eqexp);
 struct Operand *toASTLAndExp(struct LAndExp *landexp);
 struct Operand *toASTLOrExp(struct LOrExp *lorexp);
 struct Operand *toASTCond(struct Cond *cond);
-void *toASTInitVal(struct InitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num);
+void *toASTInitVal(struct InitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num, int *point);
 struct VarSymEntry *toASTVarDef(struct VarDef *vardef);
 void *toASTVarDecl(struct VarDecl *vardecl);
 void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num);

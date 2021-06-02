@@ -58,8 +58,6 @@ void printASTExpAST(struct ExpAST* expast) {
         identation += LEVEL_IDENT;
         switch (expast->op) {
             case IFSTMT:
-                PRINT("IFSTMT: \n");
-                identation += LEVEL_IDENT;
                 PRINT("CONDITION AST: \n");
                 identation += LEVEL_IDENT;
                 printASTOperand(expast->op1);
@@ -72,11 +70,8 @@ void printASTExpAST(struct ExpAST* expast) {
                 identation += LEVEL_IDENT;
                 printASTOperand(expast->op3);
                 identation -= LEVEL_IDENT;
-                identation -= LEVEL_IDENT;
                 break;
             case WHILESTMT:
-                PRINT("WHILESTME: \n");
-                identation += LEVEL_IDENT;
                 PRINT("CONDITION AST: \n");
                 identation += LEVEL_IDENT;
                 printASTOperand(expast->op1);
@@ -85,21 +80,15 @@ void printASTExpAST(struct ExpAST* expast) {
                 identation += LEVEL_IDENT;
                 printASTOperand(expast->op2);
                 identation -= LEVEL_IDENT;
-                identation -= LEVEL_IDENT;
                 break;
             case BREAKSTMT:
             case CONTINUESTMT:
-                PRINT("%s\n", EnumTypeToString(expast->op));
+                // PRINT("%s\n", EnumTypeToString(expast->op));
                 break;
             case RETURNSTMT:
-                PRINT("RETURNSTMT: \n");
-                identation += LEVEL_IDENT;
                 IfNotNullElse(expast->op1, printASTOperand(expast->op1);, PRINT("NO RETURN VALUE"););
-                identation -= LEVEL_IDENT;
                 break;
             case ASSIGN:
-                PRINT("ASSIGN: \n");
-                identation += LEVEL_IDENT;
                 PRINT("LVAL: \n");
                 identation += LEVEL_IDENT;
                 printASTOperand(expast->op1);
@@ -108,13 +97,9 @@ void printASTExpAST(struct ExpAST* expast) {
                 identation += LEVEL_IDENT;
                 printASTOperand(expast->op2);
                 identation -= LEVEL_IDENT;
-                identation -= LEVEL_IDENT;
                 break;
             case OPREAND:
-                PRINT("%s: \n", EnumTypeToString(expast->op));
-                identation += LEVEL_IDENT;
                 printASTOperand(expast->op1);
-                identation -= LEVEL_IDENT;
                 break;
             case INTCONST:
                 PRINT("INTCONST: %d\n", expast->op1->value.intconst->value);
@@ -132,11 +117,8 @@ void printASTExpAST(struct ExpAST* expast) {
             case K_LTE:
             case K_GT:
             case K_GTE:
-                PRINT("%s:\n", EnumTypeToString(expast->op));
-                identation += LEVEL_IDENT;
                 printASTOperand(expast->op1);
                 printASTOperand(expast->op2);
-                identation -= LEVEL_IDENT;
                 break;
             default:
                 PrintErrExit("UNKNOWN EXP AST OP\n");

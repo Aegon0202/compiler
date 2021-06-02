@@ -16,7 +16,38 @@ int level;
 int func_offset;
 int global_data_offset;
 
-void *toASTCompUnit(struct CompUnit *cp) {
+#define BinExpToASTGegerator(parent_type, parent_op_name, child_name, child_type)                          \
+    struct Operand *toAST##parent_type(struct parent_type *exp) {                                          \
+        IfNull(exp, return NULL;);                                                                         \
+        struct parent_type *head = exp;                                                                    \
+        struct parent_type *t_exp = exp;                                                                   \
+        struct Operand *prev = toAST##child_type(t_exp->child_name);                                       \
+        t_exp = t_exp->next;                                                                               \
+        while (t_exp != head) {                                                                            \
+            struct Operand *now = toAST##child_type(t_exp->child_name);                                    \
+            prev = newOperand(EXPAST, newExpAST(t_exp->parent_op_name->typevalue, prev, now, NULL, NULL)); \
+            t_exp = t_exp->next;                                                                           \
+        }                                                                                                  \
+        return prev;                                                                                       \
+    }
+
+#define BinExpToASTGegeratorWithEnumOp(parent_type, enum_op, child_name, child_type) \
+    struct Operand *toAST##parent_type(struct parent_type *exp) {                    \
+        IfNull(exp, return NULL;);                                                   \
+        struct parent_type *head = exp;                                              \
+        struct parent_type *t_exp = exp;                                             \
+        struct Operand *prev = toAST##child_type(t_exp->child_name);                 \
+        t_exp = t_exp->next;                                                         \
+        while (t_exp != head) {                                                      \
+            struct Operand *now = toAST##child_type(t_exp->child_name);              \
+            prev = newOperand(EXPAST, newExpAST(enum_op, prev, now, NULL, NULL));    \
+            t_exp = t_exp->next;                                                     \
+        }                                                                            \
+        return prev;                                                                 \
+    }
+
+void *
+toASTCompUnit(struct CompUnit *cp) {
     IfNull(cp, return NULL;);
     struct CompUnit *head = cp;
     level = 0;
@@ -191,110 +222,50 @@ struct Operand *toASTUnaryExp(struct UnaryExp *unaryexp) {
     return NULL;
 }
 
-struct Operand *toASTMulExp(struct MulExp *mulexp) {
-    IfNull(mulexp, return NULL;);
-    struct MulExp *head = mulexp;
-    struct Operand *exp_ast;
-    head->prev->next = NULL;
-    if (head->next != NULL) {
-        exp_ast = newOperand(EXPAST, newExpAST(head->next->mulop->typevalue, toASTUnaryExp(head->unaryexp), toASTMulExp(head->next), NULL, NULL));
-    } else {
-        exp_ast = toASTUnaryExp(head->unaryexp);
-    }
-    EnsureNotNull(exp_ast);
-    head->prev->next = head;
-    return exp_ast;
-}
+BinExpToASTGegerator(MulExp, mulop, unaryexp, UnaryExp);
 
-struct Operand *toASTAddExp(struct AddExp *addexp) {
-    IfNull(addexp, return NULL;);
-    struct AddExp *head = addexp;
-    struct Operand *exp_ast;
-    head->prev->next = NULL;
-    if (head->next != NULL) {
-        exp_ast = newOperand(EXPAST, newExpAST(head->next->addop->typevalue, toASTMulExp(head->mulexp), toASTAddExp(head->next), NULL, NULL));
-    } else {
-        exp_ast = toASTMulExp(head->mulexp);
-    }
-    EnsureNotNull(exp_ast);
-    head->prev->next = head;
-    return exp_ast;
-}
+BinExpToASTGegerator(AddExp, addop, mulexp, MulExp);
 
 struct Operand *toASTExp(struct Exp *exp) {
     IfNull(exp, return NULL;);
     return toASTAddExp(exp->addexp);
 }
 
-struct Operand *toASTRelExp(struct RelExp *relexp) {
-    IfNull(relexp, return NULL;);
-    struct RelExp *head = relexp;
-    struct Operand *operand;
-    head->prev->next = NULL;
-    if (head->next != NULL) {
-        operand = newOperand(EXPAST, newExpAST(head->next->relop->typevalue, toASTAddExp(head->addexp), toASTRelExp(head->next), NULL, NULL));
-    } else {
-        operand = toASTAddExp(head->addexp);
-    }
-    EnsureNotNull(operand);
-    head->prev->next = head;
-    return operand;
-}
+BinExpToASTGegerator(RelExp, relop, addexp, AddExp);
 
-struct Operand *toASTEqExp(struct EqExp *eqexp) {
-    IfNull(eqexp, return NULL;);
-    struct EqExp *head = eqexp;
-    struct Operand *operand;
-    head->prev->next = NULL;
-    if (head->next != NULL) {
-        operand = newOperand(EXPAST, newExpAST(head->next->eqop->typevalue, toASTRelExp(head->relexp), toASTEqExp(head->next), NULL, NULL));
-    } else {
-        operand = toASTRelExp(head->relexp);
-    }
-    EnsureNotNull(operand);
-    head->prev->next = head;
-    return operand;
-}
+BinExpToASTGegerator(EqExp, eqop, relexp, RelExp);
 
-struct Operand *toASTLAndExp(struct LAndExp *landexp) {
-    IfNull(landexp, return NULL;);
-    struct LAndExp *head = landexp;
-    struct Operand *operand;
-    head->prev->next = NULL;
-    if (head->next != NULL) {
-        operand = newOperand(EXPAST, newExpAST(K_AND, toASTEqExp(head->eqexp), toASTLAndExp(head->next), NULL, NULL));
-    } else {
-        operand = toASTEqExp(head->eqexp);
-    }
-    EnsureNotNull(operand);
-    head->prev->next = head;
-    return operand;
-}
+BinExpToASTGegeratorWithEnumOp(LAndExp, K_AND, eqexp, EqExp);
 
-struct Operand *toASTLOrExp(struct LOrExp *lorexp) {
-    IfNull(lorexp, return NULL;);
-    struct LOrExp *head = lorexp;
-    struct Operand *operand;
-    head->prev->next = NULL;
-    if (head->next != NULL) {
-        operand = newOperand(EXPAST, newExpAST(K_OR, toASTLAndExp(head->landexp), toASTLOrExp(head->next), NULL, NULL));
-    } else {
-        operand = toASTLAndExp(head->landexp);
-    }
-    EnsureNotNull(operand);
-    head->prev->next = head;
-    return operand;
-}
+BinExpToASTGegeratorWithEnumOp(LOrExp, K_OR, landexp, LAndExp);
 
 struct Operand *toASTCond(struct Cond *cond) {
     IfNull(cond, return NULL;);
     return toASTLOrExp(cond->lorexp);
 }
 
-void *toASTInitVal(struct InitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num) {
+void *toASTInitVal(struct InitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num, int *point) {
     IfNull(initval, return NULL;);
     IfNull(array_shape, return NULL;);
-    // not complete
+    if (initval->valuetype == INITVALS) {
+        struct InitVals *head = initval->value.initvals;
+        struct InitVals *initvals = head;
+        int current_size = calcConstOperand(array_shape[0]);
+        do {
+            if (initvals->initval == NULL) {
+                while ((*point) % (array_size / current_size)) {
+                    *point += 1;
+                }
+            } else if (initvals->initval->valuetype == EXP) {
+                init_target[*point++] = toASTExp(initval->value.exp);
+            } else {
+                toASTInitVal(initvals->initval, init_target, array_shape + 1, array_size / current_size, array_dimensional_num - 1, point);
+            }
+            initvals = initvals->next;
+        } while (initvals != head);
+    } else {
+        init_target[*point++] = toASTExp(initval->value.exp);
+    }
     return NULL;
 }
 
@@ -327,7 +298,9 @@ struct VarSymEntry *toASTVarDef(struct VarDef *vardef) {
         var->initval = (struct Operand **)malloc(sizeof(struct Operand *) * var->size);
         EnsureNotNull(var->initval);
         if (var->is_array) {
-            toASTInitVal(vardef->initval, var->initval, var->array_shape, var->size, var->array_dimensional_num);
+            int point = 0;
+            var->initval = (struct Operand **)malloc(sizeof(struct Operand *) * var->size);
+            toASTInitVal(vardef->initval, var->initval, var->array_shape, var->size, var->array_dimensional_num, &point);
         } else {
             if (vardef->initval->valuetype == INITVALS) {
                 PrintErrExit("TO AST VAR DECL INTI VAL TYPE ERROR\n");

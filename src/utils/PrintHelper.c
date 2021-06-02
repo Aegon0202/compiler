@@ -201,6 +201,10 @@ const char *EnumTypeToString(int type) {
             return "ARRAYIMPLAST";
         case EXPAST:
             return "EXPAST";
+        case BREAKSTMT:
+            return "BREAKSTMT";
+        case CONTINUESTMT:
+            return "CONTINUESTMT";
         case OPREAND:
             return "OPERAND";
         case 0:

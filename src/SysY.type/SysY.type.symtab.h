@@ -13,7 +13,7 @@ struct VarSymEntry {
     char *name;
     int offset;
     int size;                      // Variable size
-    int level;                     // global is zero; prefer to use on high level
+    int level;                     // global is zero; prefer to use on high level; -1: temp variable
     int typevalue;                 // K_INT STRING(const char *)
     int is_array;                  // 1 or 0
     int is_const;                  // 1 or 0
