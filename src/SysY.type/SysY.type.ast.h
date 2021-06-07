@@ -30,7 +30,7 @@ struct Operand *toASTCond(struct Cond *cond);
 void *toASTInitVal(struct InitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num, int *point);
 struct VarSymEntry *toASTVarDef(struct VarDef *vardef);
 void *toASTVarDecl(struct VarDecl *vardecl);
-void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num);
+void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num, int *point);
 struct VarSymEntry *toASTConstDef(struct ConstDef *constdef);
 void *toASTConstDecl(struct ConstDecl *constdecl);
 void *toASTDecl(struct Decl *decl);

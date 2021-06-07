@@ -320,15 +320,40 @@ void *toASTVarDecl(struct VarDecl *vardecl) {
         struct VarSymEntry *vse = toASTVarDef(vardefs->vardef);
         vse->typevalue = type_value;
         vse->size *= 4;
+        if (level != 0) {
+            vse->offset = func_offset;
+            func_offset += vse->size;
+        } else {
+            vse->offset = global_data_offset;
+            global_data_offset += vse->size;
+        }
         vardefs = vardefs->next;
     } while (vardefs != head);
     return NULL;
 }
 
-void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num) {
+void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_target, struct Operand **array_shape, int array_size, int array_dimensional_num, int *point) {
     IfNull(initval, return NULL;);
     IfNull(array_shape, return NULL;);
-    // not complete
+    if (initval->valuetype == INITVALS) {
+        struct ConstInitVals *head = initval->value.constinitvals;
+        struct ConstInitVals *initvals = head;
+        int current_size = calcConstOperand(array_shape[0]);
+        do {
+            if (initvals->constinitval == NULL) {
+                while ((*point) % (array_size / current_size)) {
+                    *point += 1;
+                }
+            } else if (initvals->constinitval->valuetype == EXP) {
+                init_target[*point++] = newOperand(INTCONST, newIntConstAST(calcConstConstExp(initval->value.constexp)));
+            } else {
+                toASTConstInitVal(initvals->constinitval, init_target, array_shape + 1, array_size / current_size, array_dimensional_num - 1, point);
+            }
+            initvals = initvals->next;
+        } while (initvals != head);
+    } else {
+        init_target[*point++] = toASTExp(initval->value.constexp);
+    }
     return NULL;
 }
 
@@ -361,7 +386,9 @@ struct VarSymEntry *toASTConstDef(struct ConstDef *constdef) {
     var->initval = (struct Operand **)malloc(sizeof(struct Operand *) * var->size);
     EnsureNotNull(var->initval);
     if (var->is_array) {
-        toASTConstInitVal(constdef->constinitval, var->initval, var->array_shape, var->size, var->array_dimensional_num);
+        int point = 0;
+        var->initval = (struct Operand **)malloc(sizeof(struct Operand *) * var->size);
+        toASTConstInitVal(constdef->constinitval, var->initval, var->array_shape, var->size, var->array_dimensional_num, &point);
     } else {
         if (constdef->constinitval->valuetype == CONSTINITVALS) {
             PrintErrExit("TO AST VAR DECL INTI VAL TYPE ERROR\n");
@@ -382,6 +409,13 @@ void *toASTConstDecl(struct ConstDecl *constdecl) {
         vse->typevalue = type_value;
         vse->size *= 4;
         vse->is_const = 1;
+        if (level != 0) {
+            vse->offset = func_offset;
+            func_offset += vse->size;
+        } else {
+            vse->offset = global_data_offset;
+            global_data_offset += vse->size;
+        }
         constdefs = constdefs->next;
     } while (constdefs != head);
     return NULL;
@@ -407,7 +441,7 @@ void *toASTFuncFParams(struct FuncFParams *funcfparams, struct FuncSymEntry *fse
     if (funcfparams->funcfparam != NULL) {
         struct FuncFParams *head = funcfparams;
         struct FuncFParams *fp = head;
-        // int offset = 0;
+        int offset = -4;
         do {
             fse->funcparamnum++;
             fp = fp->next;
@@ -424,6 +458,7 @@ void *toASTFuncFParams(struct FuncFParams *funcfparams, struct FuncSymEntry *fse
             vse->is_array = 0;
             vse->array_dimensional_num = 0;
             vse->array_shape = NULL;
+
             if (fp->funcfparam->exparraydefs) {
                 vse->is_array = 1;
                 struct ExpArrayDefs *eadfs_head = fp->funcfparam->exparraydefs;
@@ -440,6 +475,9 @@ void *toASTFuncFParams(struct FuncFParams *funcfparams, struct FuncSymEntry *fse
                     eadfs = eadfs->next;
                 } while (eadfs != eadfs_head);
             }
+            vse->offset = offset;
+            vse->size = 4;
+            offset -= vse->size;
             fp = fp->next;
         } while (fp != head);
     }
@@ -533,10 +571,12 @@ struct ExpAST *toASTBlockItems(struct BlockItems *blockitems) {
 
 struct ExpAST *toASTBlock(struct Block *block) {
     IfNull(block, return NULL;);
+    int prev_offset = func_offset;
     level++;
     struct ExpAST *expast = toASTBlockItems(block->blockitems);
     removeVarFromSymTable(level);
     level--;
+    func_offset = prev_offset;
     return expast;
 }
 
