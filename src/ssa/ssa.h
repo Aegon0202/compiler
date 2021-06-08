@@ -37,7 +37,9 @@ typedef struct {
     BasicBlockNode predecessors;
     int successor_num;
     BasicBlockNode successors;
-
+    
+    int phi_num;
+    int phi_list[1000];     //存储
 } BasicBlock;
 
 typedef struct{
@@ -90,8 +92,8 @@ Phi* create_new_phi(BasicBlock*);
 Definition* create_new_definition();
 
 def_use_node* create_new_def_use_node();
-void add_user(ID id, Ir* value);
-void delete_user(ID id, Ir* value);
+void add_user(int i, BasicBlock* block, Ir* ir)；
+void delete_user(int , Ir* );
 BasicBlock* create_new_block();
 Value* new_Value();
 
@@ -99,8 +101,8 @@ int read_variable(ID id, BasicBlock* block);
 int read_variable_recursively(ID id, BasicBlock* block);
 
 void write_variable(ID operand, BasicBlock* block,Ir* ir, Value v);
-void add_phi_operand();
+void add_phi_operand(ID id,Phi* phi);
 void remove_trivial_phi();
 void seal_block();
 
-
+void try_remove_trivial_phi(Phi*);
