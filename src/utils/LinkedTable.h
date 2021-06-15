@@ -94,4 +94,24 @@ struct Item* popLinkedTable(struct LinkedTable* linked_table);
  *      -1： 表中还有数据
  */
 int freeLinkedTable(struct LinkedTable** linked_table_p);
+
+/**
+ * 判断两个字符串是否相等
+ * 
+ * :param (const char*) str_1
+ * :param (const char*) str_2
+ * 
+ * :return 1代表两个字符串相等，0代表不相等
+ */
+int string_equal(void* str_1, void* str_2);
+
+/**
+ * 判断两个数字是否相等
+ * 
+ * :param (int*) int_1
+ * :param (int*) int_2
+ * 
+ * :return 1代表两个数字相等，0代表不相等
+ */
+int int_euqal(void* int_1, void* int_2);
 #endif

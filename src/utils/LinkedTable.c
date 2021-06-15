@@ -137,3 +137,11 @@ int freeLinkedTable(struct LinkedTable** linked_table_p) {
     *linked_table_p = NULL;
     return 0;
 }
+
+int string_equal(void* str_1, void* str_2) {
+    return strcmp((const char*)str_1, (const char*)str_2) == 0;
+}
+
+int int_euqal(void* int_1, void* int_2) {
+    return *(int*)int_1 == *(int*)int_2;
+}

@@ -352,7 +352,7 @@ void *toASTConstInitVal(struct ConstInitVal *initval, struct Operand **init_targ
             initvals = initvals->next;
         } while (initvals != head);
     } else {
-        init_target[*point++] = toASTExp(initval->value.constexp);
+        init_target[*point++] = newOperand(INTCONST, newIntConstAST(calcConstConstExp(initval->value.constexp)));
     }
     return NULL;
 }

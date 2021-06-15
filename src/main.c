@@ -18,9 +18,9 @@ int main() {
     initFreeToken();
     initSymTable();
     yyparse();
-    printToken(result.compunit,printToken_p);
-    //toASTCompUnit(result.compunit);
-    //printASTAll(funcsymtable_p->head);
+    //printToken(result.compunit,printToken_p);
+    toASTCompUnit(result.compunit);
+    printASTAll(funcsymtable_p->head);
     //printToken(result.compunit, printToken_p);
     return 0;
 }

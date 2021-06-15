@@ -35,7 +35,7 @@ struct ArrayImplAST {
 
 struct Operand {
     int type;       // OPERAND
-    int valuetype;  // INTCONST, LABELENTRY, VARSYMENTRY, FUNCIMPLAST, ARRAYIMPLAST,EXPAST
+    int valuetype;  // INTCONST, VARSYMENTRY, FUNCIMPLAST, ARRAYIMPLAST,EXPAST
     union {
         struct LabelEntry *label;
         struct VarSymEntry *variable;
