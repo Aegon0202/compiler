@@ -25,7 +25,7 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 | K_DIV（求商）`op3`  `<-`  `op1`  `/`  `op2`      | 源操作数 | 源操作数 | 目标操作数 |
 | K_MOD（求余）`op3`  `<-`  `op1`  `%`  `op2`      | 源操作数 | 源操作数 | 目标操作数 |
 | K_AND（逻辑与）`op3`  `<-`  `op1`  `&&`  `op2`   | 源操作数 | 源操作数 | 目标操作数 |
-| K_OR（逻辑或）`op3`  `<-`  `op1`  `||`  `op2`    | 源操作数 | 源操作数 | 目标操作数 |
+| K_OR（逻辑或）`op3`  `<-`  `op1`  `\|\|`  `op2`    | 源操作数 | 源操作数 | 目标操作数 |
 | K_EQ（相等）`op3`  `<-`  `op1`  `==`  `op2`      | 源操作数 | 源操作数 | 目标操作数 |
 | K_EQ（不相等）`op3`  `<-`  `op1`  `！=`  `op2`   | 源操作数 | 源操作数 | 目标操作数 |
 | K_LT（小于）`op3`  `<-`  `op1`  `<`  `op2`       | 源操作数 | 源操作数 | 目标操作数 |
@@ -37,7 +37,7 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand
-
+//需要在SSA中完成的函数
 /**
  * 生成一个新的基本块
  * 
@@ -141,50 +141,6 @@ OPERAND_TYPE* toSSATempVariable(BASIC_BLOCK_TYPE* basic_block);
  * :return (IR_LIST_TYPE*) 一条ir指令
 */
 IR_TYPE* newIR(int op, OPERAND_TYPE* op1, OPERAND_TYPE* op2, OPERAND_TYPE* op3, BASIC_BLOCK_TYPE* basic_block);
-
-/**
- * 将ir添加到ir_list的末尾
- * 
- * :param (IR_LIST_TYPE*) ir_list 一个ir的链表
- * :param (IR_LIST_TYPE*) ir 一条ir指令
- * 
- * :return (void) 无返回值
-*/
-//void appendIrList(IR_LIST_TYPE* ir_list, IR_TYPE* ir);
-
-/**
- * 将ir添加到BasicBlock中ir_list的末尾
- * 
- * :param (BASIC_BLOCK_TYPE*) basic_block 一个ir的链表
- * :param (IR_LIST_TYPE*) ir 一条ir指令
- * 
- * :return (void) 无返回值
-*/
-//void appendToBasicBlock(BASIC_BLOCK_TYPE* basic_block, IR_TYPE* ir);
-
-/**
- * 将next添加到head的末尾
- * 
- * :param (IR_LIST_TYPE*) head 一个ir的链表
- * :param (IR_LIST_TYPE*) next 另一个ir的链表
- * 
- * :return (void) 无返回值
-*/
-//void mergeIrList(IR_LIST_TYPE* head, IR_LIST_TYPE* next);
-
-/**
- * 获取ir_list最后产生的操作符
- * 
- * :param (IR_LIST_TYPE*) ir_list
- * 
- * :return (OPERAND_TYPE*) 最后的操作符
- * 
- * :example 
- *      ir_list: add op1,op2,op3
- *               sub op2,op4,op5
- *      return op5
-*/
-//OPERAND_TYPE* getLastOperandIrList(IR_LIST_TYPE* ir_list);
 
 /**
  * 添加一条由predecessor指向successor的边
