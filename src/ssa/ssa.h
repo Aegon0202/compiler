@@ -9,9 +9,9 @@ typedef void* ID;
 extern int current_size = 0;
 extern int max_capacity = MAX_CAPACITY;
 
-extern Value reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄存器的数量为无限大
+extern Value* reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄存器的数量为无限大
 extern ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
-extern Definition tag[MAX_CAPACITY];     //这个序列也是对应与寄存器中的每个值，在优化阶段需要用到这些信息
+extern Definition* tag[MAX_CAPACITY];     //这个序列也是对应与寄存器中的每个值，在优化阶段需要用到这些信息
 
 enum IrType {HEAD,Add,Sub,Mul,Div,Minus,And,Or,Not,Branch,Jump,Call,Return,Function,Param};
 
@@ -100,7 +100,7 @@ Value* new_Value();
 int read_variable(ID id, BasicBlock* block);
 int read_variable_recursively(ID id, BasicBlock* block);
 
-void write_variable(ID operand, BasicBlock* block,Ir* ir, Value v);
+void write_variable(ID operand, BasicBlock* block,Ir* ir, Value* v);
 void add_phi_operand(ID id,Phi* phi);
 void remove_trivial_phi();
 void seal_block();

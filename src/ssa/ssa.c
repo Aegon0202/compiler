@@ -6,10 +6,12 @@ int current_phi_num = 0;
 int current_size = 0;
 int max_capacity = MAX_CAPACITY;
 Ir* currentIr;
-Value reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄存器的数量为无限大
+Value* reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄存器的数量为无限大
 ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
-Definition tag[MAX_CAPACITY];     //这个序列也是对应与寄存器中的每个值，在优化阶段需要用到这些信息
+Definition* tag[MAX_CAPACITY];     //这个序列也是对应与寄存器中的每个值，在优化阶段需要用到这些信息
 Phi* phi_memory[MAX_CAPACITY];
+
+
 
 
 Ir* create_new_ir(enum IrType op_type, Operand op1,Operand op2,Operand op3){
@@ -104,6 +106,7 @@ int read_variable_recursively(ID id, BasicBlock* block){
     if(block->is_sealed==0)                 //该块未sealed
     {
         Phi* val = create_new_phi(block);
+        //insert an ir at the begin of the block, like assign phi, id
         write_variable(id,block,currentIr,val);     //表示插入了phi函数
         return -2;
     }
@@ -115,7 +118,7 @@ int read_variable_recursively(ID id, BasicBlock* block){
         return read_variable(id,b);
     }   
     else{                                   //该块有多个祖先且已经sealed,这时需要创建phi，并且回溯确定phi的参数。
-        Phi* phi = create_new_phi(block);
+        Phi* phi = create_new_phi(block);   //同样，在这种情况也需要在基本块开始加上一条ir表示将phi赋值
         write_variable(id,block,currentIr,phi);
         add_phi_operand(id,phi);
         return -2;                                          
@@ -124,7 +127,7 @@ int read_variable_recursively(ID id, BasicBlock* block){
 }
 
 
-void write_variable(ID id, BasicBlock* block, Ir* ir, Value v){
+void write_variable(ID id, BasicBlock* block, Ir* ir, Value* v){
     reg_list[++current_size] = v;
     id_list[current_size] = id;
                     
