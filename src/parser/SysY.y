@@ -5,6 +5,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #define YYERROR_VERBOSE
     extern YYSTYPE result;
     int yylex();
     void yyerror(const char *s);

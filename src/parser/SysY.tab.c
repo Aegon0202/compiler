@@ -74,11 +74,12 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #define YYERROR_VERBOSE
     extern YYSTYPE result;
     int yylex();
     void yyerror(const char *s);
 
-#line 82 "src/parser/SysY.tab.c"
+#line 83 "src/parser/SysY.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -175,7 +176,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 13 "src/parser/SysY.y"
+#line 14 "src/parser/SysY.y"
 
     struct Keyword *keyword;
     struct CompUnit *compunit;
@@ -237,7 +238,7 @@ union YYSTYPE
     struct RefList *reflist;
     struct String* string;
 
-#line 241 "src/parser/SysY.tab.c"
+#line 242 "src/parser/SysY.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -616,16 +617,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   167,   167,   168,   169,   170,   174,   175,   179,   183,
-     184,   188,   189,   193,   194,   198,   202,   203,   204,   208,
-     209,   213,   217,   218,   222,   223,   224,   225,   229,   230,
-     231,   235,   236,   240,   241,   242,   243,   247,   248,   252,
-     253,   254,   258,   259,   263,   267,   268,   272,   273,   277,
-     278,   282,   283,   284,   285,   286,   287,   288,   289,   290,
-     291,   292,   296,   300,   304,   305,   309,   310,   311,   315,
-     319,   320,   321,   322,   326,   327,   328,   332,   333,   337,
-     338,   341,   342,   346,   347,   348,   352,   353,   357,   358,
-     362,   363,   367,   368,   372
+       0,   168,   168,   169,   170,   171,   175,   176,   180,   184,
+     185,   189,   190,   194,   195,   199,   203,   204,   205,   209,
+     210,   214,   218,   219,   223,   224,   225,   226,   230,   231,
+     232,   236,   237,   241,   242,   243,   244,   248,   249,   253,
+     254,   255,   259,   260,   264,   268,   269,   273,   274,   278,
+     279,   283,   284,   285,   286,   287,   288,   289,   290,   291,
+     292,   293,   297,   301,   305,   306,   310,   311,   312,   316,
+     320,   321,   322,   323,   327,   328,   329,   333,   334,   338,
+     339,   342,   343,   347,   348,   349,   353,   354,   358,   359,
+     363,   364,   368,   369,   373
 };
 #endif
 
@@ -1553,565 +1554,565 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 167 "src/parser/SysY.y"
+#line 168 "src/parser/SysY.y"
                 { (yyval.compunit) = newCompUnit(COMPUNIT,DECL,(yyvsp[0].decl),NULL); result.compunit = (yyval.compunit)->next; }
-#line 1559 "src/parser/SysY.tab.c"
+#line 1560 "src/parser/SysY.tab.c"
     break;
 
   case 3:
-#line 168 "src/parser/SysY.y"
+#line 169 "src/parser/SysY.y"
                 { (yyval.compunit) = newCompUnit(COMPUNIT,FUNCDEF,(yyvsp[0].funcdef),NULL); result.compunit = (yyval.compunit)->next; }
-#line 1565 "src/parser/SysY.tab.c"
+#line 1566 "src/parser/SysY.tab.c"
     break;
 
   case 4:
-#line 169 "src/parser/SysY.y"
+#line 170 "src/parser/SysY.y"
                         { (yyval.compunit) = newCompUnit(COMPUNIT,DECL,(yyvsp[0].decl),(yyvsp[-1].compunit)); result.compunit = (yyval.compunit)->next; }
-#line 1571 "src/parser/SysY.tab.c"
+#line 1572 "src/parser/SysY.tab.c"
     break;
 
   case 5:
-#line 170 "src/parser/SysY.y"
+#line 171 "src/parser/SysY.y"
                             { (yyval.compunit) = newCompUnit(COMPUNIT,FUNCDEF,(yyvsp[0].funcdef),(yyvsp[-1].compunit)); result.compunit = (yyval.compunit)->next; }
-#line 1577 "src/parser/SysY.tab.c"
+#line 1578 "src/parser/SysY.tab.c"
     break;
 
   case 6:
-#line 174 "src/parser/SysY.y"
+#line 175 "src/parser/SysY.y"
                     { (yyval.decl) = newDecl(DECL,CONSTDECL,(yyvsp[0].constdecl)); }
-#line 1583 "src/parser/SysY.tab.c"
+#line 1584 "src/parser/SysY.tab.c"
     break;
 
   case 7:
-#line 175 "src/parser/SysY.y"
+#line 176 "src/parser/SysY.y"
                 { (yyval.decl) = newDecl(DECL,VARDECL,(yyvsp[0].vardecl)); }
-#line 1589 "src/parser/SysY.tab.c"
+#line 1590 "src/parser/SysY.tab.c"
     break;
 
   case 8:
-#line 179 "src/parser/SysY.y"
+#line 180 "src/parser/SysY.y"
                                             { (yyval.constdecl) = newConstDecl(CONSTDECL,newBType(BTYPE,K_INT),(yyvsp[-1].constdefs)->next); }
-#line 1595 "src/parser/SysY.tab.c"
+#line 1596 "src/parser/SysY.tab.c"
     break;
 
   case 9:
-#line 183 "src/parser/SysY.y"
+#line 184 "src/parser/SysY.y"
                     { (yyval.constdefs) = newConstDefs(CONSTDEFS,(yyvsp[0].constdef),NULL); }
-#line 1601 "src/parser/SysY.tab.c"
+#line 1602 "src/parser/SysY.tab.c"
     break;
 
   case 10:
-#line 184 "src/parser/SysY.y"
+#line 185 "src/parser/SysY.y"
                                     { (yyval.constdefs) = newConstDefs(CONSTDEFS,(yyvsp[0].constdef),(yyvsp[-2].constdefs)); }
-#line 1607 "src/parser/SysY.tab.c"
+#line 1608 "src/parser/SysY.tab.c"
     break;
 
   case 11:
-#line 188 "src/parser/SysY.y"
+#line 189 "src/parser/SysY.y"
                                         { (yyval.constdef) = newConstDef(CONSTDEF,(yyvsp[-2].ident),NULL,(yyvsp[0].constinitval)); }
-#line 1613 "src/parser/SysY.tab.c"
+#line 1614 "src/parser/SysY.tab.c"
     break;
 
   case 12:
-#line 189 "src/parser/SysY.y"
+#line 190 "src/parser/SysY.y"
                                                         { (yyval.constdef) = newConstDef(CONSTDEF,(yyvsp[-3].ident),(yyvsp[-2].constarraydefs)->next,(yyvsp[0].constinitval)); }
-#line 1619 "src/parser/SysY.tab.c"
+#line 1620 "src/parser/SysY.tab.c"
     break;
 
   case 13:
-#line 193 "src/parser/SysY.y"
+#line 194 "src/parser/SysY.y"
                         { (yyval.constarraydefs) = newConstArrayDefs(CONSTARRAYDEFS,(yyvsp[0].constarraydef),NULL); }
-#line 1625 "src/parser/SysY.tab.c"
+#line 1626 "src/parser/SysY.tab.c"
     break;
 
   case 14:
-#line 194 "src/parser/SysY.y"
+#line 195 "src/parser/SysY.y"
                                         { (yyval.constarraydefs) = newConstArrayDefs(CONSTARRAYDEFS,(yyvsp[0].constarraydef),(yyvsp[-1].constarraydefs)); }
-#line 1631 "src/parser/SysY.tab.c"
+#line 1632 "src/parser/SysY.tab.c"
     break;
 
   case 15:
-#line 198 "src/parser/SysY.y"
+#line 199 "src/parser/SysY.y"
                                         { (yyval.constarraydef) = newConstArrayDef(CONSTARRAYDEF,(yyvsp[-1].constexp)); }
-#line 1637 "src/parser/SysY.tab.c"
+#line 1638 "src/parser/SysY.tab.c"
     break;
 
   case 16:
-#line 202 "src/parser/SysY.y"
+#line 203 "src/parser/SysY.y"
                     { (yyval.constinitval) = newConstInitVal(CONSTINITVAL,CONSTEXP,(yyvsp[0].constexp)); }
-#line 1643 "src/parser/SysY.tab.c"
+#line 1644 "src/parser/SysY.tab.c"
     break;
 
   case 17:
-#line 203 "src/parser/SysY.y"
+#line 204 "src/parser/SysY.y"
                             { (yyval.constinitval) = newConstInitVal(CONSTINITVAL,CONSTINITVALS,newConstInitVals(CONSTINITVALS,NULL,NULL)); }
-#line 1649 "src/parser/SysY.tab.c"
+#line 1650 "src/parser/SysY.tab.c"
     break;
 
   case 18:
-#line 204 "src/parser/SysY.y"
+#line 205 "src/parser/SysY.y"
                                             { (yyval.constinitval) = newConstInitVal(CONSTINITVAL,CONSTINITVALS,(yyvsp[-1].constinitvals)->next); }
-#line 1655 "src/parser/SysY.tab.c"
+#line 1656 "src/parser/SysY.tab.c"
     break;
 
   case 19:
-#line 208 "src/parser/SysY.y"
+#line 209 "src/parser/SysY.y"
                         { (yyval.constinitvals) = newConstInitVals(CONSTINITVALS,(yyvsp[0].constinitval),NULL); }
-#line 1661 "src/parser/SysY.tab.c"
+#line 1662 "src/parser/SysY.tab.c"
     break;
 
   case 20:
-#line 209 "src/parser/SysY.y"
+#line 210 "src/parser/SysY.y"
                                             { (yyval.constinitvals) = newConstInitVals(CONSTINITVALS,(yyvsp[0].constinitval),(yyvsp[-2].constinitvals)); }
-#line 1667 "src/parser/SysY.tab.c"
+#line 1668 "src/parser/SysY.tab.c"
     break;
 
   case 21:
-#line 213 "src/parser/SysY.y"
+#line 214 "src/parser/SysY.y"
                                     { (yyval.vardecl) = newVarDecl(VARDECL,newBType(BTYPE,K_INT),(yyvsp[-1].vardefs)->next); }
-#line 1673 "src/parser/SysY.tab.c"
+#line 1674 "src/parser/SysY.tab.c"
     break;
 
   case 22:
-#line 217 "src/parser/SysY.y"
+#line 218 "src/parser/SysY.y"
                 { (yyval.vardefs) = newVarDefs(VARDEFS,(yyvsp[0].vardef),NULL); }
-#line 1679 "src/parser/SysY.tab.c"
+#line 1680 "src/parser/SysY.tab.c"
     break;
 
   case 23:
-#line 218 "src/parser/SysY.y"
+#line 219 "src/parser/SysY.y"
                                 { (yyval.vardefs) = newVarDefs(VARDEFS,(yyvsp[0].vardef),(yyvsp[-2].vardefs)); }
-#line 1685 "src/parser/SysY.tab.c"
+#line 1686 "src/parser/SysY.tab.c"
     break;
 
   case 24:
-#line 222 "src/parser/SysY.y"
+#line 223 "src/parser/SysY.y"
                 { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[0].ident),NULL,NULL); }
-#line 1691 "src/parser/SysY.tab.c"
+#line 1692 "src/parser/SysY.tab.c"
     break;
 
   case 25:
-#line 223 "src/parser/SysY.y"
+#line 224 "src/parser/SysY.y"
                                 { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[-1].ident),(yyvsp[0].constarraydefs)->next,NULL); }
-#line 1697 "src/parser/SysY.tab.c"
+#line 1698 "src/parser/SysY.tab.c"
     break;
 
   case 26:
-#line 224 "src/parser/SysY.y"
+#line 225 "src/parser/SysY.y"
                                     { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[-2].ident),NULL,(yyvsp[0].initval)); }
-#line 1703 "src/parser/SysY.tab.c"
+#line 1704 "src/parser/SysY.tab.c"
     break;
 
   case 27:
-#line 225 "src/parser/SysY.y"
+#line 226 "src/parser/SysY.y"
                                                 { (yyval.vardef) = newVarDef(VARDEF,(yyvsp[-3].ident),(yyvsp[-2].constarraydefs)->next,(yyvsp[0].initval)); }
-#line 1709 "src/parser/SysY.tab.c"
+#line 1710 "src/parser/SysY.tab.c"
     break;
 
   case 28:
-#line 229 "src/parser/SysY.y"
+#line 230 "src/parser/SysY.y"
             { (yyval.initval) = newInitVal(INITVAL,EXP,(yyvsp[0].exp)); }
-#line 1715 "src/parser/SysY.tab.c"
+#line 1716 "src/parser/SysY.tab.c"
     break;
 
   case 29:
-#line 230 "src/parser/SysY.y"
+#line 231 "src/parser/SysY.y"
                             { (yyval.initval) = newInitVal(INITVAL,INITVAL,newInitVals(INITVALS,NULL,NULL)); }
-#line 1721 "src/parser/SysY.tab.c"
+#line 1722 "src/parser/SysY.tab.c"
     break;
 
   case 30:
-#line 231 "src/parser/SysY.y"
+#line 232 "src/parser/SysY.y"
                                         { (yyval.initval) = newInitVal(INITVAL,INITVAL,(yyvsp[-1].initvals)->next); }
-#line 1727 "src/parser/SysY.tab.c"
+#line 1728 "src/parser/SysY.tab.c"
     break;
 
   case 31:
-#line 235 "src/parser/SysY.y"
+#line 236 "src/parser/SysY.y"
                 { (yyval.initvals) = newInitVals(INITVALS,(yyvsp[0].initval),NULL); }
-#line 1733 "src/parser/SysY.tab.c"
+#line 1734 "src/parser/SysY.tab.c"
     break;
 
   case 32:
-#line 236 "src/parser/SysY.y"
+#line 237 "src/parser/SysY.y"
                                     { (yyval.initvals) = newInitVals(INITVALS,(yyvsp[0].initval),(yyvsp[-2].initvals)); }
-#line 1739 "src/parser/SysY.tab.c"
+#line 1740 "src/parser/SysY.tab.c"
     break;
 
   case 33:
-#line 240 "src/parser/SysY.y"
+#line 241 "src/parser/SysY.y"
                                                             { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),(yyvsp[-3].ident),newFuncFParams(FUNCFPARAMS,NULL,NULL),(yyvsp[0].block)); }
-#line 1745 "src/parser/SysY.tab.c"
+#line 1746 "src/parser/SysY.tab.c"
     break;
 
   case 34:
-#line 241 "src/parser/SysY.y"
+#line 242 "src/parser/SysY.y"
                                                             { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),(yyvsp[-3].ident),newFuncFParams(FUNCFPARAMS,NULL,NULL),(yyvsp[0].block)); }
-#line 1751 "src/parser/SysY.tab.c"
+#line 1752 "src/parser/SysY.tab.c"
     break;
 
   case 35:
-#line 242 "src/parser/SysY.y"
+#line 243 "src/parser/SysY.y"
                                                                         { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_INT),(yyvsp[-4].ident),(yyvsp[-2].funcfparams)->next,(yyvsp[0].block)); }
-#line 1757 "src/parser/SysY.tab.c"
+#line 1758 "src/parser/SysY.tab.c"
     break;
 
   case 36:
-#line 243 "src/parser/SysY.y"
+#line 244 "src/parser/SysY.y"
                                                                         { (yyval.funcdef) = newFuncDef(FUNCDEF,newFuncType(FUNCTYPE,K_VOID),(yyvsp[-4].ident),(yyvsp[-2].funcfparams)->next,(yyvsp[0].block)); }
-#line 1763 "src/parser/SysY.tab.c"
+#line 1764 "src/parser/SysY.tab.c"
     break;
 
   case 37:
-#line 247 "src/parser/SysY.y"
+#line 248 "src/parser/SysY.y"
                     { (yyval.funcfparams) = newFuncFParams(FUNCFPARAMS,(yyvsp[0].funcfparam),NULL); }
-#line 1769 "src/parser/SysY.tab.c"
+#line 1770 "src/parser/SysY.tab.c"
     break;
 
   case 38:
-#line 248 "src/parser/SysY.y"
+#line 249 "src/parser/SysY.y"
                                         { (yyval.funcfparams) = newFuncFParams(FUNCFPARAMS,(yyvsp[0].funcfparam),(yyvsp[-2].funcfparams)); }
-#line 1775 "src/parser/SysY.tab.c"
+#line 1776 "src/parser/SysY.tab.c"
     break;
 
   case 39:
-#line 252 "src/parser/SysY.y"
+#line 253 "src/parser/SysY.y"
                     { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[0].ident),NULL); }
-#line 1781 "src/parser/SysY.tab.c"
+#line 1782 "src/parser/SysY.tab.c"
     break;
 
   case 40:
-#line 253 "src/parser/SysY.y"
+#line 254 "src/parser/SysY.y"
                                             { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[-2].ident),newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),NULL)); }
-#line 1787 "src/parser/SysY.tab.c"
+#line 1788 "src/parser/SysY.tab.c"
     break;
 
   case 41:
-#line 254 "src/parser/SysY.y"
+#line 255 "src/parser/SysY.y"
                                                         { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[-3].ident),newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),(yyvsp[0].exparraydefs)->next)); }
-#line 1793 "src/parser/SysY.tab.c"
+#line 1794 "src/parser/SysY.tab.c"
     break;
 
   case 42:
-#line 258 "src/parser/SysY.y"
+#line 259 "src/parser/SysY.y"
                     { (yyval.exparraydefs) = newExpArrayDefs(EXPARRAYDEFS,(yyvsp[0].exparraydef),NULL); }
-#line 1799 "src/parser/SysY.tab.c"
+#line 1800 "src/parser/SysY.tab.c"
     break;
 
   case 43:
-#line 259 "src/parser/SysY.y"
+#line 260 "src/parser/SysY.y"
                                     { (yyval.exparraydefs) = newExpArrayDefs(EXPARRAYDEFS,(yyvsp[0].exparraydef),(yyvsp[-1].exparraydefs)); }
-#line 1805 "src/parser/SysY.tab.c"
+#line 1806 "src/parser/SysY.tab.c"
     break;
 
   case 44:
-#line 263 "src/parser/SysY.y"
+#line 264 "src/parser/SysY.y"
                                     { (yyval.exparraydef) = newExpArrayDef(EXPARRAYDEF,(yyvsp[-1].exp)); }
-#line 1811 "src/parser/SysY.tab.c"
+#line 1812 "src/parser/SysY.tab.c"
     break;
 
   case 45:
-#line 267 "src/parser/SysY.y"
+#line 268 "src/parser/SysY.y"
                             { (yyval.block) = newBlock(BLOCK,NULL); }
-#line 1817 "src/parser/SysY.tab.c"
+#line 1818 "src/parser/SysY.tab.c"
     break;
 
   case 46:
-#line 268 "src/parser/SysY.y"
+#line 269 "src/parser/SysY.y"
                                         { (yyval.block) = newBlock(BLOCK,(yyvsp[-1].blockitems)->next); }
-#line 1823 "src/parser/SysY.tab.c"
+#line 1824 "src/parser/SysY.tab.c"
     break;
 
   case 47:
-#line 272 "src/parser/SysY.y"
+#line 273 "src/parser/SysY.y"
                     { (yyval.blockitems) = newBlockItems(BLOCKITEMS,(yyvsp[0].blockitem),NULL); }
-#line 1829 "src/parser/SysY.tab.c"
+#line 1830 "src/parser/SysY.tab.c"
     break;
 
   case 48:
-#line 273 "src/parser/SysY.y"
+#line 274 "src/parser/SysY.y"
                                 { (yyval.blockitems) = newBlockItems(BLOCKITEMS,(yyvsp[0].blockitem),(yyvsp[-1].blockitems)); }
-#line 1835 "src/parser/SysY.tab.c"
+#line 1836 "src/parser/SysY.tab.c"
     break;
 
   case 49:
-#line 277 "src/parser/SysY.y"
+#line 278 "src/parser/SysY.y"
                 { (yyval.blockitem) = newBlockItem(BLOCKITEM,DECL,(yyvsp[0].decl)); }
-#line 1841 "src/parser/SysY.tab.c"
+#line 1842 "src/parser/SysY.tab.c"
     break;
 
   case 50:
-#line 278 "src/parser/SysY.y"
+#line 279 "src/parser/SysY.y"
                 { (yyval.blockitem) = newBlockItem(BLOCKITEM,STMT,(yyvsp[0].stmt)); }
-#line 1847 "src/parser/SysY.tab.c"
+#line 1848 "src/parser/SysY.tab.c"
     break;
 
   case 51:
-#line 282 "src/parser/SysY.y"
+#line 283 "src/parser/SysY.y"
                                         { (yyval.stmt) = newStmt(STMT,ASSIGN,newAssign(ASSIGN,(yyvsp[-3].lval),(yyvsp[-1].exp))); }
-#line 1853 "src/parser/SysY.tab.c"
+#line 1854 "src/parser/SysY.tab.c"
     break;
 
   case 52:
-#line 283 "src/parser/SysY.y"
+#line 284 "src/parser/SysY.y"
                     { (yyval.stmt) = newStmt(STMT,EXP,newExp(EXP,NULL)); }
-#line 1859 "src/parser/SysY.tab.c"
+#line 1860 "src/parser/SysY.tab.c"
     break;
 
   case 53:
-#line 284 "src/parser/SysY.y"
+#line 285 "src/parser/SysY.y"
                         { (yyval.stmt) = newStmt(STMT,EXP,(yyvsp[-1].exp)); }
-#line 1865 "src/parser/SysY.tab.c"
+#line 1866 "src/parser/SysY.tab.c"
     break;
 
   case 54:
-#line 285 "src/parser/SysY.y"
+#line 286 "src/parser/SysY.y"
                 { (yyval.stmt) = newStmt(STMT,BLOCK,(yyvsp[0].block)); }
-#line 1871 "src/parser/SysY.tab.c"
+#line 1872 "src/parser/SysY.tab.c"
     break;
 
   case 55:
-#line 286 "src/parser/SysY.y"
+#line 287 "src/parser/SysY.y"
                                                                              { (yyval.stmt) = newStmt(STMT,IFSTMT,newIfStmt(IFSTMT,(yyvsp[-2].cond),(yyvsp[0].stmt),NULL)); }
-#line 1877 "src/parser/SysY.tab.c"
+#line 1878 "src/parser/SysY.tab.c"
     break;
 
   case 56:
-#line 287 "src/parser/SysY.y"
+#line 288 "src/parser/SysY.y"
                                                                     { (yyval.stmt) = newStmt(STMT,IFSTMT,newIfStmt(IFSTMT,(yyvsp[-4].cond),(yyvsp[-2].stmt),(yyvsp[0].stmt))); }
-#line 1883 "src/parser/SysY.tab.c"
+#line 1884 "src/parser/SysY.tab.c"
     break;
 
   case 57:
-#line 288 "src/parser/SysY.y"
+#line 289 "src/parser/SysY.y"
                                                             { (yyval.stmt) = newStmt(STMT,WHILESTMT,newWhileStmt(WHILESTMT,(yyvsp[-2].cond),(yyvsp[0].stmt))); }
-#line 1889 "src/parser/SysY.tab.c"
+#line 1890 "src/parser/SysY.tab.c"
     break;
 
   case 58:
-#line 289 "src/parser/SysY.y"
+#line 290 "src/parser/SysY.y"
                             { (yyval.stmt) = newStmt(STMT,BREAKSTMT,NULL); }
-#line 1895 "src/parser/SysY.tab.c"
+#line 1896 "src/parser/SysY.tab.c"
     break;
 
   case 59:
-#line 290 "src/parser/SysY.y"
+#line 291 "src/parser/SysY.y"
                                 { (yyval.stmt) = newStmt(STMT,CONTINUESTMT,NULL); }
-#line 1901 "src/parser/SysY.tab.c"
+#line 1902 "src/parser/SysY.tab.c"
     break;
 
   case 60:
-#line 291 "src/parser/SysY.y"
+#line 292 "src/parser/SysY.y"
                                 { (yyval.stmt) = newStmt(STMT,RETURNSTMT,newReturnStmt(RETURNSTMT,NULL)); }
-#line 1907 "src/parser/SysY.tab.c"
+#line 1908 "src/parser/SysY.tab.c"
     break;
 
   case 61:
-#line 292 "src/parser/SysY.y"
+#line 293 "src/parser/SysY.y"
                                     { (yyval.stmt) = newStmt(STMT,RETURNSTMT,newReturnStmt(RETURNSTMT,(yyvsp[-1].exp))); }
-#line 1913 "src/parser/SysY.tab.c"
+#line 1914 "src/parser/SysY.tab.c"
     break;
 
   case 62:
-#line 296 "src/parser/SysY.y"
+#line 297 "src/parser/SysY.y"
                 { (yyval.exp) = newExp(EXP,(yyvsp[0].addexp)->next); }
-#line 1919 "src/parser/SysY.tab.c"
+#line 1920 "src/parser/SysY.tab.c"
     break;
 
   case 63:
-#line 300 "src/parser/SysY.y"
+#line 301 "src/parser/SysY.y"
                 { (yyval.cond) = newCond(COND,(yyvsp[0].lorexp)->next); }
-#line 1925 "src/parser/SysY.tab.c"
+#line 1926 "src/parser/SysY.tab.c"
     break;
 
   case 64:
-#line 304 "src/parser/SysY.y"
+#line 305 "src/parser/SysY.y"
                 { (yyval.lval) = newLVal(LVAL,IDENT,(yyvsp[0].ident)); }
-#line 1931 "src/parser/SysY.tab.c"
+#line 1932 "src/parser/SysY.tab.c"
     break;
 
   case 65:
-#line 305 "src/parser/SysY.y"
+#line 306 "src/parser/SysY.y"
                             { (yyval.lval) = newLVal(LVAL,ARRAYIMPL,newArrayImpl(ARRAYIMPL,(yyvsp[-1].ident),(yyvsp[0].exparraydefs)->next)); }
-#line 1937 "src/parser/SysY.tab.c"
+#line 1938 "src/parser/SysY.tab.c"
     break;
 
   case 66:
-#line 309 "src/parser/SysY.y"
+#line 310 "src/parser/SysY.y"
                                             { (yyval.primaryexp) = newPrimaryExp(PRIMARYEXP,EXP,(yyvsp[-1].exp)); }
-#line 1943 "src/parser/SysY.tab.c"
+#line 1944 "src/parser/SysY.tab.c"
     break;
 
   case 67:
-#line 310 "src/parser/SysY.y"
+#line 311 "src/parser/SysY.y"
                 { (yyval.primaryexp) = newPrimaryExp(PRIMARYEXP,LVAL,(yyvsp[0].lval)); }
-#line 1949 "src/parser/SysY.tab.c"
+#line 1950 "src/parser/SysY.tab.c"
     break;
 
   case 68:
-#line 311 "src/parser/SysY.y"
+#line 312 "src/parser/SysY.y"
                 { (yyval.primaryexp) = newPrimaryExp(PRIMARYEXP,NUMBER,(yyvsp[0].number)); }
-#line 1955 "src/parser/SysY.tab.c"
+#line 1956 "src/parser/SysY.tab.c"
     break;
 
   case 69:
-#line 315 "src/parser/SysY.y"
+#line 316 "src/parser/SysY.y"
                     { (yyval.number) = newNumber(NUMBER,(yyvsp[0].intconst)); }
-#line 1961 "src/parser/SysY.tab.c"
+#line 1962 "src/parser/SysY.tab.c"
     break;
 
   case 70:
-#line 319 "src/parser/SysY.y"
+#line 320 "src/parser/SysY.y"
                     { (yyval.unaryexp) = newUnaryExp(UNARYEXP,PRIMARYEXP,(yyvsp[0].primaryexp)); }
-#line 1967 "src/parser/SysY.tab.c"
+#line 1968 "src/parser/SysY.tab.c"
     break;
 
   case 71:
-#line 320 "src/parser/SysY.y"
+#line 321 "src/parser/SysY.y"
                                                 { (yyval.unaryexp) = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,(yyvsp[-2].ident),newFuncRParams(FUNCRPARAMS,NULL,NULL))); }
-#line 1973 "src/parser/SysY.tab.c"
+#line 1974 "src/parser/SysY.tab.c"
     break;
 
   case 72:
-#line 321 "src/parser/SysY.y"
+#line 322 "src/parser/SysY.y"
                                                             { (yyval.unaryexp) = newUnaryExp(UNARYEXP,FUNCIMPL,newFuncImpl(FUNCIMPL,(yyvsp[-3].ident),(yyvsp[-1].funcrparams)->next)); }
-#line 1979 "src/parser/SysY.tab.c"
+#line 1980 "src/parser/SysY.tab.c"
     break;
 
   case 73:
-#line 322 "src/parser/SysY.y"
+#line 323 "src/parser/SysY.y"
                             { (yyval.unaryexp) = newUnaryExp(UNARYEXP,UNARYEXPS,newUnaryExps(UNARYEXPS,(yyvsp[-1].unaryop),(yyvsp[0].unaryexp))); }
-#line 1985 "src/parser/SysY.tab.c"
+#line 1986 "src/parser/SysY.tab.c"
     break;
 
   case 74:
-#line 326 "src/parser/SysY.y"
+#line 327 "src/parser/SysY.y"
                 { (yyval.unaryop) = newUnaryOp(UNARYOP,K_ADD); }
-#line 1991 "src/parser/SysY.tab.c"
+#line 1992 "src/parser/SysY.tab.c"
     break;
 
   case 75:
-#line 327 "src/parser/SysY.y"
+#line 328 "src/parser/SysY.y"
                 { (yyval.unaryop) = newUnaryOp(UNARYOP,K_SUB); }
-#line 1997 "src/parser/SysY.tab.c"
+#line 1998 "src/parser/SysY.tab.c"
     break;
 
   case 76:
-#line 328 "src/parser/SysY.y"
+#line 329 "src/parser/SysY.y"
                 { (yyval.unaryop) = newUnaryOp(UNARYOP,K_NOT); }
-#line 2003 "src/parser/SysY.tab.c"
+#line 2004 "src/parser/SysY.tab.c"
     break;
 
   case 77:
-#line 332 "src/parser/SysY.y"
+#line 333 "src/parser/SysY.y"
                     { (yyval.funcrparams) = newFuncRParams(FUNCRPARAMS,(yyvsp[0].funcrparam),NULL); }
-#line 2009 "src/parser/SysY.tab.c"
+#line 2010 "src/parser/SysY.tab.c"
     break;
 
   case 78:
-#line 333 "src/parser/SysY.y"
+#line 334 "src/parser/SysY.y"
                                         { (yyval.funcrparams) = newFuncRParams(FUNCRPARAMS,(yyvsp[0].funcrparam),(yyvsp[-2].funcrparams)); }
-#line 2015 "src/parser/SysY.tab.c"
+#line 2016 "src/parser/SysY.tab.c"
     break;
 
   case 79:
-#line 337 "src/parser/SysY.y"
+#line 338 "src/parser/SysY.y"
             { (yyval.funcrparam) = newFuncRParam(FUNCRPARAM,EXP,(yyvsp[0].exp)); }
-#line 2021 "src/parser/SysY.tab.c"
+#line 2022 "src/parser/SysY.tab.c"
     break;
 
   case 80:
-#line 338 "src/parser/SysY.y"
+#line 339 "src/parser/SysY.y"
                 { (yyval.funcrparam) = newFuncRParam(FUNCRPARAM,STRING,(yyvsp[0].string)); }
-#line 2027 "src/parser/SysY.tab.c"
+#line 2028 "src/parser/SysY.tab.c"
     break;
 
   case 81:
-#line 341 "src/parser/SysY.y"
+#line 342 "src/parser/SysY.y"
                     { (yyval.mulexp) = newMulExp(MULEXP,NULL,(yyvsp[0].unaryexp),NULL); }
-#line 2033 "src/parser/SysY.tab.c"
+#line 2034 "src/parser/SysY.tab.c"
     break;
 
   case 82:
-#line 342 "src/parser/SysY.y"
+#line 343 "src/parser/SysY.y"
                                 { (yyval.mulexp) = newMulExp(MULEXP,(yyvsp[-1].mulop),(yyvsp[0].unaryexp),(yyvsp[-2].mulexp)); }
-#line 2039 "src/parser/SysY.tab.c"
+#line 2040 "src/parser/SysY.tab.c"
     break;
 
   case 83:
-#line 346 "src/parser/SysY.y"
+#line 347 "src/parser/SysY.y"
                 { (yyval.addexp) = newAddExp(ADDEXP,NULL,(yyvsp[0].mulexp)->next,NULL); }
-#line 2045 "src/parser/SysY.tab.c"
+#line 2046 "src/parser/SysY.tab.c"
     break;
 
   case 84:
-#line 347 "src/parser/SysY.y"
+#line 348 "src/parser/SysY.y"
                             { (yyval.addexp) = newAddExp(ADDEXP,newAddOp(ADDOP,K_ADD),(yyvsp[0].mulexp)->next,(yyvsp[-2].addexp)); }
-#line 2051 "src/parser/SysY.tab.c"
+#line 2052 "src/parser/SysY.tab.c"
     break;
 
   case 85:
-#line 348 "src/parser/SysY.y"
+#line 349 "src/parser/SysY.y"
                             { (yyval.addexp) = newAddExp(ADDEXP,newAddOp(ADDOP,K_SUB),(yyvsp[0].mulexp)->next,(yyvsp[-2].addexp)); }
-#line 2057 "src/parser/SysY.tab.c"
+#line 2058 "src/parser/SysY.tab.c"
     break;
 
   case 86:
-#line 352 "src/parser/SysY.y"
+#line 353 "src/parser/SysY.y"
                 { (yyval.relexp) = newRelExp(RELEXP,NULL,(yyvsp[0].addexp)->next,NULL); }
-#line 2063 "src/parser/SysY.tab.c"
+#line 2064 "src/parser/SysY.tab.c"
     break;
 
   case 87:
-#line 353 "src/parser/SysY.y"
+#line 354 "src/parser/SysY.y"
                             { (yyval.relexp) = newRelExp(RELEXP,(yyvsp[-1].relop),(yyvsp[0].addexp)->next,(yyvsp[-2].relexp)); }
-#line 2069 "src/parser/SysY.tab.c"
+#line 2070 "src/parser/SysY.tab.c"
     break;
 
   case 88:
-#line 357 "src/parser/SysY.y"
+#line 358 "src/parser/SysY.y"
                 { (yyval.eqexp) = newEqExp(EQEXP,NULL,(yyvsp[0].relexp)->next,NULL); }
-#line 2075 "src/parser/SysY.tab.c"
+#line 2076 "src/parser/SysY.tab.c"
     break;
 
   case 89:
-#line 358 "src/parser/SysY.y"
+#line 359 "src/parser/SysY.y"
                             { (yyval.eqexp) = newEqExp(EQEXP,(yyvsp[-1].eqop),(yyvsp[0].relexp)->next,(yyvsp[-2].eqexp)); }
-#line 2081 "src/parser/SysY.tab.c"
+#line 2082 "src/parser/SysY.tab.c"
     break;
 
   case 90:
-#line 362 "src/parser/SysY.y"
+#line 363 "src/parser/SysY.y"
                 { (yyval.landexp) = newLAndExp(LANDEXP,(yyvsp[0].eqexp)->next,NULL); }
-#line 2087 "src/parser/SysY.tab.c"
+#line 2088 "src/parser/SysY.tab.c"
     break;
 
   case 91:
-#line 363 "src/parser/SysY.y"
+#line 364 "src/parser/SysY.y"
                                { (yyval.landexp) = newLAndExp(LANDEXP,(yyvsp[0].eqexp)->next,(yyvsp[-2].landexp)); }
-#line 2093 "src/parser/SysY.tab.c"
+#line 2094 "src/parser/SysY.tab.c"
     break;
 
   case 92:
-#line 367 "src/parser/SysY.y"
+#line 368 "src/parser/SysY.y"
                 { (yyval.lorexp) = newLOrExp(LOREXP,(yyvsp[0].landexp)->next,NULL); }
-#line 2099 "src/parser/SysY.tab.c"
+#line 2100 "src/parser/SysY.tab.c"
     break;
 
   case 93:
-#line 368 "src/parser/SysY.y"
+#line 369 "src/parser/SysY.y"
                                { (yyval.lorexp) = newLOrExp(LOREXP,(yyvsp[0].landexp)->next,(yyvsp[-2].lorexp)); }
-#line 2105 "src/parser/SysY.tab.c"
+#line 2106 "src/parser/SysY.tab.c"
     break;
 
   case 94:
-#line 372 "src/parser/SysY.y"
+#line 373 "src/parser/SysY.y"
                 { (yyval.constexp) = newConstExp(CONSTEXP,(yyvsp[0].addexp)->next); }
-#line 2111 "src/parser/SysY.tab.c"
+#line 2112 "src/parser/SysY.tab.c"
     break;
 
 
-#line 2115 "src/parser/SysY.tab.c"
+#line 2116 "src/parser/SysY.tab.c"
 
       default: break;
     }
@@ -2343,4 +2344,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 374 "src/parser/SysY.y"
+#line 375 "src/parser/SysY.y"
