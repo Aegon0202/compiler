@@ -1,3 +1,9 @@
+#ifdef __STDC_ALLOC_LIB__
+#define __STDC_WANT_LIB_EXT2__ 1
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include"./ssa.h"
 #include<stdlib.h>
 #include<stdio.h>
@@ -9,9 +15,8 @@ extern Value reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄�
 extern ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 extern Definition tag[MAX_CAPACITY];     //这个序列也是对应与寄存器中的每个值，在优化阶段需要用到这些信息
 
-
 Ir* create_new_ir(enum IrType op_type, Operand op1,Operand op2,Operand op3){
-    Ir* ir = (Ir*)malloc(sizeof Ir);
+    Ir* ir = (Ir*)malloc(sizeof(Ir));
     ir->op1 = op1;
     ir->op2 = op2;
     ir->op3 = op3;
@@ -20,7 +25,7 @@ Ir* create_new_ir(enum IrType op_type, Operand op1,Operand op2,Operand op3){
 }
 
 Phi* create_new_phi(BasicBlock* block){
-    Phi* p = (Phi*)malloc(sizeof Phi);
+    Phi* p = (Phi*)malloc(sizeof(Phi));
     p->is_complete = 0;
     p->parameters.idx = -1;             //头节点;
     p->def_block = block;
@@ -29,7 +34,7 @@ Phi* create_new_phi(BasicBlock* block){
 }
 
 Definition* create_new_definition(){
-    Definition* d = (Definition*)malloc(sizeof Definition);
+    Definition* d = (Definition*)malloc(sizeof(Definition));
     d->users.address.block = NULL;
     list_init(&(d->users->def_use_link));
     return d;
@@ -45,7 +50,7 @@ void delete_user(ID id, Ir* value){
 
 //创建一个新的block
 BasicBlock* create_new_block(){
-    BasicBlock* block = (BasicBlock*)malloc(sizeof BasicBlock);
+    BasicBlock* block = (BasicBlock*)malloc(sizeof(BasicBlock));
     block->is_sealed = 0;
     block->is_full = 0;
     block->predecessor_num = 0;
@@ -62,11 +67,11 @@ BasicBlock* create_new_block(){
 
 //为两个block建立祖先和后继的关系
 void connect_block(BasicBlock* pre, BasicBlock* suc){
-    BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof BasicBlockNode);
+    BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
     tmp->value = suc;
     list_add(&(tmp->block_link), &(pre->successors->block_link));
 
-    BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof BasicBlockNode);
+    BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
     tmp->value = pre;
     list_add(&(tmp->block_link), &(suc->predecessors->block_link));
 
@@ -80,7 +85,7 @@ int read_variable(ID id, BasicBlock* block){
     for(i=end;i>=begin;i--)
         //维护def_use_chain，返回读取到的值
         if(id_list[i]== id){
-            def_use_node* tmp = (def_use_node*)malloc(sizeof def_use_node);    
+            def_use_node* tmp = (def_use_node*)malloc(sizeof(def_use_node));    
             tmp->address.block = block;
             tmp->address.ir = currentIr;
             list_add(&(tag[i].users.def_use_link),&(tmp->def_use_link));
@@ -124,5 +129,61 @@ void write_variable(ID id, BasicBlock* block, Ir* ir, Value v){
 }
 
 Phi* add_phi_operand(ID id,Phi* phi){
-    
+    return NULL;
 }
+
+///---------------------------------------------------
+
+BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor){
+    BasicBlock* block = create_new_block();
+    if (predecessor){
+        block->predecessor_num = 1;
+        connect_block(predecessor,block);
+    }
+    return block;
+}
+
+void setBasicBlockSealed(BASIC_BLOCK_TYPE* basic_block){
+    basic_block->is_sealed = 1;
+}
+
+OPERAND_TYPE* toSSAIntConst(struct IntConst* int_const, BASIC_BLOCK_TYPE* basic_block){
+    OPERAND_TYPE* oprand = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
+    oprand->type = INT;
+    oprand->operand.v.intValue = int_const->value;
+    return oprand;
+}
+
+OPERAND_TYPE* toSSAString(struct String* str, BASIC_BLOCK_TYPE* basic_block){
+    OPERAND_TYPE* oprand = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
+    oprand->type = STRING;
+    oprand->operand.v.str = strdup(str->content);
+    return oprand;
+}
+
+OPERAND_TYPE* toSSAVarSymEntry(struct VarSymEntry* vse, BASIC_BLOCK_TYPE* basic_block){
+    OPERAND_TYPE* opr = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
+    opr->type = REGISTER;
+    opr->operand.reg_idx = -1;
+    return opr;
+}
+
+OPERAND_TYPE* toSSABasicBlock(BASIC_BLOCK_TYPE* target_block, BASIC_BLOCK_TYPE* basic_block){
+    OPERAND_TYPE* opr = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
+
+    opr->type = INT;
+    opr->operand.v.intValue = (int)(target_block);
+    return opr;
+}
+
+OPERAND_TYPE* toSSAFuncName(struct FuncSymEntry* fse, BASIC_BLOCK_TYPE* basic_block){
+    OPERAND_TYPE* opr = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
+    opr->type = FUNCID;
+    opr->operand.v.funcID = (void*)fse;
+    return opr;
+}
+
+OPERAND_TYPE* toSSAParamName(struct VarSymEntry* vse, BASIC_BLOCK_TYPE* basic_block){
+    //wait to be realize
+}
+
