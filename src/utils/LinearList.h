@@ -1,5 +1,5 @@
-#ifndef LINEAR_LIST_H
-#define LINEAR_LIST_H
+#ifndef UTILS_LINEAR_LIST_H
+#define UTILS_LINEAR_LIST_H
 
 #include "./Item.h"
 struct LinearListElem {

@@ -1,13 +1,6 @@
 #ifndef SYSY_TYPE_SYMTAB_H
 #define SYSY_TYPE_SYMTAB_H
 
-enum {
-    VARSYMENTRY = 600,
-    FUNCSYMENTRY,
-    FUNCSYMTABLE,
-    VARSYMTABLE
-};
-
 struct VarSymEntry {
     int type;  // VARSYMENTRY
     char *name;
@@ -56,7 +49,6 @@ struct FuncSymEntry *newFuncSymEntry(const char *name, struct FuncSymEntry *head
 struct FuncSymEntry *findFuncInTable(const char *name);
 struct VarSymEntry *findVarInTable(const char *name);
 void removeVarFromSymTable(int level);
-char *getUniquieName();
 
 extern struct FuncSymTable *funcsymtable_p;
 extern struct VarSymTable *varsymtable_active_p, *varsymtable_deactive_p;

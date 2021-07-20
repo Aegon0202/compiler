@@ -19,64 +19,64 @@ static int identation;
         fprintf(stdout, msg, ##__VA_ARGS__); \
     } while (0)
 
-struct printToken_t *printToken_p;
+struct printToken_t printToken_ins;
 
-#define ListLikePrintGenerator1(funcname, listype, dataname1)                       \
-    void funcname(listype *list) {                                                  \
-        IfNull(list, {                                                              \
-            PRINT("NULL POINT\n");                                                  \
-            return;                                                                 \
-        });                                                                         \
-        listype *head = list;                                                       \
-        do {                                                                        \
-            PRINT("%s\n", EnumTypeToString(list->type));                            \
-            identation += LEVEL_IDENT;                                              \
-            IfNotNull(list->dataname1, printToken(list->dataname1, printToken_p);); \
-            identation -= LEVEL_IDENT;                                              \
-            list = list->next;                                                      \
-        } while (list != head);                                                     \
+#define ListLikePrintGenerator1(funcname, listype, dataname1)                          \
+    void funcname(listype *list) {                                                     \
+        IfNull(list, {                                                                 \
+            PRINT("NULL POINT\n");                                                     \
+            return;                                                                    \
+        });                                                                            \
+        listype *head = list;                                                          \
+        do {                                                                           \
+            PRINT("%s\n", EnumTypeToString(list->type));                               \
+            identation += LEVEL_IDENT;                                                 \
+            IfNotNull(list->dataname1, printToken(list->dataname1, &printToken_ins);); \
+            identation -= LEVEL_IDENT;                                                 \
+            list = list->next;                                                         \
+        } while (list != head);                                                        \
     }
 
-#define ListLikePrintGenerator2(funcname, listype, dataname1, dataname2)            \
-    void funcname(listype *list) {                                                  \
-        IfNull(list, {                                                              \
-            PRINT("NULL POINT\n");                                                  \
-            return;                                                                 \
-        });                                                                         \
-        listype *head = list;                                                       \
-        do {                                                                        \
-            PRINT("%s\n", EnumTypeToString(list->type));                            \
-            identation += LEVEL_IDENT;                                              \
-            IfNotNull(list->dataname1, printToken(list->dataname1, printToken_p);); \
-            IfNotNull(list->dataname2, printToken(list->dataname2, printToken_p);); \
-            identation -= LEVEL_IDENT;                                              \
-            list = list->next;                                                      \
-        } while (list != head);                                                     \
+#define ListLikePrintGenerator2(funcname, listype, dataname1, dataname2)               \
+    void funcname(listype *list) {                                                     \
+        IfNull(list, {                                                                 \
+            PRINT("NULL POINT\n");                                                     \
+            return;                                                                    \
+        });                                                                            \
+        listype *head = list;                                                          \
+        do {                                                                           \
+            PRINT("%s\n", EnumTypeToString(list->type));                               \
+            identation += LEVEL_IDENT;                                                 \
+            IfNotNull(list->dataname1, printToken(list->dataname1, &printToken_ins);); \
+            IfNotNull(list->dataname2, printToken(list->dataname2, &printToken_ins);); \
+            identation -= LEVEL_IDENT;                                                 \
+            list = list->next;                                                         \
+        } while (list != head);                                                        \
     }
 
-#define OnlyDataPrintGenerator1(funcname, printtype, dataname1)                   \
-    void funcname(printtype *token) {                                             \
-        IfNull(token, {                                                           \
-            PRINT("NULL POINT\n");                                                \
-            return;                                                               \
-        });                                                                       \
-        PRINT("%s\n", EnumTypeToString(token->type));                             \
-        identation += LEVEL_IDENT;                                                \
-        IfNotNull(token->dataname1, printToken(token->dataname1, printToken_p);); \
-        identation -= LEVEL_IDENT;                                                \
+#define OnlyDataPrintGenerator1(funcname, printtype, dataname1)                      \
+    void funcname(printtype *token) {                                                \
+        IfNull(token, {                                                              \
+            PRINT("NULL POINT\n");                                                   \
+            return;                                                                  \
+        });                                                                          \
+        PRINT("%s\n", EnumTypeToString(token->type));                                \
+        identation += LEVEL_IDENT;                                                   \
+        IfNotNull(token->dataname1, printToken(token->dataname1, &printToken_ins);); \
+        identation -= LEVEL_IDENT;                                                   \
     }
 
-#define OnlyDataPrintGenerator2(funcname, printtype, dataname1, dataname2)        \
-    void funcname(printtype *token) {                                             \
-        IfNull(token, {                                                           \
-            PRINT("NULL POINT\n");                                                \
-            return;                                                               \
-        });                                                                       \
-        PRINT("%s\n", EnumTypeToString(token->type));                             \
-        identation += LEVEL_IDENT;                                                \
-        IfNotNull(token->dataname1, printToken(token->dataname1, printToken_p);); \
-        IfNotNull(token->dataname2, printToken(token->dataname2, printToken_p);); \
-        identation -= LEVEL_IDENT;                                                \
+#define OnlyDataPrintGenerator2(funcname, printtype, dataname1, dataname2)           \
+    void funcname(printtype *token) {                                                \
+        IfNull(token, {                                                              \
+            PRINT("NULL POINT\n");                                                   \
+            return;                                                                  \
+        });                                                                          \
+        PRINT("%s\n", EnumTypeToString(token->type));                                \
+        identation += LEVEL_IDENT;                                                   \
+        IfNotNull(token->dataname1, printToken(token->dataname1, &printToken_ins);); \
+        IfNotNull(token->dataname2, printToken(token->dataname2, &printToken_ins);); \
+        identation -= LEVEL_IDENT;                                                   \
     }
 
 #define OnlyDataPrintGenerator3(funcname, printtype, dataname1, dataname2, dataname3) \
@@ -87,9 +87,9 @@ struct printToken_t *printToken_p;
         });                                                                           \
         PRINT("%s\n", EnumTypeToString(token->type));                                 \
         identation += LEVEL_IDENT;                                                    \
-        IfNotNull(token->dataname1, printToken(token->dataname1, printToken_p););     \
-        IfNotNull(token->dataname2, printToken(token->dataname2, printToken_p););     \
-        IfNotNull(token->dataname3, printToken(token->dataname3, printToken_p););     \
+        IfNotNull(token->dataname1, printToken(token->dataname1, &printToken_ins););  \
+        IfNotNull(token->dataname2, printToken(token->dataname2, &printToken_ins););  \
+        IfNotNull(token->dataname3, printToken(token->dataname3, &printToken_ins););  \
         identation -= LEVEL_IDENT;                                                    \
     }
 
@@ -101,23 +101,23 @@ struct printToken_t *printToken_p;
         });                                                                                      \
         PRINT("%s\n", EnumTypeToString(token->type));                                            \
         identation += LEVEL_IDENT;                                                               \
-        IfNotNull(token->dataname1, printToken(token->dataname1, printToken_p););                \
-        IfNotNull(token->dataname2, printToken(token->dataname2, printToken_p););                \
-        IfNotNull(token->dataname3, printToken(token->dataname3, printToken_p););                \
-        IfNotNull(token->dataname4, printToken(token->dataname4, printToken_p););                \
+        IfNotNull(token->dataname1, printToken(token->dataname1, &printToken_ins););             \
+        IfNotNull(token->dataname2, printToken(token->dataname2, &printToken_ins););             \
+        IfNotNull(token->dataname3, printToken(token->dataname3, &printToken_ins););             \
+        IfNotNull(token->dataname4, printToken(token->dataname4, &printToken_ins););             \
         identation -= LEVEL_IDENT;                                                               \
     }
 
-#define OnlyUnionPrintGenerator(funcname, printtype, value_in_union_name)                                         \
-    void funcname(printtype *token) {                                                                             \
-        IfNull(token, {                                                                                           \
-            PRINT("NULL POINT\n");                                                                                \
-            return;                                                                                               \
-        });                                                                                                       \
-        PRINT("%s %s\n", EnumTypeToString(token->type), EnumTypeToString(token->valuetype));                      \
-        identation += LEVEL_IDENT;                                                                                \
-        IfNotNull(token->value.value_in_union_name, printToken(token->value.value_in_union_name, printToken_p);); \
-        identation -= LEVEL_IDENT;                                                                                \
+#define OnlyUnionPrintGenerator(funcname, printtype, value_in_union_name)                                            \
+    void funcname(printtype *token) {                                                                                \
+        IfNull(token, {                                                                                              \
+            PRINT("NULL POINT\n");                                                                                   \
+            return;                                                                                                  \
+        });                                                                                                          \
+        PRINT("%s %s\n", EnumTypeToString(token->type), EnumTypeToString(token->valuetype));                         \
+        identation += LEVEL_IDENT;                                                                                   \
+        IfNotNull(token->value.value_in_union_name, printToken(token->value.value_in_union_name, &printToken_ins);); \
+        identation -= LEVEL_IDENT;                                                                                   \
     }
 
 void printKeyword(struct Keyword *keyword) {
@@ -145,7 +145,7 @@ void printCompUnit(struct CompUnit *cp) {
     do {
         PRINT("COMPUNIT %s\n", EnumTypeToString(cp->type));
         identation += LEVEL_IDENT;
-        IfNotNull(cp->value.decl, printToken(cp->value.decl, printToken_p););
+        IfNotNull(cp->value.decl, printToken(cp->value.decl, &printToken_ins););
         identation -= LEVEL_IDENT;
         cp = cp->next;
     } while (cp != head);
@@ -312,8 +312,7 @@ void printString(struct String *string) {
 }
 
 // only use once for init
-void initPrintToken() {
-    printToken_p = (struct printToken_t *)malloc(sizeof(struct printToken_t));
+void initPrintToken(struct printToken_t *printToken_p) {
     EnsureNotNull(printToken_p);
     printToken_p->visitKeyword = printKeyword;
     printToken_p->visitIntConst = printIntConst;
@@ -380,6 +379,11 @@ void printFresh() {
 }
 
 void printToken(void *token, struct printToken_t *visitor) {
+    static int need_init_flag = 1;
+    if (need_init_flag) {
+        need_init_flag = 0;
+        initPrintToken(&printToken_ins);
+    }
     EnsureNotNull(token);
     EnsureNotNull(visitor);
     switch (*(int *)token) {

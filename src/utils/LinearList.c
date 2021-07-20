@@ -107,6 +107,7 @@ void* removeLinearListElem(struct LinearListElem* elems, unsigned long long int 
 struct LinearList* newLinearList() {
     static int need_init_flag = 1;
     if (need_init_flag) {
+        need_init_flag = 0;
         ull total = 1;
         for (int i = 0; i < TOTAL_LEVEL; i++) {
             container_size[i] = total;

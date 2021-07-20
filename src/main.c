@@ -14,13 +14,13 @@
 YYSTYPE result;
 
 int main() {
-    initPrintToken();
+    //initPrintToken();
     initFreeToken();
     initSymTable();
     yyparse();
-    //printToken(result.compunit,printToken_p);
+    printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);
-    //printToken(result.compunit, printToken_p);
+    //printToken(result.compunit, printToken_ins);
     return 0;
 }

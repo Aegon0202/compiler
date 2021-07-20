@@ -1,6 +1,7 @@
 #ifndef SYSY_AST_SSA_H
 #define SYSY_AST_SSA_H
 
+#include "../ENUM.h"
 #include "../SysY.type/SysY.type.def.h"
 #include "../SysY.type/SysY.type.symtab.h"
 #include "../parser/SysY.tab.h"
@@ -14,20 +15,6 @@
 #define IR_LIST_TYPE Ir
 #define IR_TYPE Ir
 #define OPERAND_TYPE Operand
-
-/**
- * SSA_IR_OP
- * 详见 README.md
-*/
-enum SSA_IR_OP {
-    PARAM = 800,
-    CALL,
-    JUMP,
-    BRANCH,
-    LOAD,
-    STORE,
-    NOP,
-};
 
 // 一个函数名到对应的基本块首地址的对应表
 extern struct LinkedTable* func_block_table;

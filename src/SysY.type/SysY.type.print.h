@@ -68,7 +68,7 @@ void printToken(void *token, struct printToken_t *visitor);
 
 void printFresh();
 void initPrintToken();
-extern struct printToken_t *printToken_p;
+extern struct printToken_t printToken_ins;
 
 void printKeyword(struct Keyword *);
 void printIntConst(struct IntConst *);
