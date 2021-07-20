@@ -46,7 +46,7 @@ struct FuncTabElem {
 };
 
 struct BlockTabElem {
-    struct VarTabELem* last;    // 当前块变量上一个的引用
+    struct VarTabElem* last;    // 当前块变量上一个的引用
     int size;                   // 当前块变量的总大小
     struct BlockTabElem* link;  // 上层块
 };

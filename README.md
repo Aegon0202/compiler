@@ -35,8 +35,9 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 
 ```c
 #define BASIC_BLOCK_TYPE BasicBlock
-#define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand
+#define IR_TYPE Ir
+
 //需要在SSA中完成的函数
 /**
  * 生成一个新的基本块
@@ -67,7 +68,6 @@ void setBasicBlockSealed(BASIC_BLOCK_TYPE* basic_block);
 */
 OPERAND_TYPE* toSSAIntConst(struct IntConst* int_const, BASIC_BLOCK_TYPE* basic_block);
 
-
 /**
  * 将一个（struct String*）转化成一个合法的操作符
  * 
@@ -79,15 +79,37 @@ OPERAND_TYPE* toSSAIntConst(struct IntConst* int_const, BASIC_BLOCK_TYPE* basic_
 OPERAND_TYPE* toSSAString(struct String* str, BASIC_BLOCK_TYPE* basic_block);
 
 /**
- * 将一个（struct VarSymEntry*）转化成一个合法的操作符
- * 可能是作为输入，也可能是作为输出
+ * 将一个（struct VarTabElem*）转化成一个合法的操作符
+ * 作为输入
  * 
- * :param (struct VarSymEntry*) vse 一个输入，代表一个int变量
+ * :param (struct VarTabElem*) vte 一个输入，代表一个int变量
  * :param (BASIC_BLOCK_TYPE*) basic_block 一个基本块，将需要的ir或其他东西放到此基本块中
  * 
  * :return (OPERAND_TYPE*) ssa中的操作符
 */
-OPERAND_TYPE* toSSAVarSymEntry(struct VarSymEntry* vse, BASIC_BLOCK_TYPE* basic_block);
+OPERAND_TYPE* toSSAVarTabElemRead(struct VarTabElem* vte, BASIC_BLOCK_TYPE* basic_block);
+
+/**
+ * 将一个（struct VarTabElem*）转化成一个合法的操作符
+ * 作为输出
+ * 
+ * :param (struct VarTabElem*) vte 一个输入，代表一个int变量
+ * :param (BASIC_BLOCK_TYPE*) basic_block 一个基本块，将需要的ir或其他东西放到此基本块中
+ * 
+ * :return (OPERAND_TYPE*) ssa中的操作符
+*/
+OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* basic_block);
+
+/**
+ * 将一个偏移量（int）转成一个合法的代指其绝对地址的操作数。
+ * 
+ * :param (int) base 基址 取值为 FRAMEPOINT STACKPOINT GLOBALDATA
+ * :param (int) offset 偏移量
+ * :param (BASIC_BLOCK_TYPE*) basic_block 一个基本块，将需要的ir或其他东西放到此基本块中
+ * 
+ * :return (OPERAND_TYPE*) ssa中的操作符
+ */
+OPERAND_TYPE* toSSAOffset(int base, int offset, BASIC_BLOCK_TYPE* basic_block);
 
 /**
  * 将一个（BASIC_BLOCK_TYPE*）转化成一个合法的操作符
@@ -100,15 +122,15 @@ OPERAND_TYPE* toSSAVarSymEntry(struct VarSymEntry* vse, BASIC_BLOCK_TYPE* basic_
 OPERAND_TYPE* toSSABasicBlock(BASIC_BLOCK_TYPE* target_block, BASIC_BLOCK_TYPE* basic_block);
 
 /**
- * 将一个（struct FuncSymEntry*）转化成一个合法的操作符，作为函数名称。
+ * 将一个（struct FuncTabElem*）转化成一个合法的操作符，作为函数名称。
  * 可用于 PARAM和CALL
  * 
- * :param (struct FuncSymEntry*) fse 一个输入，函数名。
+ * :param (struct FuncTabElem*) fte 一个输入，函数名。
  * :param (BASIC_BLOCK_TYPE*) basic_block 一个基本块，将需要的ir或其他东西放到此基本块中
  * 
  * :return (OPERAND_TYPE*) ssa中的操作符
 */
-OPERAND_TYPE* toSSAFuncName(struct FuncSymEntry* fse, BASIC_BLOCK_TYPE* basic_block);
+OPERAND_TYPE* toSSAFuncName(struct FuncTabElem* fte, BASIC_BLOCK_TYPE* basic_block);
 
 /**
  * 将一个（struct VarSymEntry*）转化成一个合法的操作符，作为函数中形参的名称。
@@ -138,7 +160,7 @@ OPERAND_TYPE* toSSATempVariable(BASIC_BLOCK_TYPE* basic_block);
  * :param (OPERAND_TYPE*) op1,op2,op3 操作符
  * :param (BASIC_BLOCK_TYPE*) basic_block 一个基本块，将新创建的ir放到此基本块中
  * 
- * :return (IR_LIST_TYPE*) 一条ir指令
+ * :return (IR_TYPE*) 一条ir指令
 */
 IR_TYPE* newIR(int op, OPERAND_TYPE* op1, OPERAND_TYPE* op2, OPERAND_TYPE* op3, BASIC_BLOCK_TYPE* basic_block);
 
