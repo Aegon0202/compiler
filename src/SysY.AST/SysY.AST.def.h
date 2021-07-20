@@ -1,17 +1,9 @@
 #ifndef SYSY_AST_DEF_H
 #define SYSY_AST_DEF_H
 
+#include "../ENUM.h"
 #include "../SysY.type/SysY.type.def.h"
 #include "../SysY.type/SysY.type.symtab.h"
-
-enum {
-    LABELENTRY = 700,
-    //LABELSYMTABLE,
-    FUNCIMPLAST,
-    ARRAYIMPLAST,
-    EXPAST,
-    OPREAND
-};
 
 struct LabelEntry {
     int type;

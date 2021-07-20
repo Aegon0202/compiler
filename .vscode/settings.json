@@ -9,6 +9,10 @@
         "sysy.ast.ssa.h": "c",
         "sysy.ast.def.h": "c",
         "linkedtable.h": "c",
+        "sysy.type.visitor.h": "c",
+        "linearlist.h": "c",
+        "sysy.type.def.h": "c",
+        "output": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}"
 }
