@@ -92,8 +92,10 @@ Phi* create_new_phi(BasicBlock*);
 Definition* create_new_definition();
 
 def_use_node* create_new_def_use_node();
-void add_user(int i, BasicBlock* block, Ir* ir)；
+
+void add_user(int i, BasicBlock* block, Ir* ir);
 void delete_user(int , Ir* );
+
 BasicBlock* create_new_block();
 Value* new_Value();
 
