@@ -4,13 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./Item.h"
 #include "./NullPointMacro.h"
 #include "./PrintHelper.h"
-
-struct Item {
-    void* key;    // only supprt point
-    void* value;  // only support point
-};
 
 struct LinkedElem {
     struct Item* item;
@@ -42,7 +38,7 @@ struct LinkedTable* newLinkedTable(int (*key_equal)(void*, void*));
 /**
  * 在LinkedTable中设定 key以及对应的value
  * 
- * :param (struct LinkedTable*) linked_table 一个指向HashTable的指针
+ * :param (struct LinkedTable*) linked_table 一个指向LinkedTable的指针
  * :param (void*) key 指向key的指针
  * :param (void*) value 指向value的指针
  * 
@@ -53,7 +49,7 @@ void* setLinkedTable(struct LinkedTable* linked_table, void* key, void* value);
 /**
  * 在LinkedTable中获取key对应的value
  * 
- * :param (struct LinkedTable*) linked_table 一个指向HashTable的指针
+ * :param (struct LinkedTable*) linked_table 一个指向LinkedTable的指针
  * :param (void*) key 指向key的指针
  * 
  * :return (void*) 指向value的指针。
@@ -64,7 +60,7 @@ void* getLinkedTable(struct LinkedTable* linked_table, void* key);
 /**
  * 在LinkedTable中删除key对应的value
  * 
- * :param (struct LinkedTable*) linked_table 一个指向HashTable的指针
+ * :param (struct LinkedTable*) linked_table 一个指向LinkedTable的指针
  * :param (void*) key 指向key的指针
  * 
  * :return (struct Item*) 指向item的指针。
@@ -76,7 +72,7 @@ struct Item* removeLinkedTable(struct LinkedTable* linked_table, void* key);
 /**
  * 在LinkedTable中删除链表末尾的元素
  * 
- * :param (struct LinkedTable*) linked_table 一个指向HashTable的指针
+ * :param (struct LinkedTable*) linked_table 一个指向LinkedTable的指针
  * 
  * :return (struct Item*) 指向item的指针。
  *      当表中有数据时，返回item的指针。否则返回NULL

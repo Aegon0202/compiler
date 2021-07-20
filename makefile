@@ -14,7 +14,7 @@ SYSY_DEF_DIR = src/SysY.type
 SYSY_DEF_SRC = 	$(SYSY_DEF_DIR)/*.c
 
 SYSY_AST_DIR = src/SysY.AST
-SYSY_AST_SRC = $(SYSY_AST_DIR)/*.c
+SYSY_AST_SRC = $(SYSY_AST_DIR)/SysY.AST.new.c
 
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
