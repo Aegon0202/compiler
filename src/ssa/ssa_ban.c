@@ -1,3 +1,4 @@
+/*
 #ifdef __STDC_ALLOC_LIB__
 #define __STDC_WANT_LIB_EXT2__ 1
 #else
@@ -29,12 +30,7 @@ Ir* create_new_ir(enum IrType op_type, Operand op1,Operand op2,Operand op3){
 }
 
 Phi* create_new_phi(BasicBlock* block){
-<<<<<<< HEAD
-    Phi* p = (Phi*)malloc(sizeof Phi);
-    
-=======
     Phi* p = (Phi*)malloc(sizeof(Phi));
->>>>>>> 58da50caa6ee794fb20a45a2fc3c3cc893acb1b4
     p->is_complete = 0;
     p->parameters.idx = -1;             //头节点;
     p->def_block = block;
@@ -147,7 +143,6 @@ void write_variable(ID id, BasicBlock* block, Ir* ir, Value* v){
 
 }
 
-<<<<<<< HEAD
 void add_phi_operand(ID id, Phi* phi){
     BasicBlock* tmp=phi->def_block;
     BasicBlockNode pre = tmp->predecessors;
@@ -159,32 +154,6 @@ void add_phi_operand(ID id, Phi* phi){
         append_phi_operand(phi,read_variable(id,pre_block));
     }
     try_remove_trivial_phi(phi);
-=======
-Phi* add_phi_operand(ID id,Phi* phi){
-    return NULL;
-}
-
-///---------------------------------------------------
-
-BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor){
-    BasicBlock* block = create_new_block();
-    if (predecessor){
-        block->predecessor_num = 1;
-        connect_block(predecessor,block);
-    }
-    return block;
-}
-
-void setBasicBlockSealed(BASIC_BLOCK_TYPE* basic_block){
-    basic_block->is_sealed = 1;
-}
-
-OPERAND_TYPE* toSSAIntConst(struct IntConst* int_const, BASIC_BLOCK_TYPE* basic_block){
-    OPERAND_TYPE* oprand = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
-    oprand->type = INT;
-    oprand->operand.v.intValue = int_const->value;
-    return oprand;
->>>>>>> 58da50caa6ee794fb20a45a2fc3c3cc893acb1b4
 }
 
 OPERAND_TYPE* toSSAString(struct String* str, BASIC_BLOCK_TYPE* basic_block){
@@ -220,3 +189,4 @@ OPERAND_TYPE* toSSAParamName(struct VarSymEntry* vse, BASIC_BLOCK_TYPE* basic_bl
     //wait to be realize
 }
 
+*/

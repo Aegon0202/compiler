@@ -12,7 +12,6 @@
 int current_size = 0;
 int max_capacity = MAX_CAPACITY;
 Ir* currentIr;
-
 Value value_list[MAX_CAPACITY];
 ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 

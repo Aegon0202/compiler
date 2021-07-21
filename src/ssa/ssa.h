@@ -19,8 +19,6 @@ extern Value* reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄
 
 extern ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
-extern Definition* tag[MAX_CAPACITY];     //这个序列也是对应与寄存器中的每个值，在优化阶段需要用到这些信息
-
 enum IrType {HEAD,Add,Sub,Mul,Div,Minus,And,Or,Not,Branch,Jump,Call,Return,Function,Param};
 
 
@@ -71,6 +69,12 @@ typedef struct{
     Operand *op1,*op2,*op3;
     list_entry_t ir_link;
 } Ir;
+
+typedef struct{
+    BasicBlock start_block;
+    ID* id_list;
+    Value* value_list;
+} Program;
 
 #define le2struct(le,type,member)    \
         to_struct((le),type,member)
