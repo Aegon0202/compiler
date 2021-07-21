@@ -4,3 +4,4 @@ a.out
 *.gch
 core
 *.o
+a.out.dSYM

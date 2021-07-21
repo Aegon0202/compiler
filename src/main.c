@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../tmp/input"
 #include "SysY.symtab/SysY.symtab.ssa.h"
 #include "SysY.type/SysY.type.def.h"
 #include "SysY.type/SysY.type.free.h"
@@ -15,6 +14,7 @@
 YYSTYPE result;
 
 int main() {
+    const int N[2][2] = {{1}, 2, 3};
     int* b = (int*)&(N[0][0]);
     //initPrintToken();
     // initFreeToken();

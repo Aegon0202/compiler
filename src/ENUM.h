@@ -79,7 +79,13 @@ enum {
     STACKPOINT,
     GLOBALDATA,
 
-    PHI,INT,ConstSTRING,FUNCID,REGISTER,ADDRESS,BASIC_BLOCK
+    PHI,
+    INT,
+    ConstSTRING,
+    FUNCID,
+    REGISTER,
+    ADDRESS,
+    BASIC_BLOCK
 };
 
 #endif
