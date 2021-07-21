@@ -207,7 +207,7 @@ void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BL
     struct Item* t;
     while ((t = popLinkedTable(visited)) != NULL)
         free(t);
-    freeLinkedTable(visited);
+    freeLinkedTable(&visited);
 }
 
 void __print_op(Operand* op) {
