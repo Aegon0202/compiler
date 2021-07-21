@@ -4,12 +4,7 @@
 // #include "../ssa/ssa.h"
 #include "../utils/DequeList.h"
 #include "../utils/LinkedTable.h"
-/*
-#define BASIC_BLOCK_TYPE BasicBlock
-#define IR_LIST_TYPE Ir
-#define IR_TYPE Ir
-#define OPERAND_TYPE Operand
-*/
+
 struct VarTabElem {
     char* name;
     int level;
