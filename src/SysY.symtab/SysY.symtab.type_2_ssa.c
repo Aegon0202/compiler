@@ -1,7 +1,7 @@
 //#include "../SysY.AST/SysY.AST.new.h"
 #include "../SysY.type/SysY.type.def.h"
 // #include "../ssa/ssa.h"
-#include "../utils/LinearList.h"
+#include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
 #include "./SysY.symtab.calcConst.h"
 #include "./SysY.symtab.def.h"
@@ -9,21 +9,15 @@
 
 #define INT_SIZE 4
 
-static struct LinkedTable* id_block_table;
-static struct LinkedTable* id_tail_block_table;
-static int block_id_next = 0;
+static struct LinkedTable* block_tail_table;
 
-static struct LinkedTable* while_break_table;
-static struct LinkedTable* while_continue_table;
-static int while_level = 0;
-
-static struct LinkedTable* cond_true_table;
-static struct LinkedTable* cond_false_table;
-static int cond_level = 0;
+static struct DequeList* break_target_queue;
+static struct DequeList* continue_target_queue;
 
 static int level = 0;
 static int global_offset = 0;
-static int func_offset = 0;  // maybe offset of $fp
+static int func_offset = 0;  // variable maybe offset of $fp
+static int func_fparam_offset = 0;
 static struct FuncTabElem* producing_func;
 
 struct IntConst* getIntConstStatic(int value) {
@@ -154,7 +148,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                         return toSSAOffset(FRAMEPOINT, elem->offset, basic_block);
                 }
             } else {
-                return toSSAVarTabElem(elem, basic_block);
+                return toSSAVarTabElemRead(elem, basic_block);
             }
             PrintErrExit("unknown error happen");
 
@@ -197,8 +191,46 @@ OPERAND_TYPE* toSSAPrimaryExp(struct PrimaryExp* primaryexp, BASIC_BLOCK_TYPE* b
 
 OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_block) {
     struct FuncTabElem* fte = getFuncTabElemByName(funcimpl->ident->name, func_table);
-    struct LinearList i;
-    return NULL;
+    OPERAND_TYPE* func_op = toSSAFuncName(fte, basic_block);
+    OPERAND_TYPE* result_op = toSSATempVariable(basic_block);
+
+    struct LinearList* param_list = newLinearList();
+    int param_next = 0;
+    struct FuncRParams* frps = funcimpl->funcrparams;
+    struct FuncRParams* head = funcimpl->funcrparams;
+
+    do {
+        struct FuncRParam* frp = frps->funcrparam;
+        OPERAND_TYPE* param_op;
+        switch (frp->valuetype) {
+            case STRING:
+                param_op = toSSAString(frp->value.string, basic_block);
+                break;
+            case EXP:
+                param_op = toSSAExp(frp->value.exp, basic_block);
+                break;
+            default:
+                PrintErrExit("FuncRParam not support valuetype %s", EnumTypeToString(frp->valuetype));
+        }
+        IfNotNull(setLinearList(param_list, param_next, param_op), PrintErrExit("this should be NULL"););
+        param_next++;
+        frps = frps->next;
+    } while (frps != head);
+    for (int i = 0; i < param_next; i++) {
+        OPERAND_TYPE* param_op = getLinearList(param_list, i);
+        EnsureNotNull(param_op);
+        newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(i), basic_block), param_op, basic_block);
+    }
+    newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
+
+    return result_op;
+}
+
+OPERAND_TYPE* toSSAUnaryExps(struct UnaryExps* unaryexps, BASIC_BLOCK_TYPE* basic_block) {
+    OPERAND_TYPE* op = toSSAUnaryExp(unaryexps->unaryexp, basic_block);
+    OPERAND_TYPE* r_op = toSSATempVariable(basic_block);
+    newIR(unaryexps->unaryop->typevalue, toSSAIntConst(getIntConstStatic(0), basic_block), op, r_op, basic_block);
+    return r_op;
 }
 
 OPERAND_TYPE* toSSAUnaryExp(struct UnaryExp* unaryexp, BASIC_BLOCK_TYPE* basic_block) {
@@ -239,55 +271,36 @@ to_ssa_bi_exp_generator(RelExp, AddExp, addexp, relop);
 to_ssa_bi_exp_generator(EqExp, RelExp, relexp, eqop);
 #undef to_ssa_bi_exp_generator
 
-#define to_ssa_bi_exp_generator(exp_type, sub_type, sub_name, op)                        \
-    OPERAND_TYPE* toSSA##exp_type(struct exp_type* exp, BASIC_BLOCK_TYPE* basic_block) { \
-        struct exp_type* head = exp;                                                     \
-        OPERAND_TYPE* op1 = NULL;                                                        \
-        do {                                                                             \
-            OPERAND_TYPE* op2 = toSSA##sub_type(exp->sub_name, basic_block);             \
-            if (op1 != NULL) {                                                           \
-                OPERAND_TYPE* op3 = toSSATempVariable(basic_block);                      \
-                newIR(op, op1, op2, op3, basic_block);                                   \
-                op1 = op3;                                                               \
-            } else {                                                                     \
-                op1 = op2;                                                               \
-            }                                                                            \
-            exp = exp->next;                                                             \
-        } while (head != exp);                                                           \
-        return op1;                                                                      \
-    }
-to_ssa_bi_exp_generator(LAndExp, EqExp, eqexp, K_AND);
-to_ssa_bi_exp_generator(LOrExp, LAndExp, landexp, K_OR);
-
-#undef to_ssa_bi_exp_generator
-
 OPERAND_TYPE* toSSAExp(struct Exp* exp, BASIC_BLOCK_TYPE* basic_block) {
     return toSSAAddExp(exp->addexp, basic_block);
 }
 
-void __var_decl_init_helper(struct InitVal* initval, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
+void __var_def_array_init(struct InitVal* initval, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
     if (initval->valuetype != INITVALS) {
         PrintErrExit("this function only support initvals");
     }
+    struct InitVals* initvals = initval->value.initvals;
+    struct InitVals* head = initvals;
+    // not complete
 }
 
-void VarDeclInit(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
+void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
     if (vardef->initval != NULL) {
         if (elem->level == 1) {
             PrintErrExit("function paramentor not support init value");
         } else if (elem->level == 0) {
-            //??? global init
-            if (elem->is_array) {
-            } else {
-            }
+            // not complete
+            MALLOC_WITHOUT_DECLARE(elem->const_init_value, int, elem->size / INT_SIZE);
+
         } else {
             if (elem->is_array) {
+                // not complete
             } else {
                 if (vardef->initval->valuetype != EXP) {
                     PrintErrExit("not support use initials to init variable: %s", elem->name);
                 }
                 OPERAND_TYPE* init_op = toSSAExp(vardef->initval->value.exp, basic_block);
-                newIR(K_ADD, init_op, toSSAIntConst((0), basic_block), toSSAVarTabElem(elem, basic_block), basic_block);
+                newIR(K_ADD, init_op, toSSAIntConst(getIntConstStatic(0), basic_block), toSSAVarTabElemWrite(elem, basic_block), basic_block);
             }
         }
     }
@@ -330,20 +343,118 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
         block->last = elem->link;
         block->size += elem->size;
 
-        VarDeclInit(vardef, elem, basic_block);
+        __var_def_init(vardef, elem, basic_block);
 
         vardefs = vardefs->next;
     } while (vardefs != head);
+
+    return 0;
 }
 
-int toSSADecl(struct Decl* decl) {
+struct ArrayTabElem* __offset_to_max_hight_dis(struct ArrayTabElem* array, int offset) {
+    while (array != NULL) {
+        if (offset % (array->elem_size / INT_SIZE) == 0) {
+            return array->elem_ref;
+        }
+        array = array->elem_ref;
+    }
+    PrintErrExit("init const array failure");
+}
+
+void __const_def_array_init(struct ConstInitVals* constinitvals, struct ArrayTabElem* array, int* buffer) {
+    struct ConstInitVals* head = constinitvals;
+    int offset;
+    struct ArrayTabElem* t_array;
+    do {
+        struct ConstInitVal* constinitval = constinitvals->constinitval;
+        switch (constinitval->valuetype) {
+            case CONSTEXP:
+                buffer[offset] = calcConstConstExp(constinitval->value.constexp);
+                offset += 1;
+                break;
+            case CONSTINITVALS:
+                t_array = __offset_to_max_hight_dis(array, offset);
+                __const_def_array_init(constinitval->value.constinitvals, t_array, buffer + offset);
+                offset += t_array->elem_size / INT_SIZE;
+                break;
+            default:
+                PrintErrExit("NOT SUPPORT ConstInitVal ValueType %s", EnumTypeToString(constinitval->valuetype));
+        }
+        constinitvals = constinitvals->next;
+    } while (constinitvals != head);
+}
+
+void __const_def_init(struct ConstDef* constdef, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
+    EnsureNotNull(constdef->constinitval);
+    MALLOC_WITHOUT_DECLARE(elem->const_init_value, int, elem->size / INT_SIZE);
+    if (elem->is_array) {
+        if (constdef->constinitval->valuetype != CONSTINITVALS) {
+            PrintErrExit("not support use const exp to init array: %s", elem->name);
+        }
+        __const_def_array_init(constdef->constinitval->value.constinitvals, elem->array_ref, elem->const_init_value);
+    } else {
+        if (constdef->constinitval->valuetype != CONSTEXP) {
+            PrintErrExit("not support use const initvals to init variable: %s", elem->name);
+        }
+        *(elem->const_init_value) = calcConstConstExp(constdef->constinitval->value.constexp);
+    }
+}
+
+int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
+    IfNull(constdecl, return 0;);
+    int type_value = constdecl->btype->typevalue;
+    struct ConstDefs* head = constdecl->constdefs;
+    struct ConstDefs* constdefs = head;
+    do {
+        struct ConstDef* constdef = constdefs->constdef;
+        struct VarTabElem* elem = newVarTabElem(constdef->ident->name, var_table);
+        elem->level = level;
+        elem->is_const = 0;
+        elem->const_init_value = NULL;
+
+        if (constdef->constarraydefs != NULL) {
+            elem->is_array = 1;
+            elem->type = ARRAY;
+            elem->array_ref = toSSAConstArrayDefs(constdef->constarraydefs);
+            elem->size = elem->array_ref->size;
+        } else {
+            elem->is_array = 0;
+            elem->type = K_INT;
+            elem->array_ref = NULL;
+            elem->size = INT_SIZE;
+        }
+
+        if (elem->level != 0) {
+            elem->offset = func_offset - elem->size;
+            func_offset -= elem->size;
+        } else {
+            elem->offset = global_offset;
+            global_offset += elem->size;
+        }
+
+        struct BlockTabElem* block = getLastDisplay(display);
+        elem->link = block->last;
+        block->last = elem->link;
+        block->size += elem->size;
+
+        EnsureNotNull(constdef->constinitval);
+        __const_def_init(constdef, elem, basic_block);
+        elem->is_const = 1;
+
+        constdefs = constdefs->next;
+    } while (constdefs != head);
+
+    return 0;
+}
+
+int toSSADecl(struct Decl* decl, BASIC_BLOCK_TYPE* basic_block) {
     IfNull(decl, return 0;);
     switch (decl->valuetype) {
         case VARDECL:
-            return toSSAVarDecl(decl->value.vardecl, NULL);
+            return toSSAVarDecl(decl->value.vardecl, basic_block);
             break;
         case CONSTDECL:
-            return toSSAConstDecl(decl->value.constdecl);
+            return toSSAConstDecl(decl->value.constdecl, basic_block);
             break;
         default:
             PrintErrExit("NOT SUPPORT Decl ValueType %s", EnumTypeToString(decl->valuetype));
@@ -352,17 +463,346 @@ int toSSADecl(struct Decl* decl) {
     return 0;
 }
 
+struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_BLOCK_TYPE* basic_block) {
+    struct ExpArrayDefs* head = exparraydefs;
+    struct ArrayTabElem* head_array = NULL;
+    struct ArrayTabElem* prev_array = NULL;
+    struct ArrayTabElem* array = NULL;
+
+    do {
+        struct ExpArrayDef* exparraydef = exparraydef;
+        array = newArrayTabElem(array_table);
+
+        array->elem_num = 0;
+        array->elem_size = 0;
+        array->elem_type = ARRAY;
+        array->elem_size_offset = func_offset - INT_SIZE;
+        func_offset -= INT_SIZE;
+        array->size = 0;
+
+        array->elem_ref = NULL;
+        IfNull(head_array, head_array = array;);
+        IfNotNull(prev_array, prev_array->elem_ref = array;);
+        prev_array = array;
+
+        if (exparraydef->exp != NULL) {
+            OPERAND_TYPE* num_op = toSSAExp(exparraydef->exp, basic_block);
+            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
+        } else {
+            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+        }
+
+        exparraydefs = exparraydefs->next;
+    } while (exparraydefs != head);
+
+    return head_array;
+}
+
+void toSSALValWrite(struct LVal* lval, OPERAND_TYPE* result, BASIC_BLOCK_TYPE* basic_block) {
+    struct VarTabElem* elem;
+    OPERAND_TYPE* operand = NULL;
+    OPERAND_TYPE* t_op;
+    int is_array;
+    switch (lval->valuetype) {
+        case IDENT:
+            elem = getVarTabElemByName(lval->value.ident->name, display);
+            if (elem->is_array) {
+                PrintErrExit("not support assign to array");
+            }
+            t_op = toSSAVarTabElemWrite(elem, basic_block);
+            newIR(K_ADD, result, toSSAIntConst(getIntConstStatic(0), basic_block), t_op, basic_block);
+            break;
+        case ARRAYIMPL:
+            elem = getVarTabElemByName(lval->value.arrayimpl->ident->name, display);
+            if (!elem->is_array) {
+                PrintErrExit("only array variable use in array impl %s", lval->value.arrayimpl->ident->name);
+            }
+            operand = toSSAArrayImplAddress(lval->value.arrayimpl, elem, &is_array, basic_block);
+            if (is_array) {
+                PrintErrExit("not support assign to array");
+            }
+
+            newIR(STORE, operand, toSSAIntConst(getIntConstStatic(0), basic_block), result, basic_block);
+            break;
+        default:
+            PrintErrExit("toSSALValRead not support valuetype %s", EnumTypeToString(lval->valuetype));
+    }
+    return;
+}
+
+void toSSAAssign(struct Assign* assign, BASIC_BLOCK_TYPE* basic_block) {
+    OPERAND_TYPE* result = toSSAExp(assign->exp, basic_block);
+    toSSALValWrite(assign->lval, result, basic_block);
+}
+
+void toSSALAndExp(struct LAndExp* landexp, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE* false_block, BASIC_BLOCK_TYPE* basic_block) {
+    struct LAndExp* head = landexp;
+    BASIC_BLOCK_TYPE* block_head = basic_block;
+    do {
+        OPERAND_TYPE* cond = toSSAEqExp(landexp->eqexp, basic_block);
+        if (landexp->next != head) {
+            BASIC_BLOCK_TYPE* new_block = newBasicBlock(NULL);
+            newIR(BRANCH, cond, toSSABasicBlock(new_block, basic_block), toSSABasicBlock(false_block, basic_block), basic_block);
+            addBasicBlockEdge(basic_block, new_block);
+            addBasicBlockEdge(basic_block, false_block);
+            if (basic_block != block_head) {
+                setBasicBlockSealed(basic_block);
+            }
+            basic_block = new_block;
+        } else {
+            newIR(BRANCH, cond, toSSABasicBlock(true_block, basic_block), toSSABasicBlock(false_block, basic_block), basic_block);
+            addBasicBlockEdge(basic_block, true_block);
+            addBasicBlockEdge(basic_block, false_block);
+            if (basic_block != block_head) {
+                setBasicBlockSealed(basic_block);
+            }
+        }
+        landexp = landexp->next;
+    } while (landexp != head);
+}
+
+void toSSALOrExp(struct LOrExp* lorexp, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE* false_block, BASIC_BLOCK_TYPE* basic_block) {
+    struct LOrExp* head = lorexp;
+    BASIC_BLOCK_TYPE* block_head = basic_block;
+    do {
+        if (lorexp->next != head) {
+            BASIC_BLOCK_TYPE* new_block = newBasicBlock(NULL);
+            toSSALAndExp(lorexp->landexp, true_block, new_block, basic_block);
+            if (basic_block != block_head) {
+                setBasicBlockSealed(basic_block);
+            }
+            basic_block = new_block;
+        } else {
+            toSSALAndExp(lorexp->landexp, true_block, false_block, basic_block);
+            if (basic_block != block_head) {
+                setBasicBlockSealed(basic_block);
+            }
+        }
+        lorexp = lorexp->next;
+    } while (lorexp != head);
+    return;
+}
+void toSSACond(struct Cond* cond, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE* false_block, BASIC_BLOCK_TYPE* basic_block) {
+    toSSALOrExp(cond->lorexp, true_block, false_block, basic_block);
+}
+
+void toSSAIfStmt(struct IfStmt* ifstmt, BASIC_BLOCK_TYPE** basic_block_p) {
+    BASIC_BLOCK_TYPE* true_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* false_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* cond_block = *basic_block_p;
+    toSSACond(ifstmt->cond, true_block, false_block, cond_block);
+    setBasicBlockSealed(cond_block);
+
+    if (toSSAStmt(ifstmt->then, &true_block) == 0) {
+        newIR(JUMP, NULL, NULL, toSSABasicBlock(merge_block, true_block), true_block);
+        addBasicBlockEdge(true_block, merge_block);
+    }
+    setBasicBlockSealed(true_block);
+    if (toSSAStmt(ifstmt->otherwise, &false_block) == 0) {
+        newIR(JUMP, NULL, NULL, toSSABasicBlock(merge_block, false_block), false_block);
+        addBasicBlockEdge(false_block, merge_block);
+    }
+    setBasicBlockSealed(false_block);
+    *basic_block_p = merge_block;
+}
+
+void toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p) {
+    BASIC_BLOCK_TYPE* cond_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* loop_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* basic_block = *basic_block_p;
+
+    newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, basic_block), basic_block);
+    addBasicBlockEdge(basic_block, cond_block);
+    setBasicBlockSealed(basic_block);
+
+    toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);
+    pushFrontDequeList(break_target_queue, merge_block);
+    pushFrontDequeList(continue_target_queue, cond_block);
+
+    if (toSSAStmt(whilestmt->stmt, &loop_block) == 0) {
+        newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, loop_block), loop_block);
+        addBasicBlockEdge(loop_block, cond_block);
+    }
+    setBasicBlockSealed(loop_block);
+    setBasicBlockSealed(cond_block);
+
+    popFrontDequeList(break_target_queue);
+    popFrontDequeList(continue_target_queue);
+
+    *basic_block_p = merge_block;
+}
+
+void toSSAReturnStmt(struct ReturnStmt* returnstmt, BASIC_BLOCK_TYPE* basic_block) {
+    newIR(RETURNSTMT, returnstmt->exp == NULL ? NULL : toSSAExp(returnstmt->exp, basic_block), NULL, NULL, basic_block);
+}
+
+void toSSABreakStmt(BASIC_BLOCK_TYPE* basic_block) {
+    BASIC_BLOCK_TYPE* target_block = getFrontDequeList(break_target_queue);
+    EnsureNotNull(target_block);
+    newIR(JUMP, NULL, NULL, toSSABasicBlock(target_block, basic_block), basic_block);
+    addBasicBlockEdge(basic_block, target_block);
+}
+
+void toSSAContinueStmt(BASIC_BLOCK_TYPE* basic_block) {
+    BASIC_BLOCK_TYPE* target_block = getFrontDequeList(continue_target_queue);
+    EnsureNotNull(target_block);
+    newIR(JUMP, NULL, NULL, toSSABasicBlock(target_block, basic_block), basic_block);
+    addBasicBlockEdge(basic_block, target_block);
+}
+
+// 0: continue, 1: stop this block
+int toSSAStmt(struct Stmt* stmt, BASIC_BLOCK_TYPE** basic_block_p) {
+    IfNull(stmt, return 0;);
+    switch (stmt->valuetype) {
+        case ASSIGN:
+            toSSAAssign(stmt->value.assign, *basic_block_p);
+            return 0;
+        case BLOCK:
+            return toSSABlock(stmt->value.block, basic_block_p);
+        case IFSTMT:
+            toSSAIfStmt(stmt->value.ifstmt, basic_block_p);
+            return 0;
+        case WHILESTMT:
+            toSSAWhileStmt(stmt->value.whilestmt, basic_block_p);
+            return 0;
+        case EXP:
+            toSSAExp(stmt->value.exp, *basic_block_p);
+            return 0;
+        case RETURNSTMT:
+            toSSAReturnStmt(stmt->value.returnstmt, *basic_block_p);
+            return 1;
+        case BREAKSTMT:
+            toSSABreakStmt(*basic_block_p);
+            return 1;
+        case CONTINUESTMT:
+            toSSAContinueStmt(*basic_block_p);
+            return 1;
+        default:
+            PrintErrExit("NOT SUPPORT BlockItem ValueType %s", EnumTypeToString(stmt->valuetype));
+    }
+}
+
+// 0: continue, 1: stop this block( break continue return )
+int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
+    level++;
+    appendDisplay(newBlockTabElem(getLastDisplay(display), block_table), display);
+
+    struct BlockItems* head = block->blockitems;
+    struct BlockItems* blockitems = block->blockitems;
+    IfNull(head, {
+        level--;
+        removeLastDisplay(display);
+        return 0;
+    });
+    do {
+        struct BlockItem* blockitem = blockitems->blockitem;
+        switch (blockitem->valuetype) {
+            case DECL:
+                toSSADecl(blockitem->value.decl, *basic_block_p);
+                break;
+            case STMT:
+                if (toSSAStmt(blockitem->value.stmt, basic_block_p)) {
+                    level--;
+                    removeLastDisplay(display);
+                    return 1;
+                }
+                break;
+            default:
+                PrintErrExit("NOT SUPPORT BlockItem ValueType %s", EnumTypeToString(blockitem->valuetype));
+        }
+        blockitems = blockitems->next;
+    } while (blockitems != head);
+
+    level--;
+    removeLastDisplay(display);
+}
+
+void toSSAFuncDef(struct FuncDef* funcdef) {
+    struct FuncTabElem* fte = newFuncTabElem(funcdef->ident->name, func_table);
+    func_offset = 0;
+    func_fparam_offset = 0;
+
+    struct FuncFParams* f_head = funcdef->funcfparams;
+    struct FuncFParams* funcfparams = f_head;
+
+    BASIC_BLOCK_TYPE* basic_block = newBasicBlock(NULL);
+    fte->blocks = basic_block;
+    fte->return_type = funcdef->functype->typevalue;
+
+    level++;
+    appendDisplay(newBlockTabElem(getLastDisplay(display), block_table), display);
+    do {
+        struct FuncFParam* funcfparam = funcfparams->funcfparam;
+        if (funcfparam == NULL) {
+            break;
+        }
+        struct VarTabElem* elem = newVarTabElem(funcfparam->ident->name, var_table);
+        elem->size = INT_SIZE;
+        elem->level = level;
+        elem->const_init_value = NULL;
+        elem->is_const = 0;
+
+        if (funcfparam->exparraydefs != NULL) {
+            elem->is_array = 1;
+            elem->type = ARRAY;
+            elem->array_ref = toSSAExpArrayDefs(funcfparam->exparraydefs, basic_block);
+        } else {
+            elem->is_array = 0;
+            elem->type = K_INT;
+            elem->array_ref = NULL;
+        }
+
+        elem->offset = func_fparam_offset;
+        func_fparam_offset += INT_SIZE;
+
+        struct BlockTabElem* block = getLastDisplay(display);
+        elem->link = block->last;
+        block->last = elem->link;
+        block->size += elem->size;
+
+        fte->parameters_num++;
+        elem->link = fte->parameters_ref;
+        fte->parameters_size += elem->size;
+        fte->parameters_ref = elem;
+
+        funcfparams = funcfparams->next;
+    } while (funcfparams != f_head);
+
+    BASIC_BLOCK_TYPE* basic_block_head;
+    toSSABlock(funcdef->block, &basic_block);
+    setBasicBlockSealed(basic_block);
+    setLinkedTable(block_tail_table, basic_block_head, basic_block);
+
+    level--;
+    removeLastDisplay(display);
+}
+
+static int basic_block_equal(void* k1, void* k2) {
+    return k1 == k2;
+}
+
 void toSSACompUnit(struct CompUnit* cp) {
     IfNull(cp, return;);
     struct CompUnit* head = cp;
     level = 0;
+    static int need_init_flag = 1;
+    if (need_init_flag) {
+        need_init_flag = 0;
+
+        block_tail_table = newLinkedTable(basic_block_equal);
+
+        break_target_queue = newDequeList();
+        continue_target_queue = newDequeList();
+    }
     do {
         switch (cp->valuetype) {
             case FUNCDEF:
                 toSSAFuncDef(cp->value.funcdef);
                 break;
             case DECL:
-                toSSADecl(cp->value.decl);
+                toSSADecl(cp->value.decl, NULL);
                 break;
             default:
                 PrintErrExit("NOT SUPPORT CompUnit ValueType %s", EnumTypeToString(cp->valuetype));
