@@ -20,8 +20,8 @@ int pushBackDequeList(struct DequeList* deque, void* value) {
     if (deque->head + 1 == deque->tail) {
         return -1;
     }
-    void* value = setLinearList(deque, deque->tail, value);
-    IfNull(value, PrintErrExit("Must Be Empty"));
+    void* value_ = setLinearList(deque, deque->tail, value);
+    IfNotNull(value_, PrintErrExit("Must Be Empty"));
     deque->tail--;
     return 0;
 }

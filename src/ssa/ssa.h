@@ -6,21 +6,28 @@
 
 #define MAX_CAPACITY 1000000
 #define DEF_TABLE_SIZE 1000
-
 typedef void* ID;
 
-extern void * fp;                         //函数调用,栈顶指针
+typedef struct BasicBlockNode BasicBlockNode;
+typedef struct Ir Ir;
 
-extern int current_size = 0;
+typedef struct BasicBlock{
+    int is_sealed;          //前驱节点是否已经确定
+    int is_full;            //
+//    int begin_reg_idx;  
+//    int end_reg_idx;
+    Ir* ir_list;             // 基本块内包含的ir
+    int predecessor_num;    //前驱节点个数
+    BasicBlockNode* predecessors; //前驱节点
+    int successor_num;      //后代个数
+    BasicBlockNode* successors; //后代节点
+} BasicBlock;
 
-extern int max_capacity = MAX_CAPACITY;
-
-extern Value* reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄存器的数量为无限大
-
-extern ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
-
-enum IrType {HEAD,Add,Sub,Mul,Div,Minus,And,Or,Not,Branch,Jump,Call,Return,Function,Param};
-
+//基本块链表
+struct BasicBlockNode{
+    BasicBlock* value;
+    list_entry_t block_link;
+};
 
 typedef union{
     int intValue;
@@ -30,33 +37,10 @@ typedef union{
     Ir* complex_value;
 } Value;
 
-typedef struct {
-    BasicBlock* block;
-    Ir* ir;
-}Address;
-
-//基本块
-typedef struct {
-    int is_sealed;          //前驱节点是否已经确定
-    int is_full;            //
-//    int begin_reg_idx;  
-//    int end_reg_idx;
-    Ir ir_list;             // 基本块内包含的ir
-    int predecessor_num;    //前驱节点个数
-    BasicBlockNode predecessors; //前驱节点
-    int successor_num;      //后代个数
-    BasicBlockNode successors; //后代节点
-} BasicBlock;
-
-//基本块链表
-typedef struct{
-    BasicBlock* value;
-    list_entry_t block_link;
-} BasicBlockNode;
 
 //放在ir中的操作数，可以是Value也可以是寄存器，type表示的是操作数的类型,如果是value则只能是address或者int
 typedef struct{
-    enum Operand_type{PHI,INT,STRING,FUNCID,REGISTER,ADDRESS,BASIC_BLOCK} type;
+    enum Operand_type{PHI,INT,ConstSTRING,FUNCID,REGISTER,ADDRESS,BASIC_BLOCK} type;
     union{
         Value v;
         int reg_idx;
@@ -64,11 +48,11 @@ typedef struct{
 } Operand;
 
 //IR
-typedef struct{
+struct Ir{
     enum IrType type;
     Operand *op1,*op2,*op3;
     list_entry_t ir_link;
-} Ir;
+};
 
 typedef struct{
     BasicBlock start_block;
@@ -80,13 +64,26 @@ typedef struct{
         to_struct((le),type,member)
 
 
+
+
+void * fp;                         //函数调用,栈顶指针
+
+int current_size;
+
+int max_capacity = MAX_CAPACITY;
+
+Value* reg_list[MAX_CAPACITY];     //寄存器堆，在这个阶段，寄存器的数量为无限大
+
+ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+
+enum IrType {HEAD,Add,Sub,Mul,Div,Minus,And,Or,Not,Branch,Jump,Call,Return,Function,Param};
+
 Ir* create_new_ir(enum IrType op_type, Operand *op1,Operand*,Operand*);
 BasicBlock* create_new_block();
 Value* new_Value();
 
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
-
 void add_user(int i, BasicBlock* block, Ir* ir);
 void delete_user(int , Ir* );
 int read_variable(ID id, BasicBlock* block);

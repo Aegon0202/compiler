@@ -9,11 +9,11 @@
 #include<stdlib.h>
 #include<stdio.h>
 
-int current_size = 0;
-int max_capacity = MAX_CAPACITY;
-Ir* currentIr;
-Value value_list[MAX_CAPACITY];
-ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+extern int current_size;
+extern int max_capacity;
+extern Ir* currentIr;
+extern Value value_list[MAX_CAPACITY];
+extern ID id_list[MAX_CAPACITY];         //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
 int alloc_register(){
     return current_size++;
@@ -35,12 +35,12 @@ BasicBlock* create_new_block(){
     block->is_full = 0;
     block->predecessor_num = 0;
     block->successor_num = 0;
-    block->predecessors.value=NULL;
-    block->successors.value=NULL;
-    block->ir_list.type = HEAD;
-    list_init(&(block->predecessors.block_link));
-    list_init(&(block->successors.block_link));
-    list_init(&(block->ir_list.ir_link));
+    block->predecessors->value=NULL;
+    block->successors->value=NULL;
+    block->ir_list->type = HEAD;
+    list_init(&(block->predecessors->block_link));
+    list_init(&(block->successors->block_link));
+    list_init(&(block->ir_list->ir_link));
     return block;
 }
 
@@ -51,7 +51,7 @@ void connect_block(BasicBlock* pre, BasicBlock* suc){
     tmp->value = suc;
     list_add(&(tmp->block_link), &(pre->successors->block_link));
 
-    BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
+    tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
     tmp->value = pre;
     list_add(&(tmp->block_link), &(suc->predecessors->block_link));
 
@@ -95,7 +95,7 @@ OPERAND_TYPE* toSSAIntConst(struct IntConst* int_const, BASIC_BLOCK_TYPE* basic_
 
 OPERAND_TYPE* toSSAString(struct String* str, BASIC_BLOCK_TYPE* basic_block){
     OPERAND_TYPE* oprand = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
-    oprand->type = STRING;
+    oprand->type = ConstSTRING;
     oprand->operand.v.str = strdup(str->content);
     return oprand;
 }
