@@ -204,12 +204,50 @@ void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BL
     }
 }
 
+void __print_op(Operand* op) {
+    if (op == NULL) {
+        printf("- ");
+        return;
+    }
+    switch (op->type) {
+        case INT:
+            printf("$%d ", op->operand.v.intValue);
+            break;
+        case REGISTER:
+            printf("%%%d ", op->operand.reg_idx);
+            break;
+        case FRAMEPOINT:
+        case STACKPOINT:
+        case GLOBALDATA:
+            printf("@0x%x ", op->operand.v.intValue);
+            break;
+        case ConstSTRING:
+            printf("%s ", op->operand.v.str);
+            break;
+        case FUNCID:
+            printf("%s ", ((struct FuncTabElem*)(op->operand.v.funcID))->name);
+            break;
+        case BASIC_BLOCK:
+            printf("0x%p ", op->operand.v.b);
+            break;
+        default:
+            PrintErrExit("error %s", EnumTypeToString(op->type));
+    }
+}
+
 void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
     list_entry_t* head = &(basic_block->ir_list->ir_link);
     list_entry_t* next = head->next;
     while (next != head) {
         Ir* ir = le2struct(next, Ir, ir_link);
-        printf("op: %20s\top1: op2: op3:", EnumTypeToString(ir->type));
+        printf("op: %12s ", EnumTypeToString(ir->type));
+        printf("op1: ");
+        __print_op(ir->op1);
+        printf("op2: ");
+        __print_op(ir->op2);
+        printf("op3: ");
+        __print_op(ir->op3);
+        printf("\n");
         next = list_next(next);
     }
 }
