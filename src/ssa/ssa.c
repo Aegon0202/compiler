@@ -55,11 +55,11 @@ BasicBlock* create_new_block() {
 void connect_block(BasicBlock* pre, BasicBlock* suc) {
     BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
     tmp->value = suc;
-    list_add(&(tmp->block_link), &(pre->successors->block_link));
+    list_add(&(pre->successors->block_link), &(tmp->block_link));
 
     tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
     tmp->value = pre;
-    list_add(&(tmp->block_link), &(suc->predecessors->block_link));
+    list_add(&(suc->predecessors->block_link), &(tmp->block_link));
 }
 
 int read_variable(ID id, BasicBlock* block) {
@@ -197,11 +197,17 @@ void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BL
             BasicBlock* t_block = t_node->value;
             void* res = getLinkedTable(visited, t_block);
             if (res == NULL) {
+                pushFrontDequeList(queue, t_block);
                 setLinkedTable(visited, t_block, t_block);
             }
             next = list_next(next);
         }
     }
+    freeDequeList(&queue);
+    struct Item* t;
+    while ((t = popLinkedTable(visited)) != NULL)
+        free(t);
+    freeLinkedTable(visited);
 }
 
 void __print_op(Operand* op) {
@@ -228,7 +234,7 @@ void __print_op(Operand* op) {
             printf("%s ", ((struct FuncTabElem*)(op->operand.v.funcID))->name);
             break;
         case BASIC_BLOCK:
-            printf("0x%p ", op->operand.v.b);
+            printf("%p ", op->operand.v.b);
             break;
         default:
             PrintErrExit("error %s", EnumTypeToString(op->type));
@@ -238,6 +244,7 @@ void __print_op(Operand* op) {
 void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
     list_entry_t* head = &(basic_block->ir_list->ir_link);
     list_entry_t* next = head->next;
+    printf("block address %p:\n", basic_block);
     while (next != head) {
         Ir* ir = le2struct(next, Ir, ir_link);
         printf("op: %12s ", EnumTypeToString(ir->type));
