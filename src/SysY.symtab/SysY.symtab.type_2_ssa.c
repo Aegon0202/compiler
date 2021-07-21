@@ -395,7 +395,7 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
 
         struct BlockTabElem* block = getLastDisplay(display);
         elem->link = block->last;
-        block->last = elem->link;
+        block->last = elem;
         block->size += elem->size;
 
         if (vardef->initval != NULL) {
