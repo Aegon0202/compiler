@@ -7,8 +7,6 @@
 
 #define INT_SIZE 4
 
-static struct LinkedTable* block_tail_table;
-
 static struct DequeList* break_target_queue;
 static struct DequeList* continue_target_queue;
 
@@ -16,7 +14,8 @@ static int level = 0;
 static int global_offset = 0;
 static int func_offset = 0;  // variable maybe offset of $fp
 static int func_fparam_offset = 0;
-static struct FuncTabElem* producing_func;
+
+struct ArrayTabElem* __offset_to_max_hight_dis(struct ArrayTabElem* array, int offset);
 
 struct IntConst* getIntConstStatic(int value) {
     static struct IntConst int_const;
@@ -168,6 +167,8 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
         default:
             PrintErrExit("toSSALValRead not support valuetype %s", EnumTypeToString(lval->valuetype));
     }
+    PrintErrExit("unknown error happen");
+    return NULL;
 }
 
 OPERAND_TYPE* toSSANumber(struct Number* number, BASIC_BLOCK_TYPE* basic_block) {
@@ -185,6 +186,8 @@ OPERAND_TYPE* toSSAPrimaryExp(struct PrimaryExp* primaryexp, BASIC_BLOCK_TYPE* b
         default:
             PrintErrExit("primaryexp not support valuetype %s", EnumTypeToString(primaryexp->valuetype));
     }
+    PrintErrExit("unknown error happen");
+    return NULL;
 }
 
 OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_block) {
@@ -199,7 +202,7 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
 
     do {
         struct FuncRParam* frp = frps->funcrparam;
-        OPERAND_TYPE* param_op;
+        OPERAND_TYPE* param_op = NULL;
         switch (frp->valuetype) {
             case STRING:
                 param_op = toSSAString(frp->value.string, basic_block);
@@ -273,40 +276,94 @@ OPERAND_TYPE* toSSAExp(struct Exp* exp, BASIC_BLOCK_TYPE* basic_block) {
     return toSSAAddExp(exp->addexp, basic_block);
 }
 
-void __var_def_array_init(struct InitVal* initval, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
-    if (initval->valuetype != INITVALS) {
-        PrintErrExit("this function only support initvals");
-    }
-    struct InitVals* initvals = initval->value.initvals;
+void __var_def_array_init(struct InitVals* initvals, struct ArrayTabElem* array, BASIC_BLOCK_TYPE* basic_block, OPERAND_TYPE** buffer) {
     struct InitVals* head = initvals;
-    // not complete
+    int offset = 0;
+    struct ArrayTabElem* t_array;
+    do {
+        struct InitVal* initval = initvals->initval;
+        switch (initval->valuetype) {
+            case CONSTEXP:
+                buffer[offset] = toSSAExp(initval->value.exp, basic_block);
+                offset += 1;
+                break;
+            case CONSTINITVALS:
+                t_array = __offset_to_max_hight_dis(array, offset);
+                __var_def_array_init(initval->value.initvals, t_array, basic_block, buffer + offset);
+                offset += t_array->elem_size / INT_SIZE;
+                break;
+            default:
+                PrintErrExit("NOT SUPPORT ConstInitVal ValueType %s", EnumTypeToString(initval->valuetype));
+        }
+        initvals = initvals->next;
+    } while (initvals != head);
+}
+
+void __global_def_array_init(struct InitVals* initvals, struct ArrayTabElem* array, int* buffer) {
+    struct InitVals* head = initvals;
+    int offset = 0;
+    struct ArrayTabElem* t_array;
+    do {
+        struct InitVal* initval = initvals->initval;
+        switch (initval->valuetype) {
+            case EXP:
+                buffer[offset] = calcConstExp(initval->value.exp);
+                offset += 1;
+                break;
+            case INITVALS:
+                t_array = __offset_to_max_hight_dis(array, offset);
+                __global_def_array_init(initval->value.initvals, t_array, buffer + offset);
+                offset += t_array->elem_size / INT_SIZE;
+                break;
+            default:
+                PrintErrExit("NOT SUPPORT ConstInitVal ValueType %s", EnumTypeToString(initval->valuetype));
+        }
+        initvals = initvals->next;
+    } while (initvals != head);
 }
 
 void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
-    if (vardef->initval != NULL) {
-        if (elem->level == 1) {
-            PrintErrExit("function paramentor not support init value");
-        } else if (elem->level == 0) {
-            // not complete
-            MALLOC_WITHOUT_DECLARE(elem->const_init_value, int, elem->size / INT_SIZE);
-
-        } else {
-            if (elem->is_array) {
-                // not complete
-            } else {
-                if (vardef->initval->valuetype != EXP) {
-                    PrintErrExit("not support use initials to init variable: %s", elem->name);
-                }
-                OPERAND_TYPE* init_op = toSSAExp(vardef->initval->value.exp, basic_block);
-                newIR(K_ADD, init_op, toSSAIntConst(getIntConstStatic(0), basic_block), toSSAVarTabElemWrite(elem, basic_block), basic_block);
+    if (elem->level == 1) {
+        PrintErrExit("function paramentor not support init value");
+    } else if (elem->level == 0) {
+        MALLOC_WITHOUT_DECLARE(elem->const_init_value, int, elem->size / INT_SIZE);
+        if (elem->is_array) {
+            if (vardef->initval->valuetype != INITVALS) {
+                PrintErrExit("not support use const exp to init array: %s", elem->name);
             }
+            __global_def_array_init(vardef->initval->value.initvals, elem->array_ref, elem->const_init_value);
+        } else {
+            if (vardef->initval->valuetype != CONSTEXP) {
+                PrintErrExit("not support use const initvals to init variable: %s", elem->name);
+            }
+            *(elem->const_init_value) = calcConstExp(vardef->initval->value.exp);
+        }
+    } else {
+        if (elem->is_array) {
+            if (vardef->initval->valuetype != INITVALS) {
+                PrintErrExit("not support use exp to init array: %s", elem->name);
+            }
+            int total_num = elem->size / INT_SIZE;
+            MALLOC(operand_buffer, OPERAND_TYPE*, total_num);
+            __var_def_array_init(vardef->initval->value.initvals, elem->array_ref, basic_block, operand_buffer);
+            OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
+            int offset = elem->offset;
+            for (int i = 0; i < total_num; i++) {
+                newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                offset += INT_SIZE;
+            }
+        } else {
+            if (vardef->initval->valuetype != EXP) {
+                PrintErrExit("not support use initials to init variable: %s", elem->name);
+            }
+            OPERAND_TYPE* init_op = toSSAExp(vardef->initval->value.exp, basic_block);
+            newIR(K_ADD, init_op, toSSAIntConst(getIntConstStatic(0), basic_block), toSSAVarTabElemWrite(elem, basic_block), basic_block);
         }
     }
 }
 
 int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
     IfNull(vardecl, return 0;);
-    int type_value = vardecl->btype->typevalue;
     struct VarDefs* head = vardecl->vardefs;
     struct VarDefs* vardefs = head;
     do {
@@ -341,7 +398,9 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
         block->last = elem->link;
         block->size += elem->size;
 
-        __var_def_init(vardef, elem, basic_block);
+        if (vardef->initval != NULL) {
+            __var_def_init(vardef, elem, basic_block);
+        }
 
         vardefs = vardefs->next;
     } while (vardefs != head);
@@ -352,16 +411,17 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
 struct ArrayTabElem* __offset_to_max_hight_dis(struct ArrayTabElem* array, int offset) {
     while (array != NULL) {
         if (offset % (array->elem_size / INT_SIZE) == 0) {
-            return array->elem_ref;
+            return array;
         }
         array = array->elem_ref;
     }
     PrintErrExit("init const array failure");
+    return NULL;
 }
 
 void __const_def_array_init(struct ConstInitVals* constinitvals, struct ArrayTabElem* array, int* buffer) {
     struct ConstInitVals* head = constinitvals;
-    int offset;
+    int offset = 0;
     struct ArrayTabElem* t_array;
     do {
         struct ConstInitVal* constinitval = constinitvals->constinitval;
@@ -400,7 +460,6 @@ void __const_def_init(struct ConstDef* constdef, struct VarTabElem* elem, BASIC_
 
 int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
     IfNull(constdecl, return 0;);
-    int type_value = constdecl->btype->typevalue;
     struct ConstDefs* head = constdecl->constdefs;
     struct ConstDefs* constdefs = head;
     do {
@@ -468,7 +527,7 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
     struct ArrayTabElem* array = NULL;
 
     do {
-        struct ExpArrayDef* exparraydef = exparraydef;
+        struct ExpArrayDef* exparraydef = exparraydefs->exparraydef;
         array = newArrayTabElem(array_table);
 
         array->elem_num = 0;
@@ -680,6 +739,8 @@ int toSSAStmt(struct Stmt* stmt, BASIC_BLOCK_TYPE** basic_block_p) {
         default:
             PrintErrExit("NOT SUPPORT BlockItem ValueType %s", EnumTypeToString(stmt->valuetype));
     }
+    PrintErrExit("unknown error happen");
+    return 0;
 }
 
 // 0: continue, 1: stop this block( break continue return )
@@ -715,6 +776,7 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
 
     level--;
     removeLastDisplay(display);
+    return 0;
 }
 
 void toSSAFuncDef(struct FuncDef* funcdef) {
@@ -768,17 +830,11 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
         funcfparams = funcfparams->next;
     } while (funcfparams != f_head);
 
-    BASIC_BLOCK_TYPE* basic_block_head;
     toSSABlock(funcdef->block, &basic_block);
     setBasicBlockSealed(basic_block);
-    setLinkedTable(block_tail_table, basic_block_head, basic_block);
 
     level--;
     removeLastDisplay(display);
-}
-
-static int basic_block_equal(void* k1, void* k2) {
-    return k1 == k2;
 }
 
 void toSSACompUnit(struct CompUnit* cp) {
@@ -788,9 +844,6 @@ void toSSACompUnit(struct CompUnit* cp) {
     static int need_init_flag = 1;
     if (need_init_flag) {
         need_init_flag = 0;
-
-        block_tail_table = newLinkedTable(basic_block_equal);
-
         break_target_queue = newDequeList();
         continue_target_queue = newDequeList();
     }

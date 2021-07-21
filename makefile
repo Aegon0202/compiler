@@ -16,12 +16,15 @@ SYSY_DEF_SRC = 	$(SYSY_DEF_DIR)/*.c
 SYSY_AST_DIR = src/SysY.AST
 SYSY_AST_SRC = $(SYSY_AST_DIR)/SysY.AST.new.c
 
+SYSY_SYMTAB_DIR = src/SysY.symtab
+SYSY_SYMTAB_SRC = $(SYSY_SYMTAB_DIR)/*.c
+
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
 
 IR = src/ssa/ssa.c
 
-parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(IR) src/main.c
+parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(SYSY_SYMTAB_SRC) $(IR) src/main.c
 	$(CC) $(CFLAGS) $^ 
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)

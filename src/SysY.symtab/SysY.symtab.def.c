@@ -80,7 +80,7 @@ void removeLastDisplay(struct Display* display) {
     if (display->next <= 0) {
         PrintErrExit("Only Support pop Display Not Empty");
     }
-    removeLinearList(display, display->next - 1);
+    removeLinearList(display->table, display->next - 1);
     display->next--;
 }
 
@@ -89,11 +89,11 @@ struct BlockTabElem* getLastDisplay(struct Display* display) {
     if (display->next <= 0) {
         PrintErrExit("SomeThing Error Happen");
     }
-    return (struct elem_type*)getLinearList(display->table, display->next - 1);
+    return (struct BlockTabElem*)getLinearList(display->table, display->next - 1);
 }
 
 struct FuncTabElem* getFuncTabElemByName(const char* name, struct FuncTable* table) {
-    void* value = getLinkedTable(table->table, name);
+    void* value = getLinkedTable(table->table, (void*)name);
     IfNull(value, PrintErrExit("not defined function %s", name));
     return value;
 }
@@ -103,7 +103,7 @@ struct VarTabElem* getVarTabElemByName(const char* name, struct Display* display
     while (block != NULL) {
         struct VarTabElem* elem = block->last;
         while (elem != NULL) {
-            if (string_equal(name, elem->name)) {
+            if (string_equal((void*)name, (void*)elem->name)) {
                 return elem;
             }
             elem = elem->link;

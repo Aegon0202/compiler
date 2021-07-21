@@ -10,7 +10,7 @@
 #include "../utils/PrintHelper.h"
 
 int calcConstArrayImpl(struct ArrayImpl *arrayimpl) {
-    struct VarTabElem *elem = getVarTabElemByName(arrayimpl->ident->name, var_table);
+    struct VarTabElem *elem = getVarTabElemByName(arrayimpl->ident->name, display);
     if (elem == NULL) {
         PrintErrExit("NOT FOUND VARIABLE %s \n", arrayimpl->ident->name);
     }

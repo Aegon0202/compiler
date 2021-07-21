@@ -71,7 +71,7 @@ void* getBackDequeList(struct DequeList* deque) {
     return value;
 }
 
-void* getFronrDequeList(struct DequeList* deque) {
+void* getFrontDequeList(struct DequeList* deque) {
     EnsureNotNull(deque);
     EnsureNotNull(deque->content);
     if (deque->head - 1 == deque->tail) {
