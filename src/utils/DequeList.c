@@ -61,6 +61,26 @@ void* popFrontDequeList(struct DequeList* deque) {
     return value;
 }
 
+void* getBackDequeList(struct DequeList* deque) {
+    EnsureNotNull(deque);
+    EnsureNotNull(deque->content);
+    if (deque->head - 1 == deque->tail) {
+        return NULL;
+    }
+    void* value = getLinearList(deque, deque->tail + 1);
+    return value;
+}
+
+void* getFronrDequeList(struct DequeList* deque) {
+    EnsureNotNull(deque);
+    EnsureNotNull(deque->content);
+    if (deque->head - 1 == deque->tail) {
+        return NULL;
+    }
+    void* value = getLinearList(deque, deque->head - 1);
+    return value;
+}
+
 unsigned long long int sizeDequeList(struct DequeList* deque) {
     EnsureNotNull(deque);
     EnsureNotNull(deque->content);

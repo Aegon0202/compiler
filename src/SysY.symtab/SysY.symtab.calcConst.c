@@ -28,8 +28,8 @@ int calcConstArrayImpl(struct ArrayImpl *arrayimpl) {
     do {
         struct ExpArrayDef *exparraydef = exparraydefs->exparraydef;
         int n = calcConstExp(exparraydef->exp);
+        offset *= array->elem_num;
         offset += n;
-        offset *= array->elem_num <= 0 ? 1 : array->elem_num;
         exparraydefs = exparraydefs->next;
         array = array->elem_ref;
     } while (head != exparraydefs && array != NULL);
