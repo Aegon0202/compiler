@@ -1,3 +1,5 @@
+#ifndef SSA_SSA_H
+#define SSA_SSA_H
 #include "../ENUM.h"
 #include "../SysY.symtab/SysY.symtab.def.h"
 #include "../SysY.type/SysY.type.def.h"
@@ -215,3 +217,7 @@ IR_TYPE* newIR(int op, OPERAND_TYPE* op1, OPERAND_TYPE* op2, OPERAND_TYPE* op3, 
  * :param (BASIC_BLOCK_TYPE*) successor     后继
 */
 void addBasicBlockEdge(BASIC_BLOCK_TYPE* predecessor, BASIC_BLOCK_TYPE* successor);
+
+void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BLOCK_TYPE*, void*), void* args);
+void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args);
+#endif

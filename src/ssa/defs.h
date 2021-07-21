@@ -1,3 +1,5 @@
+#ifndef SSA_DEF_H
+#define SSA_DEF_H
 #include <stdint.h>
 
 #define offset(type, member) ((size_t) & (((type *)(void *)0)->member))
@@ -11,3 +13,5 @@ typedef int bool;
  * */
 #define to_struct(ptr, type, member) \
     ((type *)((char *)(ptr)-offset(type, member)))
+
+#endif

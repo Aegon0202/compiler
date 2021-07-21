@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../utils/DequeList.h"
+#include "../utils/LinkedTable.h"
+
 int current_size;
 int max_capacity;
 Ir* currentIr;
@@ -169,4 +172,40 @@ IR_TYPE* newIR(int op, OPERAND_TYPE* op1, OPERAND_TYPE* op2, OPERAND_TYPE* op3, 
 
 void addBasicBlockEdge(BASIC_BLOCK_TYPE* predecessor, BASIC_BLOCK_TYPE* successor) {
     connect_block(predecessor, successor);
+}
+
+static int __block_equal(void* k1, void* k2) {
+    return k1 == k2;
+}
+
+void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BLOCK_TYPE*, void*), void* args) {
+    struct LinkedTable* visited = newLinkedTable(__block_equal);
+    struct DequeList* queue = newDequeList();
+    setLinkedTable(visited, basic_block_head, basic_block_head);
+    pushFrontDequeList(queue, basic_block_head);
+    while (!isEmptyDequeList(queue)) {
+        BasicBlock* block = popBackDequeList(queue);
+        func(block, args);
+        list_entry_t* head = &(block->successors->block_link);
+        list_entry_t* next = list_next(head);
+        while (next != head) {
+            BasicBlockNode* t_node = le2struct(next, BasicBlockNode, block_link);
+            BasicBlock* t_block = t_node->value;
+            void* res = getLinkedTable(visited, t_block);
+            if (res == NULL) {
+                setLinkedTable(visited, t_block, t_block);
+            }
+            next = list_next(next);
+        }
+    }
+}
+
+void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
+    list_entry_t* head = &(basic_block->ir_list->ir_link);
+    list_entry_t* next = head->next;
+    while (next != head) {
+        Ir* ir = le2struct(next, Ir, ir_link);
+        printf("op: %20s\top1: op2: op3:", EnumTypeToString(ir->type));
+        next = list_next(next);
+    }
 }
