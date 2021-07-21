@@ -22,11 +22,11 @@ SYSY_SYMTAB_SRC = $(SYSY_SYMTAB_DIR)/*.c
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
 
-IR = src/ssa/ssa.c
+IR = src/ssa/ssa.c src/ssa/link.c
 
 parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(SYSY_SYMTAB_SRC) $(IR) src/main.c
 	$(CC) $(CFLAGS) $^ 
-	objdump -d ./a.out > tmp_parser.asm
+	objdump -d -S ./a.out > tmp_parser.asm
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)
 	bison -d $< -o $(BISON_DIR)/SysY.tab.h -o $(BISON_GEN_H) -o $(BISON_GEN_C)

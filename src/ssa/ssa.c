@@ -34,7 +34,10 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
 
 //创建一个新的block
 BasicBlock* create_new_block() {
-    BasicBlock* block = (BasicBlock*)malloc(sizeof(BasicBlock));
+    MALLOC(block, BasicBlock, 1);
+    MALLOC_WITHOUT_DECLARE(block->predecessors, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);
     block->is_sealed = 0;
     block->is_full = 0;
     block->predecessor_num = 0;
@@ -81,6 +84,7 @@ BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
         b->predecessor_num++;
         connect_block(predecessor, b);
     }
+
     return b;
 }
 
