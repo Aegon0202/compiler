@@ -1,11 +1,9 @@
-//#include "../SysY.AST/SysY.AST.new.h"
 #include "../SysY.type/SysY.type.def.h"
-// #include "../ssa/ssa.h"
 #include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
 #include "./SysY.symtab.calcConst.h"
 #include "./SysY.symtab.def.h"
-#include "./tmp_declara.h"
+#include "./SysY.symtab.ssa.h"
 
 #define INT_SIZE 4
 

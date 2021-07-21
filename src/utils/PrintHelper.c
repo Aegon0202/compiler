@@ -1,8 +1,6 @@
 #include "PrintHelper.h"
 
-#include "../SysY.AST/SysY.AST.def.h"
-#include "../SysY.type/SysY.type.def.h"
-#include "../SysY.type/SysY.type.symtab.h"
+#include "../ENUM.h"
 #include "../parser/SysY.tab.h"
 //#include "../ssa/ssa.h"
 const char *EnumTypeToString(int type) {
