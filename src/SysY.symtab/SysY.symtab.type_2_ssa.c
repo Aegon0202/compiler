@@ -333,7 +333,7 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
             }
             __global_def_array_init(vardef->initval->value.initvals, elem->array_ref, elem->const_init_value);
         } else {
-            if (vardef->initval->valuetype != CONSTEXP) {
+            if (vardef->initval->valuetype != EXP) {
                 PrintErrExit("not support use const initvals to init variable: %s", elem->name);
             }
             *(elem->const_init_value) = calcConstExp(vardef->initval->value.exp);
@@ -369,6 +369,7 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
     do {
         struct VarDef* vardef = vardefs->vardef;
         struct VarTabElem* elem = newVarTabElem(vardef->ident->name, var_table);
+        toSSAVarTabElemWrite(elem, basic_block);
         elem->level = level;
         elem->is_const = 0;
         elem->const_init_value = NULL;
@@ -465,6 +466,7 @@ int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
     do {
         struct ConstDef* constdef = constdefs->constdef;
         struct VarTabElem* elem = newVarTabElem(constdef->ident->name, var_table);
+        toSSAVarTabElemWrite(elem, basic_block);
         elem->level = level;
         elem->is_const = 0;
         elem->const_init_value = NULL;
@@ -491,7 +493,7 @@ int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
 
         struct BlockTabElem* block = getLastDisplay(display);
         elem->link = block->last;
-        block->last = elem->link;
+        block->last = elem;
         block->size += elem->size;
 
         EnsureNotNull(constdef->constinitval);
@@ -799,6 +801,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
             break;
         }
         struct VarTabElem* elem = newVarTabElem(funcfparam->ident->name, var_table);
+        toSSAVarTabElemWrite(elem, basic_block);
         elem->size = INT_SIZE;
         elem->level = level;
         elem->const_init_value = NULL;
@@ -819,7 +822,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
 
         struct BlockTabElem* block = getLastDisplay(display);
         elem->link = block->last;
-        block->last = elem->link;
+        block->last = elem;
         block->size += elem->size;
 
         fte->parameters_num++;
@@ -858,9 +861,7 @@ void toSSACompUnit(struct CompUnit* cp) {
             default:
                 PrintErrExit("NOT SUPPORT CompUnit ValueType %s", EnumTypeToString(cp->valuetype));
         }
-        if (cp->valuetype == FUNCDEF) {
-        } else if (cp)
-            cp = cp->next;
+        cp = cp->next;
     } while (cp != head);
     return;
 }

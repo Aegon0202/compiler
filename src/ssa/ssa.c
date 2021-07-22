@@ -210,35 +210,41 @@ void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BL
     freeLinkedTable(&visited);
 }
 
-void __print_op(Operand* op) {
+const char* _op_to_str(Operand* op) {
+    static char buffer[20];
     if (op == NULL) {
-        printf("- ");
-        return;
+        snprintf(buffer, 20, "%5s: -", "-");
+        return buffer;
     }
     switch (op->type) {
         case INT:
-            printf("$%d ", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: $%d", "int", op->operand.v.intValue);
             break;
         case REGISTER:
-            printf("%%%d ", op->operand.reg_idx);
+            snprintf(buffer, 20, "%5s: %%%d", "reg", op->operand.reg_idx);
             break;
         case FRAMEPOINT:
+            snprintf(buffer, 20, "%5s: @%d", "$fp", op->operand.v.intValue);
+            break;
         case STACKPOINT:
+            snprintf(buffer, 20, "%5s: @%d", "$sp", op->operand.v.intValue);
+            break;
         case GLOBALDATA:
-            printf("@0x%x ", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: @%d", "$gd", op->operand.v.intValue);
             break;
         case ConstSTRING:
-            printf("%s ", op->operand.v.str);
+            snprintf(buffer, 20, "%5s: %-10s", "str", op->operand.v.str);
             break;
         case FUNCID:
-            printf("%s ", ((struct FuncTabElem*)(op->operand.v.funcID))->name);
+            snprintf(buffer, 20, "%5s: %-10s", "func", ((struct FuncTabElem*)(op->operand.v.funcID))->name);
             break;
         case BASIC_BLOCK:
-            printf("%p ", op->operand.v.b);
+            snprintf(buffer, 20, "%5s: %p", "block", op->operand.v.b);
             break;
         default:
             PrintErrExit("error %s", EnumTypeToString(op->type));
     }
+    return buffer;
 }
 
 void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
@@ -247,13 +253,10 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
     printf("block address %p:\n", basic_block);
     while (next != head) {
         Ir* ir = le2struct(next, Ir, ir_link);
-        printf("op: %12s ", EnumTypeToString(ir->type));
-        printf("op1: ");
-        __print_op(ir->op1);
-        printf("op2: ");
-        __print_op(ir->op2);
-        printf("op3: ");
-        __print_op(ir->op3);
+        printf("op: %12s\t", EnumTypeToString(ir->type));
+        printf("op1: %-20s\t", _op_to_str(ir->op1));
+        printf("op2: %-20s\t", _op_to_str(ir->op3));
+        printf("op3: %-20s\t", _op_to_str(ir->op2));
         printf("\n");
         next = list_next(next);
     }
