@@ -17,7 +17,7 @@ int current_size;
 int max_capacity;
 Ir* currentIr;
 Value value_list[MAX_CAPACITY];
-struct LinearList* id_list;  // index: VarTabElem* value: Value*
+struct LinearList* id_list;  // index: VarTabElem* value: int*
 //ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
 int alloc_register() {
