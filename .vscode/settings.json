@@ -12,7 +12,12 @@
         "sysy.type.visitor.h": "c",
         "linearlist.h": "c",
         "sysy.type.def.h": "c",
-        "output": "c"
+        "output": "c",
+        "functional": "cpp",
+        "iterator": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "ostream": "cpp"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
     "files.autoSave": "onFocusChange",

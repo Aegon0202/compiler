@@ -14,7 +14,7 @@ static int level = 0;
 static int global_offset = 0;
 static int func_offset = 0;  // variable maybe offset of $fp
 static int func_fparam_offset = 0;
-
+static int max_func_offset = 0;
 struct ArrayTabElem* __offset_to_max_hight_dis(struct ArrayTabElem* array, int offset);
 
 struct IntConst* getIntConstStatic(int value) {
@@ -749,7 +749,7 @@ int toSSAStmt(struct Stmt* stmt, BASIC_BLOCK_TYPE** basic_block_p) {
 int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
     level++;
     appendDisplay(newBlockTabElem(getLastDisplay(display), block_table), display);
-
+    int old_func_offset = func_offset;
     struct BlockItems* head = block->blockitems;
     struct BlockItems* blockitems = block->blockitems;
     IfNull(head, {
@@ -765,6 +765,8 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
                 break;
             case STMT:
                 if (toSSAStmt(blockitem->value.stmt, basic_block_p)) {
+                    max_func_offset = func_offset < max_func_offset ? func_offset : max_func_offset;
+                    func_offset = old_func_offset;
                     level--;
                     removeLastDisplay(display);
                     return 1;
@@ -776,6 +778,8 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
         blockitems = blockitems->next;
     } while (blockitems != head);
 
+    max_func_offset = func_offset < max_func_offset ? func_offset : max_func_offset;
+    func_offset = old_func_offset;
     level--;
     removeLastDisplay(display);
     return 0;
@@ -783,8 +787,9 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
 
 void toSSAFuncDef(struct FuncDef* funcdef) {
     struct FuncTabElem* fte = newFuncTabElem(funcdef->ident->name, func_table);
-    func_offset = 0;
-    func_fparam_offset = 0;
+    func_offset = 0;         // 32:
+    func_fparam_offset = 8;  // $fp, $lr
+    max_func_offset = 0;
 
     struct FuncFParams* f_head = funcdef->funcfparams;
     struct FuncFParams* funcfparams = f_head;
@@ -829,6 +834,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
         elem->link = fte->parameters_ref;
         fte->parameters_size += elem->size;
         fte->parameters_ref = elem;
+        fte->var_offset_end = func_offset;
 
         funcfparams = funcfparams->next;
     } while (funcfparams != f_head);

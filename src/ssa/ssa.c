@@ -17,7 +17,8 @@ int current_size;
 int max_capacity;
 Ir* currentIr;
 Value value_list[MAX_CAPACITY];
-ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+struct LinearList* id_list;  // index: VarTabElem* value: Value*
+//ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
 int alloc_register() {
     return current_size++;
@@ -64,17 +65,21 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
 
 int read_variable(ID id, BasicBlock* block) {
     //根据id寻找是否在次之前定义过这个变量
-    int i = 0;
-    for (; i < current_size; i++)
-        if (id_list[i] == id)
-            return i;
-    return -1;
+    int* reg_p = getLinearList(id_list, (size_t)id);
+    if (reg_p == NULL) {
+        return -1;
+    } else {
+        return *reg_p;
+    }
 }
 
 void write_variable(ID id, BasicBlock* block, Ir* ir) {
     //定义这个变量
     int reg = alloc_register();
-    id_list[reg] = id;
+
+    MALLOC(reg_p, int, 1);
+    *reg_p = reg;
+    setLinearList(id_list, (size_t)id, reg_p);
     value_list[reg].complex_value = ir;
 }
 
@@ -128,7 +133,10 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
         int new_reg = alloc_register();
         op->type = REGISTER;
         op->operand.reg_idx = new_reg;
-        id_list[new_reg] = (ID)vte;
+
+        MALLOC(reg_p, int, 1);
+        *reg_p = new_reg;
+        setLinearList(id_list, (size_t)vte, reg_p);
     }
     return op;
 }
@@ -162,7 +170,10 @@ OPERAND_TYPE* toSSATempVariable(BASIC_BLOCK_TYPE* basic_block) {
     MALLOC(op, OPERAND_TYPE, 1);
     op->type = REGISTER;
     op->operand.reg_idx = alloc_register();
-    id_list[op->operand.reg_idx] = (ID)op;
+
+    MALLOC(reg_id, int, 1);
+    *reg_id = op->operand.reg_idx;
+    setLinearList(id_list, (size_t)op, reg_id);
     return op;
 }
 

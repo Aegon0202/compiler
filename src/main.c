@@ -13,11 +13,12 @@
 #include "ssa/ssa.h"
 
 YYSTYPE result;
+void init();
 
 int main() {
     //initPrintToken();
     // initFreeToken();
-    init_all_table();
+    init();
     yyparse();
     toSSACompUnit(result.compunit);
     struct FuncTabElem* fte = getFuncTabElemByName("test", func_table);
