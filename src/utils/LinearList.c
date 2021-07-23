@@ -197,3 +197,25 @@ void* removeLinearList(struct LinearList* linear, unsigned long long int index) 
     }
     return NULL;
 }
+
+// from begin_index +1 to end_index
+struct LinearList* mapLinearList(struct LinearList* linear, ull begin_index, ull end_index, void* (*map_func)(void*, void*), int is_local, void* args) {
+    struct LinearList* n_list = NULL;
+    if (is_local) {
+        n_list = linear;
+    } else {
+        n_list = newLinearList();
+    }
+    for (ull i = begin_index; i != end_index; i++) {
+        setLinearList(n_list, i, map_func(getLinearList(linear, i), args));
+    }
+    return n_list;
+}
+
+void* reduceLinearList(struct LinearList* linear, ull begin_index, ull end_index, void* (*reduce_func)(void*, void*, void*), void* init_value, void* args) {
+    void* value = init_value;
+    for (ull i = begin_index; i != end_index; i++) {
+        value = reduce_func(value, getLinearList(linear, i), args);
+    }
+    return value;
+}

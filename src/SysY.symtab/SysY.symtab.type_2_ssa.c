@@ -5,8 +5,6 @@
 #include "./SysY.symtab.def.h"
 #include "./SysY.symtab.ssa.h"
 
-#define INT_SIZE 4
-
 static struct DequeList* break_target_queue;
 static struct DequeList* continue_target_queue;
 
@@ -14,7 +12,7 @@ static int level = 0;
 static int global_offset = 0;
 static int func_offset = 0;  // variable maybe offset of $fp
 static int func_fparam_offset = 0;
-
+static int max_func_offset = 0;
 struct ArrayTabElem* __offset_to_max_hight_dis(struct ArrayTabElem* array, int offset);
 
 struct IntConst* getIntConstStatic(int value) {
@@ -333,7 +331,7 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
             }
             __global_def_array_init(vardef->initval->value.initvals, elem->array_ref, elem->const_init_value);
         } else {
-            if (vardef->initval->valuetype != CONSTEXP) {
+            if (vardef->initval->valuetype != EXP) {
                 PrintErrExit("not support use const initvals to init variable: %s", elem->name);
             }
             *(elem->const_init_value) = calcConstExp(vardef->initval->value.exp);
@@ -369,6 +367,7 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
     do {
         struct VarDef* vardef = vardefs->vardef;
         struct VarTabElem* elem = newVarTabElem(vardef->ident->name, var_table);
+        toSSAVarTabElemWrite(elem, basic_block);
         elem->level = level;
         elem->is_const = 0;
         elem->const_init_value = NULL;
@@ -465,6 +464,7 @@ int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
     do {
         struct ConstDef* constdef = constdefs->constdef;
         struct VarTabElem* elem = newVarTabElem(constdef->ident->name, var_table);
+        toSSAVarTabElemWrite(elem, basic_block);
         elem->level = level;
         elem->is_const = 0;
         elem->const_init_value = NULL;
@@ -491,7 +491,7 @@ int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
 
         struct BlockTabElem* block = getLastDisplay(display);
         elem->link = block->last;
-        block->last = elem->link;
+        block->last = elem;
         block->size += elem->size;
 
         EnsureNotNull(constdef->constinitval);
@@ -747,7 +747,7 @@ int toSSAStmt(struct Stmt* stmt, BASIC_BLOCK_TYPE** basic_block_p) {
 int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
     level++;
     appendDisplay(newBlockTabElem(getLastDisplay(display), block_table), display);
-
+    int old_func_offset = func_offset;
     struct BlockItems* head = block->blockitems;
     struct BlockItems* blockitems = block->blockitems;
     IfNull(head, {
@@ -763,6 +763,8 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
                 break;
             case STMT:
                 if (toSSAStmt(blockitem->value.stmt, basic_block_p)) {
+                    max_func_offset = func_offset < max_func_offset ? func_offset : max_func_offset;
+                    func_offset = old_func_offset;
                     level--;
                     removeLastDisplay(display);
                     return 1;
@@ -774,6 +776,8 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
         blockitems = blockitems->next;
     } while (blockitems != head);
 
+    max_func_offset = func_offset < max_func_offset ? func_offset : max_func_offset;
+    func_offset = old_func_offset;
     level--;
     removeLastDisplay(display);
     return 0;
@@ -781,8 +785,9 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
 
 void toSSAFuncDef(struct FuncDef* funcdef) {
     struct FuncTabElem* fte = newFuncTabElem(funcdef->ident->name, func_table);
-    func_offset = 0;
-    func_fparam_offset = 0;
+    func_offset = 0;         // 32:
+    func_fparam_offset = 8;  // $fp, $lr
+    max_func_offset = 0;
 
     struct FuncFParams* f_head = funcdef->funcfparams;
     struct FuncFParams* funcfparams = f_head;
@@ -799,6 +804,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
             break;
         }
         struct VarTabElem* elem = newVarTabElem(funcfparam->ident->name, var_table);
+        toSSAVarTabElemWrite(elem, basic_block);
         elem->size = INT_SIZE;
         elem->level = level;
         elem->const_init_value = NULL;
@@ -819,13 +825,14 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
 
         struct BlockTabElem* block = getLastDisplay(display);
         elem->link = block->last;
-        block->last = elem->link;
+        block->last = elem;
         block->size += elem->size;
 
         fte->parameters_num++;
         elem->link = fte->parameters_ref;
         fte->parameters_size += elem->size;
         fte->parameters_ref = elem;
+        fte->var_offset_end = func_offset;
 
         funcfparams = funcfparams->next;
     } while (funcfparams != f_head);
@@ -858,9 +865,7 @@ void toSSACompUnit(struct CompUnit* cp) {
             default:
                 PrintErrExit("NOT SUPPORT CompUnit ValueType %s", EnumTypeToString(cp->valuetype));
         }
-        if (cp->valuetype == FUNCDEF) {
-        } else if (cp)
-            cp = cp->next;
+        cp = cp->next;
     } while (cp != head);
     return;
 }

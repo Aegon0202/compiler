@@ -17,7 +17,9 @@ int current_size;
 int max_capacity;
 Ir* currentIr;
 Value value_list[MAX_CAPACITY];
-ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+struct LinearList* id_list;            // index: VarTabElem* value: int*
+struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
+//ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
 int alloc_register() {
     return current_size++;
@@ -64,17 +66,21 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
 
 int read_variable(ID id, BasicBlock* block) {
     //根据id寻找是否在次之前定义过这个变量
-    int i = 0;
-    for (; i < current_size; i++)
-        if (id_list[i] == id)
-            return i;
-    return -1;
+    int* reg_p = getLinearList(id_list, (size_t)id);
+    if (reg_p == NULL) {
+        return -1;
+    } else {
+        return *reg_p;
+    }
 }
 
 void write_variable(ID id, BasicBlock* block, Ir* ir) {
     //定义这个变量
     int reg = alloc_register();
-    id_list[reg] = id;
+
+    MALLOC(reg_p, int, 1);
+    *reg_p = reg;
+    setLinearList(id_list, (size_t)id, reg_p);
     value_list[reg].complex_value = ir;
 }
 
@@ -128,7 +134,11 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
         int new_reg = alloc_register();
         op->type = REGISTER;
         op->operand.reg_idx = new_reg;
-        id_list[new_reg] = (ID)vte;
+
+        MALLOC(reg_p, int, 1);
+        *reg_p = new_reg;
+        setLinearList(id_list, (size_t)vte, reg_p);
+        setLinearList(reg_id_vartabelem, *reg_p, vte);
     }
     return op;
 }
@@ -162,7 +172,10 @@ OPERAND_TYPE* toSSATempVariable(BASIC_BLOCK_TYPE* basic_block) {
     MALLOC(op, OPERAND_TYPE, 1);
     op->type = REGISTER;
     op->operand.reg_idx = alloc_register();
-    id_list[op->operand.reg_idx] = (ID)op;
+
+    MALLOC(reg_id, int, 1);
+    *reg_id = op->operand.reg_idx;
+    setLinearList(id_list, (size_t)op, reg_id);
     return op;
 }
 
@@ -210,35 +223,41 @@ void goThroughFunction(BASIC_BLOCK_TYPE* basic_block_head, void (*func)(BASIC_BL
     freeLinkedTable(&visited);
 }
 
-void __print_op(Operand* op) {
+const char* _op_to_str(Operand* op) {
+    static char buffer[20];
     if (op == NULL) {
-        printf("- ");
-        return;
+        snprintf(buffer, 20, "%5s: -", "-");
+        return buffer;
     }
     switch (op->type) {
         case INT:
-            printf("$%d ", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: $%d", "int", op->operand.v.intValue);
             break;
         case REGISTER:
-            printf("%%%d ", op->operand.reg_idx);
+            snprintf(buffer, 20, "%5s: %%%d", "reg", op->operand.reg_idx);
             break;
         case FRAMEPOINT:
+            snprintf(buffer, 20, "%5s: @%d", "$fp", op->operand.v.intValue);
+            break;
         case STACKPOINT:
+            snprintf(buffer, 20, "%5s: @%d", "$sp", op->operand.v.intValue);
+            break;
         case GLOBALDATA:
-            printf("@0x%x ", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: @%d", "$gd", op->operand.v.intValue);
             break;
         case ConstSTRING:
-            printf("%s ", op->operand.v.str);
+            snprintf(buffer, 20, "%5s: %-10s", "str", op->operand.v.str);
             break;
         case FUNCID:
-            printf("%s ", ((struct FuncTabElem*)(op->operand.v.funcID))->name);
+            snprintf(buffer, 20, "%5s: %-10s", "func", ((struct FuncTabElem*)(op->operand.v.funcID))->name);
             break;
         case BASIC_BLOCK:
-            printf("%p ", op->operand.v.b);
+            snprintf(buffer, 20, "%5s: %p", "block", op->operand.v.b);
             break;
         default:
             PrintErrExit("error %s", EnumTypeToString(op->type));
     }
+    return buffer;
 }
 
 void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
@@ -247,13 +266,10 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
     printf("block address %p:\n", basic_block);
     while (next != head) {
         Ir* ir = le2struct(next, Ir, ir_link);
-        printf("op: %12s ", EnumTypeToString(ir->type));
-        printf("op1: ");
-        __print_op(ir->op1);
-        printf("op2: ");
-        __print_op(ir->op2);
-        printf("op3: ");
-        __print_op(ir->op3);
+        printf("op: %12s\t", EnumTypeToString(ir->type));
+        printf("op1: %-20s\t", _op_to_str(ir->op1));
+        printf("op2: %-20s\t", _op_to_str(ir->op2));
+        printf("op3: %-20s\t", _op_to_str(ir->op3));
         printf("\n");
         next = list_next(next);
     }

@@ -12,7 +12,12 @@
         "sysy.type.visitor.h": "c",
         "linearlist.h": "c",
         "sysy.type.def.h": "c",
-        "output": "c"
+        "output": "c",
+        "ratio": "c",
+        "sysy.target.def.h": "c",
+        "*.tcc": "c",
+        "istream": "c",
+        "ostream": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
     "files.autoSave": "onFocusChange",

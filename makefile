@@ -24,7 +24,9 @@ UTILS_SRC = $(UTILS_DIR)/*.c
 
 IR = src/ssa/ssa.c src/ssa/link.c
 
-parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(SYSY_SYMTAB_SRC) $(IR) src/main.c
+MAIN = src/main.c src/init.c
+
+parser: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(SYSY_SYMTAB_SRC) $(IR) $(MAIN)
 	$(CC) $(CFLAGS) $^ 
 	objdump -d -S ./a.out > tmp_parser.asm
 
