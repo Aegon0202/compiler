@@ -17,13 +17,12 @@ typedef struct Ir Ir;
 typedef struct BasicBlock {
     int is_sealed;                 //前驱节点是否已经确定
     int is_full;                   //
-                                   //    int begin_reg_idx;
-                                   //    int end_reg_idx;
     Ir* ir_list;                   // 基本块内包含的ir
     int predecessor_num;           //前驱节点个数
     BasicBlockNode* predecessors;  //前驱节点
     int successor_num;             //后代个数
     BasicBlockNode* successors;    //后代节点
+    BasicBlockNode* dominantor;    //必经节点集
 } BasicBlock;
 
 //基本块链表

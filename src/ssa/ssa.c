@@ -40,6 +40,7 @@ BasicBlock* create_new_block() {
     MALLOC_WITHOUT_DECLARE(block->predecessors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);
+    MALLOC_WITHOUT_DECLARE(block->dominantor, BasicBlockNode, 1);
     block->is_sealed = 0;
     block->is_full = 0;
     block->predecessor_num = 0;
@@ -47,9 +48,11 @@ BasicBlock* create_new_block() {
     block->predecessors->value = NULL;
     block->successors->value = NULL;
     block->ir_list->type = NOP;
+    block->dominantor->value = NULL;
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
+    list_init(&(block->dominantor->block_link));
     return block;
 }
 
@@ -273,4 +276,134 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
         printf("\n");
         next = list_next(next);
     }
+}
+
+//ssa form construct-------------------------------------------------------------------
+
+void __get_all_nodes(BasicBlock* block, BasicBlockNode* node) {
+    return;
+}
+
+void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* start) {
+    list_entry_t* head = &(block->dominantor->block_link);
+    list_entry_t* head_node_set = &(node_set->block_link);
+    list_entry_t* elem = list_next(head_node_set);
+    MALLOC(node, BasicBlockNode, 1);
+    node->value = node_set->value;
+    list_add(head, &(node->block_link));
+
+    while (head_node_set != elem) {
+        if (le2struct(elem, BasicBlockNode, block_link)->value != start) {
+            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+            node->value = le2struct(elem, BasicBlockNode, block_link)->value;
+            list_add(head, node);
+        }
+        elem = list_next(elem);
+    }
+    return;
+}
+
+int __search_BlockNode_elem(list_entry_t* list, BasicBlock* value) {
+    list_entry_t* elem = list_next(list);
+    while (elem != list) {
+        if (le2struct(elem, BasicBlockNode, block_link)->value == value)
+            return 1;
+        elem = list_next(elem);
+    }
+    return 0;
+}
+
+void __delet_list(list_entry_t* list1) {
+    list_entry_t* elem1 = list_next(list1);
+    while (elem1 != list1) {
+        list_entry_t* elem1_copy = elem1;
+        elem1 = list_next(elem1);
+        free(le2struct(elem1_copy, BasicBlockNode, block_link));
+    }
+    free(le2struct(list1, BasicBlockNode, block_link));
+}
+
+//list1 = list1交list2
+list_entry_t* __intersection_list(list_entry_t* list1, list_entry_t* list2) {
+    list_entry_t* elem1 = list_next(list1);
+    list_entry_t* elem2 = list_next(list2);
+    BasicBlockNode* node;
+    list_entry_t* result;
+    MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+    result = &(node->block_link);
+    list_init(result);
+    node->value = NULL;
+    while (elem1 != list1) {
+        if (__search_BlockNode_elem(list2, le2struct(elem1, BasicBlockNode, block_link)->value)) {
+            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+            node->value = le2struct(elem1, BasicBlockNode, block_link)->value;
+            list_add(result, &(node->block_link));
+        }
+        elem1 = list_next(elem1);
+    }
+    elem1 = list_next(list1);
+    return result;
+}
+
+//list1是不是list2的子集
+int __is_sublist(list_entry_t* list1, list_entry_t* list2) {
+    return 1;
+}
+
+int __list_equal(list_entry_t* list1, list_entry_t* list2) {
+    return __is_sublist(list1, list2) && __is_sublist(list2, list1);
+}
+
+void caculate_dominance(BasicBlock* start) {
+    list_entry_t* head;
+    list_entry_t* list = &(start->dominantor->block_link);
+    MALLOC(node, BasicBlockNode, 1);
+    node->value = start;
+    list_entry_t* elem = &(node->block_link);
+    list_add(list, elem);
+
+    MALLOC(node_set, BasicBlockNode, 1);
+    list_init(&(node_set->block_link));
+    __get_all_nodes(start, &node_set);
+    head = &(node_set->block_link);
+    elem = list_next(head);
+
+    //对每一个basicblock结点初始化
+    while (head != elem) {
+        __init_dominator(le2struct(elem, BasicBlockNode, block_link)->value, node_set, start);
+        elem = list_next(elem);
+    }
+
+    int change = 1;
+    do {
+        change = 0;
+        elem = list_next(head);
+        //遍历所有结点
+        while (elem != head) {
+            //对前驱结点的dominator集合求并集
+            //收敛之后就推出循环
+            list_entry_t* new_list = &(node_set->block_link);
+            BasicBlock* value = le2struct(elem, BasicBlockNode, block_link)->value;
+            //遍历所有前驱结点
+            list_entry_t* pre_node_list = &(le2struct(elem, BasicBlockNode, block_link)->value->predecessors->block_link);
+            list_entry_t* pre_node_elem = list_next(pre_node_list);
+            while (pre_node_list != pre_node_elem) {
+                list_entry_t l = le2struct(pre_node_elem, BasicBlockNode, block_link)->value->dominantor->block_link;
+                list_entry_t* tmp = __intersection_list(new_list, &l);
+                __delet_list(new_list);
+                new_list = tmp;
+                pre_node_elem = list_next(pre_node_elem);
+            }
+            if (!__search_BlockNode_elem(new_list, value)) {
+                MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+                node->value = value;
+                list_add(new_list, &(node->block_link));
+            }
+            if (!__list_equal(new_list, &(value->dominantor->block_link))) {
+                change = 1;
+                __delet_list(&(value->dominantor->block_link));
+                value->dominantor = le2struct(new_list, BasicBlockNode, block_link);
+            }
+        }
+    } while (change == 1);
 }
