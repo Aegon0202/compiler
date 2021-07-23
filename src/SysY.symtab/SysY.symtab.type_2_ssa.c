@@ -5,8 +5,6 @@
 #include "./SysY.symtab.def.h"
 #include "./SysY.symtab.ssa.h"
 
-#define INT_SIZE 4
-
 static struct DequeList* break_target_queue;
 static struct DequeList* continue_target_queue;
 

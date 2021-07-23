@@ -17,7 +17,8 @@ int current_size;
 int max_capacity;
 Ir* currentIr;
 Value value_list[MAX_CAPACITY];
-struct LinearList* id_list;  // index: VarTabElem* value: int*
+struct LinearList* id_list;            // index: VarTabElem* value: int*
+struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
 //ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
 int alloc_register() {
@@ -137,6 +138,7 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
         MALLOC(reg_p, int, 1);
         *reg_p = new_reg;
         setLinearList(id_list, (size_t)vte, reg_p);
+        setLinearList(reg_id_vartabelem, *reg_p, vte);
     }
     return op;
 }
@@ -266,8 +268,8 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
         Ir* ir = le2struct(next, Ir, ir_link);
         printf("op: %12s\t", EnumTypeToString(ir->type));
         printf("op1: %-20s\t", _op_to_str(ir->op1));
-        printf("op2: %-20s\t", _op_to_str(ir->op3));
-        printf("op3: %-20s\t", _op_to_str(ir->op2));
+        printf("op2: %-20s\t", _op_to_str(ir->op2));
+        printf("op3: %-20s\t", _op_to_str(ir->op3));
         printf("\n");
         next = list_next(next);
     }

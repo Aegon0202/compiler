@@ -13,11 +13,11 @@
         "linearlist.h": "c",
         "sysy.type.def.h": "c",
         "output": "c",
-        "functional": "cpp",
-        "iterator": "cpp",
-        "istream": "cpp",
-        "limits": "cpp",
-        "ostream": "cpp"
+        "ratio": "c",
+        "sysy.target.def.h": "c",
+        "*.tcc": "c",
+        "istream": "c",
+        "ostream": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
     "files.autoSave": "onFocusChange",

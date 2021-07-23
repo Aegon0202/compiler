@@ -180,4 +180,19 @@ void add_library_funcs(struct FuncTable* func_table) {
 
     func = newFuncTabElem("getch", func_table);
     func->return_type = K_INT;
+
+    func = newFuncTabElem("getarray", func_table);
+    func->return_type = K_INT;
+
+    func = newFuncTabElem("putint", func_table);
+
+    func = newFuncTabElem("putch", func_table);
+
+    func = newFuncTabElem("putarray", func_table);
+
+    func = newFuncTabElem("putf", func_table);
+
+    func = newFuncTabElem("starttime", func_table);
+
+    func = newFuncTabElem("stoptime", func_table);
 }

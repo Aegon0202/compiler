@@ -65,7 +65,8 @@ extern int max_capacity;
 
 extern Value* reg_list[MAX_CAPACITY];  //寄存器堆，在这个阶段，寄存器的数量为无限大
 
-extern struct LinearList* id_list;  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+extern struct LinearList* id_list;            //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+extern struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
 
 Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
 BasicBlock* create_new_block();

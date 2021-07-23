@@ -16,8 +16,6 @@ YYSTYPE result;
 void init();
 
 int main() {
-    //initPrintToken();
-    // initFreeToken();
     init();
     yyparse();
     toSSACompUnit(result.compunit);
