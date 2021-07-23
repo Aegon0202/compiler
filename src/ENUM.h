@@ -78,15 +78,16 @@ enum {
     NOP,
 
     ARRAY,
-    FRAMEPOINT,
-    STACKPOINT,
-    GLOBALDATA,
 
+    //operand type
     PHI,
     INT,
     ConstSTRING,
     FUNCID,
     REGISTER,
+    FRAMEPOINT,
+    STACKPOINT,
+    GLOBALDATA,
     ADDRESS,
     BASIC_BLOCK,
 
