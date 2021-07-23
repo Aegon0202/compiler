@@ -1,10 +1,6 @@
 #include "../ssa/traverse.h"
 #include "./SysY.target.def.h"
 
-static int __reg_id_equal(void* k1, void* k2) {
-    return k1 == k2;
-}
-
 struct FuncActive* newFuncActive(struct FuncTabElem* elem) {
     MALLOC(f_active, struct FuncActive, 1);
     f_active->funcelem = elem;
@@ -27,9 +23,9 @@ struct BlockLevelActive* newBlockLevelActive(BASIC_BLOCK_TYPE* basic_block) {
     return b_active;
 }
 
-struct IrLevelActive* newIrLevelActive(REG_ID_TYPE* reg) {
+struct IrLevelActive* newIrLevelActive(REG_ID_TYPE reg) {
     MALLOC(r_active, struct IrLevelActive, 1);
-    r_active->block_line_active = newLinkedTable(__reg_id_equal);
+    r_active->block_line_active = newLinearList();
     r_active->reg = reg;
     return r_active;
 }
@@ -46,7 +42,7 @@ struct ActiveStatus* newActiveStatus(int line_num, BASIC_BLOCK_TYPE* basic_block
 struct LinearList* newActiveStatusBlock(struct IrLevelActive* ir_active, struct BlockLevelActive* b_active, int is_write) {
     struct LinearList* ir_line_status = newLinearList();
     int reg_idx = ir_active->reg;
-    setLinearList(ir_active->block_line_active, b_active->basic_block, ir_line_status);
+    setLinearList(ir_active->block_line_active, (size_t)b_active->basic_block, ir_line_status);
     for (int i = 1; i <= b_active->ir_total_num; i++) {
         struct ActiveStatus* as = newActiveStatus(i, b_active->basic_block);
         as->status = ON_STACK;
@@ -79,7 +75,7 @@ void __read_reg_value_block(OPERAND_TYPE* op, int line_num, struct BlockLevelAct
         setLinearList(f_active->reg_active, reg_idx, ir_active);
     }
 
-    struct LinearList* ir_line_status = getLinearList(ir_active->block_line_active, b_active->basic_block);
+    struct LinearList* ir_line_status = getLinearList(ir_active->block_line_active, (size_t)b_active->basic_block);
     if (ir_line_status == NULL) {
         ir_line_status = newActiveStatusBlock(ir_active, b_active, 0);
     }
@@ -113,9 +109,9 @@ void __write_reg_value_block(OPERAND_TYPE* op, int line_num, struct BlockLevelAc
         setLinearList(f_active->reg_active, reg_idx, ir_active);
     }
 
-    struct LinearList* ir_line_status = getLinearList(ir_active->block_line_active, b_active->basic_block);
+    struct LinearList* ir_line_status = getLinearList(ir_active->block_line_active, (size_t)b_active->basic_block);
     if (ir_line_status == NULL) {
-        ir_line_status = ir_line_status = newActiveStatusBlock(ir_active, b_active, 1);
+        ir_line_status = newActiveStatusBlock(ir_active, b_active, 1);
     }
 
     struct ActiveStatus* as = getLinearList(ir_line_status, line_num);
@@ -227,7 +223,7 @@ void __generator_block_active(BASIC_BLOCK_TYPE* basic_block, void* func_active) 
 
 int __active_from_block(struct BlockLevelActive* b_active, struct FuncActive* f_active) {
     struct LinearList* total = b_active->total_reg;
-    int change_other = 0;
+    // int change_other = 0;
     for (int i = 0; i < b_active->total_reg_num; i++) {
         struct IrLevelActive* ir_active = getLinearList(total, i);
         if (getLinearList(b_active->in_block_reg_active, ir_active->reg) == NULL) {
@@ -240,7 +236,7 @@ int __active_from_block(struct BlockLevelActive* b_active, struct FuncActive* f_
             BasicBlockNode* t_node = le2struct(next, BasicBlockNode, block_link);
             BasicBlock* t_block = t_node->value;
             struct BlockLevelActive* t_b_active = getLinearList(f_active->basic_block_active_table, (size_t)t_block);
-            struct LinearList* ir_status_list = getLinearList(ir_active->block_line_active, t_block);
+            struct LinearList* ir_status_list = getLinearList(ir_active->block_line_active, (size_t)t_block);
 
             if (ir_status_list == NULL) {
                 ir_status_list = newActiveStatusBlock(ir_active, t_b_active, 0);
@@ -254,6 +250,7 @@ int __active_from_block(struct BlockLevelActive* b_active, struct FuncActive* f_
             }
         }
     }
+    return 0;
 }
 
 struct FuncActive* analyzeFuncLevelActive(struct FuncTabElem* fte) {

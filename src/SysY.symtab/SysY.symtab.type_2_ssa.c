@@ -82,7 +82,7 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
     OPERAND_TYPE* array_address;
     switch (vte->level) {
         case 0:
-            array_address = toSSAOffset(GLOBALDATA, vte, basic_block);
+            array_address = toSSAOffset(GLOBALDATA, (unsigned long long)vte, basic_block);
             break;
         case 1:
             array_address = toSSATempVariable(basic_block);
@@ -135,7 +135,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
             if (elem->is_array) {
                 switch (elem->level) {
                     case 0:
-                        return toSSAOffset(GLOBALDATA, elem, basic_block);
+                        return toSSAOffset(GLOBALDATA, (unsigned long long)elem, basic_block);
                     case 1:
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
                         return operand;
@@ -220,7 +220,7 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
         EnsureNotNull(param_op);
         newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(i), basic_block), param_op, basic_block);
     }
-    newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
+    newIR(CALL, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
 
     return result_op;
 }

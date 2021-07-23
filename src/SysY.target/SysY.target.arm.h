@@ -94,4 +94,6 @@ struct OP_ARM {
     list_entry_t* list;
 };
 
+void generateAllToOutFile(FILE* out_file);
+
 #endif

@@ -231,7 +231,7 @@ const char* _op_to_str(Operand* op) {
     }
     switch (op->type) {
         case INT:
-            snprintf(buffer, 20, "%5s: $%d", "int", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: $%d", "int", (int)op->operand.v.intValue);
             break;
         case REGISTER:
             snprintf(buffer, 20, "%5s: %%%d", "reg", op->operand.reg_idx);
@@ -243,7 +243,7 @@ const char* _op_to_str(Operand* op) {
             snprintf(buffer, 20, "%5s: @%lld", "$sp", op->operand.v.intValue);
             break;
         case GLOBALDATA:
-            snprintf(buffer, 20, "%5s: @%p", "$gd", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: %-10s", "$gd", ((struct VarTabElem*)op->operand.v.intValue)->name);
             break;
         case ConstSTRING:
             snprintf(buffer, 20, "%5s: %-10s", "str", op->operand.v.str);
