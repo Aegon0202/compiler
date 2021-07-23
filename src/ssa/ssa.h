@@ -33,7 +33,7 @@ struct BasicBlockNode {
 };
 
 typedef union {
-    int intValue;
+    long long int intValue;
     char* str;
     void* funcID;
     BasicBlock* b;
@@ -156,7 +156,7 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
  * 
  * :return (OPERAND_TYPE*) ssa中的操作符
  */
-OPERAND_TYPE* toSSAOffset(int base, int offset, BASIC_BLOCK_TYPE* basic_block);
+OPERAND_TYPE* toSSAOffset(int base, long long offset, BASIC_BLOCK_TYPE* basic_block);
 
 /**
  * 将一个（BASIC_BLOCK_TYPE*）转化成一个合法的操作符

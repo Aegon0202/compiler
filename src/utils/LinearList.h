@@ -10,7 +10,7 @@ struct LinearListElem {
     int rest_level;
 };
 struct LinearList {
-    struct LinearListElem** content;
+    struct LinearListElem* content;
 };
 
 /**

@@ -72,4 +72,26 @@ struct OP_LS {
     int offset;  // optional, immi
 };
 
+struct OP_ARM {
+    int type;
+
+    int op1_flag;  // REGISTER
+    union {
+        int reg;
+    } op1;
+
+    int op2_flag;  // REGISTER OPERAND2
+    union {
+        int reg;
+        const char* label;
+        struct Operand2* operand2;
+    } op2;
+
+    int op3_flag;  // REGISTER
+    union {
+        int reg;
+    } op3;
+    list_entry_t* list;
+};
+
 #endif
