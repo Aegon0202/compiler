@@ -2,9 +2,11 @@
 
 #include "./Malloc.h"
 #include "./NullPointMacro.h"
-#define TOTAL_LEVEL 32
+#define TOTAL_LEVEL 16
 typedef unsigned long long int ull;
 static ull container_size[TOTAL_LEVEL];
+
+#define LEVEL_INDEX(index, level) ((((ull)(index)) >> ((TOTAL_LEVEL - level) * 4)) & 0xF)
 
 struct LinearListElem* newLinearListElem(int rest_level) {
     MALLOC(elem, struct LinearListElem, 1);
@@ -16,27 +18,16 @@ struct LinearListElem* newLinearListElem(int rest_level) {
 void* getLinearListElem(struct LinearListElem* elems, ull index) {
     IfNull(elems, return NULL;);
     IfNull(elems->content, return NULL;);
-    if (index >= container_size[elems->rest_level]) {
-        return NULL;
-    }
     if (elems->rest_level == 0) {
         return elems->item->value;
     }
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        if (index < container_size[elems->rest_level - 1]) {
-            return getLinearListElem(elems->content[i], index);
-        }
-        index -= container_size[elems->rest_level - 1];
-    }
-    return NULL;
+    return getLinearListElem(elems->content[LEVEL_INDEX(index, elems->rest_level)], index);
 }
 
 void* setLinearListElem(struct LinearListElem* elems, ull index, void* value) {
     EnsureNotNull(elems);
     EnsureNotNull(value);
-    if (index >= container_size[elems->rest_level]) {
-        PrintErrExit("Index Out Of Range.");
-    }
+
     if (elems->rest_level == 0) {
         void* r_value = NULL;
 
@@ -50,15 +41,9 @@ void* setLinearListElem(struct LinearListElem* elems, ull index, void* value) {
         return r_value;
     }
     IfNull(elems->content, { MALLOC_WITHOUT_DECLARE(elems->content, struct LinearListElem*, TOTAL_LEVEL); });
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        if (index < container_size[elems->rest_level - 1]) {
-            IfNull(elems->content[i], elems->content[i] = newLinearListElem(elems->rest_level - 1););
-            return setLinearListElem(elems->content[i], index, value);
-        }
-        index -= container_size[elems->rest_level - 1];
-    }
-    PrintErrExit("Unknown Error Happen");
-    return NULL;
+    ull l_index = LEVEL_INDEX(index, elems->rest_level);
+    IfNull(elems->content[l_index], elems->content[l_index] = newLinearListElem(elems->rest_level - 1););
+    return setLinearListElem(elems->content[l_index], index, value);
 }
 
 struct Item* popLinearListElem(struct LinearListElem* elems) {
@@ -85,9 +70,7 @@ struct Item* popLinearListElem(struct LinearListElem* elems) {
 void* removeLinearListElem(struct LinearListElem* elems, unsigned long long int index) {
     IfNull(elems, return NULL;);
     IfNull(elems->content, return NULL;);
-    if (index >= container_size[elems->rest_level]) {
-        return NULL;
-    }
+
     if (elems->rest_level == 0) {
         void* value = elems->item->value;
         free(elems->item->key);
@@ -95,42 +78,21 @@ void* removeLinearListElem(struct LinearListElem* elems, unsigned long long int 
         elems->item = NULL;
         return value;
     }
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        if (index < container_size[elems->rest_level - 1]) {
-            return removeLinearListElem(elems->content[i], index);
-        }
-        index -= container_size[elems->rest_level - 1];
-    }
-    return NULL;
+    return removeLinearListElem(elems->content[LEVEL_INDEX(index, elems->rest_level)], index);
 }
 
 struct LinearList* newLinearList() {
-    static int need_init_flag = 1;
-    if (need_init_flag) {
-        need_init_flag = 0;
-        ull total = 1;
-        for (int i = 0; i < TOTAL_LEVEL; i++) {
-            container_size[i] = total;
-            total *= TOTAL_LEVEL;
-        }
-    }
     MALLOC(linear, struct LinearList, 1);
-    MALLOC_WITHOUT_DECLARE(linear->content, struct LinearListElem*, TOTAL_LEVEL);
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        linear->content[i] = newLinearListElem(i);
-    }
+    linear->content = newLinearListElem(TOTAL_LEVEL);
+
     return linear;
 }
 
 void* getLinearList(struct LinearList* linear, ull index) {
     IfNull(linear, return NULL;);
     IfNull(linear->content, return NULL;);
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        if (index < container_size[i]) {
-            return getLinearListElem(linear->content[i], index);
-        }
-        index -= container_size[i];
-    }
+    return getLinearListElem(linear->content, index);
+
     return NULL;
 }
 
@@ -138,21 +100,14 @@ void* setLinearList(struct LinearList* linear, ull index, void* value) {
     EnsureNotNull(linear);
     EnsureNotNull(linear->content);
     EnsureNotNull(value);
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        if (index < container_size[i]) {
-            return setLinearListElem(linear->content[i], index, value);
-        }
-        index -= container_size[i];
-    }
-    PrintErrExit("Unknown Error In Here.");
-    return NULL;
+    return setLinearListElem(linear->content, index, value);
 }
 
 void* popLinearList(struct LinearList* linear) {
     EnsureNotNull(linear);
     EnsureNotNull(linear->content);
     for (int i = 0; i < TOTAL_LEVEL; i++) {
-        struct Item* item = popLinearListElem(linear->content[i]);
+        struct Item* item = popLinearListElem(linear->content);
         if (item != NULL) {
             void* value = item->value;
             free(item->key);
@@ -169,7 +124,7 @@ int freeLinearList(struct LinearList** linear_p) {
     struct LinearList* linear = *linear_p;
     IfNull(linear->content, { free(linear->content); free(linear); *linear_p=NULL; return 0; });
     for (int i = 0; i < TOTAL_LEVEL; i++) {
-        struct Item* item = popLinearListElem(linear->content[i]);
+        struct Item* item = popLinearListElem(linear->content);
         if (item != NULL) {
             setLinearList(linear, *(ull*)(item->key), item->value);
             free(item->key);
@@ -177,9 +132,6 @@ int freeLinearList(struct LinearList** linear_p) {
             return -1;
         }
     };
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        free(linear->content[i]);
-    }
     free(linear->content);
     free(linear);
     *linear_p = NULL;
@@ -189,12 +141,8 @@ int freeLinearList(struct LinearList** linear_p) {
 void* removeLinearList(struct LinearList* linear, unsigned long long int index) {
     EnsureNotNull(linear);
     EnsureNotNull(linear->content);
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        if (index < container_size[i]) {
-            return removeLinearListElem(linear->content[i], index);
-        }
-        index -= container_size[i];
-    }
+    return removeLinearListElem(linear->content, index);
+
     return NULL;
 }
 

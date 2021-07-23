@@ -146,7 +146,7 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
     return op;
 }
 
-OPERAND_TYPE* toSSAOffset(int base, int offset, BASIC_BLOCK_TYPE* basic_block) {
+OPERAND_TYPE* toSSAOffset(int base, long long offset, BASIC_BLOCK_TYPE* basic_block) {
     MALLOC(op, OPERAND_TYPE, 1);
     op->type = base;
     op->operand.v.intValue = offset;
@@ -240,13 +240,13 @@ const char* _op_to_str(Operand* op) {
             snprintf(buffer, 20, "%5s: %%%d", "reg", op->operand.reg_idx);
             break;
         case FRAMEPOINT:
-            snprintf(buffer, 20, "%5s: @%d", "$fp", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: @%lld", "$fp", op->operand.v.intValue);
             break;
         case STACKPOINT:
-            snprintf(buffer, 20, "%5s: @%d", "$sp", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: @%lld", "$sp", op->operand.v.intValue);
             break;
         case GLOBALDATA:
-            snprintf(buffer, 20, "%5s: @%d", "$gd", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: @%p", "$gd", op->operand.v.intValue);
             break;
         case ConstSTRING:
             snprintf(buffer, 20, "%5s: %-10s", "str", op->operand.v.str);

@@ -9,7 +9,7 @@ static struct DequeList* break_target_queue;
 static struct DequeList* continue_target_queue;
 
 static int level = 0;
-static int global_offset = 0;
+int global_offset = 0;
 static int func_offset = 0;  // variable maybe offset of $fp
 static int func_fparam_offset = 0;
 static int max_func_offset = 0;
@@ -82,7 +82,7 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
     OPERAND_TYPE* array_address;
     switch (vte->level) {
         case 0:
-            array_address = toSSAOffset(GLOBALDATA, vte->offset, basic_block);
+            array_address = toSSAOffset(GLOBALDATA, vte, basic_block);
             break;
         case 1:
             array_address = toSSATempVariable(basic_block);
@@ -135,7 +135,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
             if (elem->is_array) {
                 switch (elem->level) {
                     case 0:
-                        return toSSAOffset(GLOBALDATA, elem->offset, basic_block);
+                        return toSSAOffset(GLOBALDATA, elem, basic_block);
                     case 1:
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
                         return operand;
@@ -785,8 +785,8 @@ int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p) {
 
 void toSSAFuncDef(struct FuncDef* funcdef) {
     struct FuncTabElem* fte = newFuncTabElem(funcdef->ident->name, func_table);
-    func_offset = 0;         // 32:
-    func_fparam_offset = 8;  // $fp, $lr
+    func_offset = -32;       // 32:
+    func_fparam_offset = 4;  // $fp, $lr
     max_func_offset = 0;
 
     struct FuncFParams* f_head = funcdef->funcfparams;
