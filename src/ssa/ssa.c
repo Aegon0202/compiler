@@ -281,7 +281,9 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
 //ssa form construct-------------------------------------------------------------------
 
 void __get_all_nodes(BasicBlock* block, BasicBlockNode* node) {
-    return;
+    MALLOC(new_node, BasicBlockNode, 1);
+    new_node->value = block;
+    list_add(&(node->block_link), &(new_node->block_link));
 }
 
 void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* start) {
@@ -380,8 +382,6 @@ void caculate_dominance(BasicBlock* start) {
         elem = list_next(head);
         //遍历所有结点
         while (elem != head) {
-            //对前驱结点的dominator集合求并集
-            //收敛之后就推出循环
             list_entry_t* new_list = &(node_set->block_link);
             BasicBlock* value = le2struct(elem, BasicBlockNode, block_link)->value;
             //遍历所有前驱结点
