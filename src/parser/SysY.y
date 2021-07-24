@@ -228,8 +228,8 @@ VARDEF
 
 INITVAL
     :   EXP { $$ = newInitVal(INITVAL,EXP,$1); }
-    |   K_CURLY_L K_CURLY_R { $$ = newInitVal(INITVAL,INITVAL,newInitVals(INITVALS,NULL,NULL)); }
-    |   K_CURLY_L INITVALS K_CURLY_R    { $$ = newInitVal(INITVAL,INITVAL,$2->next); }
+    |   K_CURLY_L K_CURLY_R { $$ = newInitVal(INITVAL,INITVALS,newInitVals(INITVALS,NULL,NULL)); }
+    |   K_CURLY_L INITVALS K_CURLY_R    { $$ = newInitVal(INITVAL,INITVALS,$2->next); }
     ;
 
 INITVALS

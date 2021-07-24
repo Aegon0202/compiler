@@ -1717,13 +1717,13 @@ yyreduce:
 
   case 29:
 #line 231 "src/parser/SysY.y"
-                            { (yyval.initval) = newInitVal(INITVAL,INITVAL,newInitVals(INITVALS,NULL,NULL)); }
+                            { (yyval.initval) = newInitVal(INITVAL,INITVALS,newInitVals(INITVALS,NULL,NULL)); }
 #line 1722 "src/parser/SysY.tab.c"
     break;
 
   case 30:
 #line 232 "src/parser/SysY.y"
-                                        { (yyval.initval) = newInitVal(INITVAL,INITVAL,(yyvsp[-1].initvals)->next); }
+                                        { (yyval.initval) = newInitVal(INITVAL,INITVALS,(yyvsp[-1].initvals)->next); }
 #line 1728 "src/parser/SysY.tab.c"
     break;
 

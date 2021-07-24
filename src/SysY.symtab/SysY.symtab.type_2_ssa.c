@@ -278,6 +278,7 @@ void __var_def_array_init(struct InitVals* initvals, struct ArrayTabElem* array,
     struct InitVals* head = initvals;
     int offset = 0;
     struct ArrayTabElem* t_array;
+    if (initvals == NULL) return;
     do {
         struct InitVal* initval = initvals->initval;
         switch (initval->valuetype) {
