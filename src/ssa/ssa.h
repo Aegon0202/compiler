@@ -23,6 +23,7 @@ typedef struct BasicBlock {
     int successor_num;             //后代个数
     BasicBlockNode* successors;    //后代节点
     BasicBlockNode* dominantor;    //必经节点集
+
 } BasicBlock;
 
 //基本块链表
