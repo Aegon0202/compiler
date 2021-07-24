@@ -15,8 +15,8 @@ void init();
 int main(int argc, char** argv) {
     init();
     int index;
-    const char* input_file_name = argv[3];
-    const char* output_file_name = argv[4];
+    const char* input_file_name = argv[4];
+    const char* output_file_name = argv[3];
     FILE* output_file;
     S_flag = 1;
     O_flag = 1;
