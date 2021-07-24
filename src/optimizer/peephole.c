@@ -1,7 +1,7 @@
 #include "peephole.h"
 
 #include "../ENUM.h"
-
+/*
 int __is_const_op(Operand* op, const int n) {
     if (op->type == INT)
         if (op->operand.v.intValue == n)
