@@ -234,7 +234,7 @@ const char* _op_to_str(Operand* op) {
     }
     switch (op->type) {
         case INT:
-            snprintf(buffer, 20, "%5s: $%d", "int", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: $%d", "int", (int)op->operand.v.intValue);
             break;
         case REGISTER:
             snprintf(buffer, 20, "%5s: %%%d", "reg", op->operand.reg_idx);
@@ -246,7 +246,7 @@ const char* _op_to_str(Operand* op) {
             snprintf(buffer, 20, "%5s: @%lld", "$sp", op->operand.v.intValue);
             break;
         case GLOBALDATA:
-            snprintf(buffer, 20, "%5s: @%p", "$gd", op->operand.v.intValue);
+            snprintf(buffer, 20, "%5s: %-10s", "$gd", ((struct VarTabElem*)op->operand.v.intValue)->name);
             break;
         case ConstSTRING:
             snprintf(buffer, 20, "%5s: %-10s", "str", op->operand.v.str);
@@ -298,7 +298,7 @@ void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* s
         if (le2struct(elem, BasicBlockNode, block_link)->value != start) {
             MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
             node->value = le2struct(elem, BasicBlockNode, block_link)->value;
-            list_add(head, node);
+            list_add(head, &(node->block_link));
         }
         elem = list_next(elem);
     }
@@ -328,7 +328,7 @@ void __delet_list(list_entry_t* list1) {
 //list1 = list1交list2
 list_entry_t* __intersection_list(list_entry_t* list1, list_entry_t* list2) {
     list_entry_t* elem1 = list_next(list1);
-    list_entry_t* elem2 = list_next(list2);
+    //list_entry_t* elem2 = list_next(list2);
     BasicBlockNode* node;
     list_entry_t* result;
     MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
@@ -366,7 +366,7 @@ void caculate_dominance(BasicBlock* start) {
 
     MALLOC(node_set, BasicBlockNode, 1);
     list_init(&(node_set->block_link));
-    __get_all_nodes(start, &node_set);
+    __get_all_nodes(start, node_set);
     head = &(node_set->block_link);
     elem = list_next(head);
 

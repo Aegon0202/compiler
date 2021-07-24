@@ -82,7 +82,7 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
     OPERAND_TYPE* array_address;
     switch (vte->level) {
         case 0:
-            array_address = toSSAOffset(GLOBALDATA, vte, basic_block);
+            array_address = toSSAOffset(GLOBALDATA, (unsigned long long)vte, basic_block);
             break;
         case 1:
             array_address = toSSATempVariable(basic_block);
@@ -135,7 +135,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
             if (elem->is_array) {
                 switch (elem->level) {
                     case 0:
-                        return toSSAOffset(GLOBALDATA, elem, basic_block);
+                        return toSSAOffset(GLOBALDATA, (unsigned long long)elem, basic_block);
                     case 1:
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
                         return operand;
@@ -220,7 +220,7 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
         EnsureNotNull(param_op);
         newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(i), basic_block), param_op, basic_block);
     }
-    newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
+    newIR(CALL, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
 
     return result_op;
 }
@@ -566,8 +566,13 @@ void toSSALValWrite(struct LVal* lval, OPERAND_TYPE* result, BASIC_BLOCK_TYPE* b
             if (elem->is_array) {
                 PrintErrExit("not support assign to array");
             }
-            t_op = toSSAVarTabElemWrite(elem, basic_block);
-            newIR(K_ADD, result, toSSAIntConst(getIntConstStatic(0), basic_block), t_op, basic_block);
+            if (elem->level == 0) {
+                t_op = toSSAOffset(GLOBALDATA, (unsigned long long)elem, basic_block);
+                newIR(STORE, t_op, toSSAIntConst(getIntConstStatic(0), basic_block), result, basic_block);
+            } else {
+                t_op = toSSAVarTabElemWrite(elem, basic_block);
+                newIR(K_ADD, result, toSSAIntConst(getIntConstStatic(0), basic_block), t_op, basic_block);
+            }
             break;
         case ARRAYIMPL:
             elem = getVarTabElemByName(lval->value.arrayimpl->ident->name, display);
@@ -582,7 +587,7 @@ void toSSALValWrite(struct LVal* lval, OPERAND_TYPE* result, BASIC_BLOCK_TYPE* b
             newIR(STORE, operand, toSSAIntConst(getIntConstStatic(0), basic_block), result, basic_block);
             break;
         default:
-            PrintErrExit("toSSALValRead not support valuetype %s", EnumTypeToString(lval->valuetype));
+            PrintErrExit("toSSALValWrite not support valuetype %s", EnumTypeToString(lval->valuetype));
     }
     return;
 }

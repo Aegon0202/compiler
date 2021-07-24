@@ -4,7 +4,6 @@
 #include "./NullPointMacro.h"
 #define TOTAL_LEVEL 16
 typedef unsigned long long int ull;
-static ull container_size[TOTAL_LEVEL];
 
 #define LEVEL_INDEX(index, level) ((((ull)(index)) >> ((TOTAL_LEVEL - level) * 4)) & 0xF)
 

@@ -47,6 +47,8 @@ void init_all_table() {
     table_init(array_table, struct ArrayTable);
     MALLOC_WITHOUT_DECLARE(func_table, struct FuncTable, 1);
     func_table->table = newLinkedTable(string_equal);
+    func_table->all_funcs = newLinearList();
+    func_table->next_func_index = 0;
 
 #undef table_init
     appendDisplay(newBlockTabElem(NULL, block_table), display);
@@ -132,7 +134,12 @@ struct FuncTabElem* newFuncTabElem(const char* name, struct FuncTable* table) {
     elem->parameters_ref = 0;
     elem->parameters_size = 0;
     elem->return_type = K_VOID;
-    IfNotNull(table, addFuncTable(elem, table););
+
+    IfNotNull(table, {
+        addFuncTable(elem, table);
+        setLinearList(table->all_funcs, table->next_func_index, elem);
+        table->next_func_index++;
+    });
     return elem;
 }
 

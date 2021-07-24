@@ -1,26 +1,29 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "SysY.symtab/SysY.symtab.ssa.h"
+#include "SysY.target/SysY.target.arm.h"
 #include "SysY.type/SysY.type.def.h"
-#include "SysY.type/SysY.type.free.h"
-#include "SysY.type/SysY.type.new.h"
-#include "SysY.type/SysY.type.print.h"
-#include "SysY.type/SysY.type.visitor.h"
 #include "parser/SysY.tab.h"
-#include "ssa/ssa.h"
-
 YYSTYPE result;
+int S_flag;
+int O_flag;
 void init();
 
-int main() {
+int main(int argc, char** argv) {
     init();
+    int index;
+    const char* input_file_name = argv[1];
+    const char* output_file_name = argv[4];
+    FILE* output_file;
+    S_flag = 1;
+    O_flag = 1;
+    freopen(input_file_name, "r", stdin);
+    output_file = fopen(output_file_name, "w");
     yyparse();
     toSSACompUnit(result.compunit);
-    struct FuncTabElem* fte = getFuncTabElemByName("test", func_table);
-    goThroughFunction(fte->blocks, __print_basic_block, NULL);
+    generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);

@@ -69,6 +69,8 @@ struct ArrayTable {
 
 struct FuncTable {
     struct LinkedTable* table;
+    struct LinearList* all_funcs;
+    int next_func_index;
 };
 
 extern struct VarTable* var_table;

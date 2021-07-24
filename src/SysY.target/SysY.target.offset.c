@@ -1,19 +1,21 @@
 #include "./SysY.target.offset.h"
 
 #include "../ssa/ssa.h"
+#include "../ssa/traverse.h"
 #include "../utils/Malloc.h"
-
 struct BlockRegOffset* newBlockRegOffset(BASIC_BLOCK_TYPE* basic_block, int now_offset) {
     MALLOC(b_offset, struct BlockRegOffset, 1);
     b_offset->basic_block = basic_block;
     b_offset->now_offset = now_offset;
     b_offset->reg_offset = newLinearList();
+    return b_offset;
 }
 
 struct FuncRegOffset* newFuncRegOffset(struct FuncTabElem* elem) {
     MALLOC(f_offset, struct FuncRegOffset, 1);
     f_offset->funcelem = elem;
     f_offset->now_offset = elem->var_offset_end;
+    f_offset->max_offset = elem->var_offset_end;
     f_offset->block_offsets = newLinearList();
     return f_offset;
 }
@@ -23,17 +25,20 @@ void __read_reg_value_block(OPERAND_TYPE* op, struct BlockRegOffset* b_offset) {
         return;
     }
     int reg_idx = op->operand.reg_idx;
-    void* elem = getLinearList(reg_id_vartabelem, reg_idx);
+    struct VarTabElem* elem = getLinearList(reg_id_vartabelem, reg_idx);
     if (elem != NULL) {  // 有名字的变量不参与活性分析。
+        MALLOC(offset_p, int, 1);
+        *offset_p = elem->offset;
+        setLinearList(b_offset->reg_offset, reg_idx, offset_p);
         return;
     }
 
-    int* offset = getLinearList(b_offset->reg_offset, reg_idx);
-    if (offset == NULL) {
-        MALLOC_WITHOUT_DECLARE(offset, int, 1)
-        *offset = b_offset->now_offset - INT_SIZE;
+    int* offset_p = getLinearList(b_offset->reg_offset, reg_idx);
+    if (offset_p == NULL) {
+        MALLOC_WITHOUT_DECLARE(offset_p, int, 1)
+        *offset_p = b_offset->now_offset - INT_SIZE;
         b_offset->now_offset -= INT_SIZE;
-        setLinearList(b_offset->reg_offset, reg_idx, offset);
+        setLinearList(b_offset->reg_offset, reg_idx, offset_p);
     }
 }
 
@@ -42,17 +47,20 @@ void __write_reg_value_block(OPERAND_TYPE* op, struct BlockRegOffset* b_offset) 
         return;
     }
     int reg_idx = op->operand.reg_idx;
-    void* elem = getLinearList(reg_id_vartabelem, reg_idx);
+    struct VarTabElem* elem = getLinearList(reg_id_vartabelem, reg_idx);
     if (elem != NULL) {  // 有名字的变量不参与活性分析。
+        MALLOC(offset_p, int, 1);
+        *offset_p = elem->offset;
+        setLinearList(b_offset->reg_offset, reg_idx, offset_p);
         return;
     }
 
-    int* offset = getLinearList(b_offset->reg_offset, reg_idx);
-    if (offset == NULL) {
-        MALLOC_WITHOUT_DECLARE(offset, int, 1)
-        *offset = b_offset->now_offset - INT_SIZE;
+    int* offset_p = getLinearList(b_offset->reg_offset, reg_idx);
+    if (offset_p == NULL) {
+        MALLOC_WITHOUT_DECLARE(offset_p, int, 1)
+        *offset_p = b_offset->now_offset - INT_SIZE;
         b_offset->now_offset -= INT_SIZE;
-        setLinearList(b_offset->reg_offset, reg_idx, offset);
+        setLinearList(b_offset->reg_offset, reg_idx, offset_p);
     }
 }
 
@@ -132,6 +140,8 @@ void __generator_block_active(BASIC_BLOCK_TYPE* basic_block, void* args) {
         }
         next = list_next(next);
     }
+
+    f_offset->max_offset = f_offset->max_offset < b_offset->now_offset ? f_offset->max_offset : b_offset->now_offset;
 
 #undef READ_OP
 #undef WRITE_OP

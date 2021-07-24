@@ -12,6 +12,7 @@ struct BlockRegOffset {
 struct FuncRegOffset {
     struct FuncTabElem* funcelem;
     int now_offset;
+    int max_offset;
     struct LinearList* block_offsets;  // index: basic_block address value: BlockRegOffset
 };
 
