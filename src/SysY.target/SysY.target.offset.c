@@ -21,6 +21,9 @@ struct FuncRegOffset* newFuncRegOffset(struct FuncTabElem* elem) {
 }
 
 void __read_reg_value_block(OPERAND_TYPE* op, struct BlockRegOffset* b_offset) {
+    if (op == NULL) {
+        return;
+    }
     if (op->type != REGISTER) {  // other is immi
         return;
     }
@@ -43,6 +46,9 @@ void __read_reg_value_block(OPERAND_TYPE* op, struct BlockRegOffset* b_offset) {
 }
 
 void __write_reg_value_block(OPERAND_TYPE* op, struct BlockRegOffset* b_offset) {
+    if (op == NULL) {
+        return;
+    }
     if (op->type != REGISTER) {  // other is immi
         return;
     }

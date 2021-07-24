@@ -34,3 +34,7 @@ int main(int argc, char** argv) {
     //printToken(result.compunit, printToken_ins);
     return 0;
 }
+
+void __debug_pause_there() {
+    printf("debug pause there");
+}

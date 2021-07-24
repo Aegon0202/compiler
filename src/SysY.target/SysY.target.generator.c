@@ -376,6 +376,10 @@ void convert_block_travel(BASIC_BLOCK_TYPE* basic_block, void* args) {
 
     while (head != next) {
         IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
+        Fprintf("@op: %12s", EnumTypeToString(ir->type));
+        Fprintf("op1: %-20s", _op_to_str(ir->op1));
+        Fprintf("op2: %-20s", _op_to_str(ir->op2));
+        Fprintf("op3: %-20s\n", _op_to_str(ir->op3));
         switch (ir->type) {
             case NOP:
                 break;
