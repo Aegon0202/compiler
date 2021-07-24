@@ -1789,7 +1789,7 @@ yyreduce:
 
   case 41:
 #line 255 "src/parser/SysY.y"
-                                                        { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[-3].ident),newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),(yyvsp[0].exparraydefs)->next)); }
+                                                        { (yyval.funcfparam) = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),(yyvsp[-3].ident),newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),(yyvsp[0].exparraydefs))); }
 #line 1794 "src/parser/SysY.tab.c"
     break;
 

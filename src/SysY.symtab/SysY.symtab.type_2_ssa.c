@@ -137,13 +137,20 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                     case 0:
                         return toSSAOffset(GLOBALDATA, (unsigned long long)elem, basic_block);
                     case 1:
+                        operand = toSSATempVariable(basic_block);
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
                         return operand;
                     default:
                         return toSSAOffset(FRAMEPOINT, elem->offset, basic_block);
                 }
             } else {
-                return toSSAVarTabElemRead(elem, basic_block);
+                if (elem->level == 0) {
+                    operand = toSSATempVariable(basic_block);
+                    newIR(LOAD, toSSAOffset(GLOBALDATA, (long long)elem, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
+                    return operand;
+                } else {
+                    return toSSAVarTabElemRead(elem, basic_block);
+                }
             }
             PrintErrExit("unknown error happen");
 
@@ -309,6 +316,9 @@ void __global_def_array_init(struct InitVals* initvals, struct ArrayTabElem* arr
     struct ArrayTabElem* t_array;
     do {
         struct InitVal* initval = initvals->initval;
+        if (initval == NULL) {
+            return;
+        }
         switch (initval->valuetype) {
             case EXP:
                 buffer[offset] = calcConstExp(initval->value.exp);
@@ -435,6 +445,9 @@ void __const_def_array_init(struct ConstInitVals* constinitvals, struct ArrayTab
     struct ArrayTabElem* t_array;
     do {
         struct ConstInitVal* constinitval = constinitvals->constinitval;
+        if (constinitval == NULL) {
+            return;
+        }
         switch (constinitval->valuetype) {
             case CONSTEXP:
                 buffer[offset] = calcConstConstExp(constinitval->value.constexp);
@@ -536,6 +549,8 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
     struct ArrayTabElem* head_array = NULL;
     struct ArrayTabElem* prev_array = NULL;
     struct ArrayTabElem* array = NULL;
+    struct DequeList* array_size_op = newDequeList();
+    struct DequeList* array_queue = newDequeList();
 
     do {
         struct ExpArrayDef* exparraydef = exparraydefs->exparraydef;
@@ -555,13 +570,32 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
 
         if (exparraydef->exp != NULL) {
             OPERAND_TYPE* num_op = toSSAExp(exparraydef->exp, basic_block);
-            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
+            pushFrontDequeList(array_size_op, num_op);
         } else {
-            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+            pushFrontDequeList(array_size_op, toSSAIntConst(getIntConstStatic(INT_SIZE), basic_block));
         }
+        pushFrontDequeList(array_queue, array);
 
         exparraydefs = exparraydefs->next;
     } while (exparraydefs != head);
+
+    OPERAND_TYPE* elem_size_op = NULL;
+    while (!isEmptyDequeList(array_size_op)) {
+        array = popFrontDequeList(array_queue);
+        if (elem_size_op == NULL) {
+            OPERAND_TYPE* num_op = popBackDequeList(array_size_op);
+            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
+            elem_size_op = num_op;
+        } else {
+            OPERAND_TYPE* num_op = popFrontDequeList(array_size_op);
+            OPERAND_TYPE* new_size = toSSATempVariable(basic_block);
+            newIR(K_MUL, elem_size_op, num_op, new_size, basic_block);
+            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), new_size, basic_block);
+            elem_size_op = new_size;
+        }
+    }
+    freeDequeList(&array_size_op);
+    freeDequeList(&array_queue);
 
     return head_array;
 }
