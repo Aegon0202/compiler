@@ -59,9 +59,16 @@ void generator_func_head(struct FuncRegOffset* f_offset, FILE* out_file) {
     Fprintf(".text\n");
     Fprintf(".align\t2\n");
     Fprintf(".global\t%s\n", name);
+    Fprintf(".syntax\tunified\n");
+    Fprintf(".arch armv7-r\n");
     Fprintf(".type\t%s,\t%%function\n", name);
     FprintfWithoutIdent("%s:\n", name);
-    Fprintf("PUSH\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(A4), reg_to_str(A3), reg_to_str(A2), reg_to_str(A1), reg_to_str(FP), reg_to_str(LR));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A4));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A3));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A2));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A1));
+
+    Fprintf("PUSH\t{%s,\t%s}\n", reg_to_str(FP), reg_to_str(LR));
     Fprintf("PUSH\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(V1), reg_to_str(V2), reg_to_str(V3), reg_to_str(V4), reg_to_str(V5), reg_to_str(V6), reg_to_str(V7));
 
     Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(FP), reg_to_str(SP), 32);
@@ -70,10 +77,11 @@ void generator_func_head(struct FuncRegOffset* f_offset, FILE* out_file) {
 }
 
 void generator_func_return(struct FuncRegOffset* f_offset, FILE* out_file) {
-    Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(SP), reg_to_str(FP), -32);
+    Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(V1), reg_to_str(FP), -32);
+    Fprintf("MOV\t%s,\t%s\n", reg_to_str(SP), reg_to_str(V1));
     Fprintf("POP\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(V1), reg_to_str(V2), reg_to_str(V3), reg_to_str(V4), reg_to_str(V5), reg_to_str(V6), reg_to_str(V7));
     Fprintf("POP\t{%s,\t%s}\n", reg_to_str(FP), reg_to_str(LR));
-    Fprintf("ADD\t%s,%s,#%d\n", reg_to_str(SP), reg_to_str(SP), -16);
+    Fprintf("ADD\t%s,%s,#%d\n", reg_to_str(SP), reg_to_str(SP), 16);
 }
 
 void generator_func_end(const char* name, FILE* out_file) {
@@ -206,8 +214,9 @@ convert_ir_func_head(branch) {
     convert_operand_read(op2, A2, A4, b_offset, args);
     convert_operand_read(op3, A3, A4, b_offset, args);
     Fprintf("CMP\t%s,\t#0\n", reg_to_str(A1));
-    Fprintf("BXNE\t%s\n", reg_to_str(A2));
+    Fprintf("IT\tEQ\n");
     Fprintf("BXEQ\t%s\n", reg_to_str(A3));
+    Fprintf("BX\t%s\n", reg_to_str(A2));
 }
 
 convert_ir_func_head(return_stmt) {
@@ -247,6 +256,7 @@ convert_ir_func_head(k_not) {
     convert_operand_read(op1, A1, A2, b_offset, args);
 
     Fprintf("CMP\t%s,\t#0\n", reg_to_str(A1));
+    Fprintf("ITE\tEQ\n");
     Fprintf("MOVEQ\t%s,\t#1\n", reg_to_str(A1));
     Fprintf("MOVNE\t%s,\t#0\n", reg_to_str(A1));
 
@@ -285,6 +295,7 @@ convert_ir_func_head(k_mod) {
         convert_operand_read(op1, A1, A4, b_offset, args);         \
         convert_operand_read(op2, A2, A4, b_offset, args);         \
         Fprintf("CMP\t%s,\t%s\n", reg_to_str(A1), reg_to_str(A2)); \
+        Fprintf("ITE\t" #true_cond "\n");                          \
         Fprintf("MOV" #true_cond "\t%s,\t#1\n", reg_to_str(A3));   \
         Fprintf("MOV" #false_cond "\t%s,\t#0\n", reg_to_str(A3));  \
         convert_operand_write(op3, A3, A4, b_offset, args);        \
@@ -337,7 +348,7 @@ void convert_block_travel(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct FuncRegOffset* f_offset = ((struct travel_block_tmp_arg*)args)->f_offset;
     FILE* out_file = ((struct travel_block_tmp_arg*)args)->out_file;
     struct BlockRegOffset* b_offset = getLinearList(f_offset->block_offsets, (size_t)basic_block);
-    FprintfWithoutIdent("%s:", block_label(f_offset->funcelem->name, basic_block));
+    FprintfWithoutIdent("%s:\n", block_label(f_offset->funcelem->name, basic_block));
 
     struct DequeList* param_queue = newDequeList();
 
