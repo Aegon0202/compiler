@@ -28,8 +28,6 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     generateAllToOutFile(output_file);
-    struct FuncTabElem* elem = getFuncTabElemByName("QuickSort", func_table);
-    deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, NULL);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);
