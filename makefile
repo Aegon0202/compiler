@@ -46,4 +46,4 @@ $(FLEX_GEN): $(FLEX_SRC)
 	flex -o $@ $<
 
 clean:
-	rm -f $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) parser
+	rm -f $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) compiler

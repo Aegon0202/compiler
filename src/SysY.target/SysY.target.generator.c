@@ -92,7 +92,8 @@ void generator_string(const char* name, const char* content, FILE* out_file) {
     Fprintf(".section\t.rodata\n");
     Fprintf(".align\t2\n");
     FprintfWithoutIdent("%s:\n", name);
-    Fprintf(".ascii\t\"%s\\0\"\n", content);
+    *(strchr(content, 0) - 1) = '\0';
+    Fprintf(".ascii\t\"%s\\000\"\n", content + 1);
 }
 
 void generator_global_data(struct VarTabElem* elem, FILE* out_file) {
@@ -443,6 +444,7 @@ void generator_func(struct FuncTabElem* fte, FILE* out_file) {
     MALLOC(arg, struct travel_block_tmp_arg, 1);
     arg->f_offset = f_offset;
     arg->out_file = out_file;
+    arg->string_queue = string_queue;
     deepTraverseSuccessorsBasicBlock(fte->blocks, convert_block_travel, arg);
     free(arg);
     generator_func_end(fte->name, out_file);
