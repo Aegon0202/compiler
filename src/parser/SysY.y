@@ -308,7 +308,6 @@ LVAL
 
 PRIMARYEXP
     :   K_PARENTHESES_L EXP K_PARENTHESES_R { $$ = newPrimaryExp(PRIMARYEXP,EXP,$2); }
-    |   K_PARENTHESES_L COND K_PARENTHESES_R { $$ = newPrimaryExp(PRIMARYEXP,COND,$2); }
     |   LVAL    { $$ = newPrimaryExp(PRIMARYEXP,LVAL,$1); }
     |   NUMBER  { $$ = newPrimaryExp(PRIMARYEXP,NUMBER,$1); }
     ;
