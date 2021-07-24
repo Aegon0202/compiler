@@ -278,9 +278,11 @@ void __var_def_array_init(struct InitVals* initvals, struct ArrayTabElem* array,
     struct InitVals* head = initvals;
     int offset = 0;
     struct ArrayTabElem* t_array;
-    if (initvals == NULL) return;
     do {
         struct InitVal* initval = initvals->initval;
+        if (initval == NULL) {
+            return;
+        }
         switch (initval->valuetype) {
             case CONSTEXP:
                 buffer[offset] = toSSAExp(initval->value.exp, basic_block);
@@ -348,7 +350,12 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
             OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
             int offset = elem->offset;
             for (int i = 0; i < total_num; i++) {
-                newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                if (operand_buffer[i] == NULL) {
+                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+
+                } else {
+                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                }
                 offset += INT_SIZE;
             }
         } else {

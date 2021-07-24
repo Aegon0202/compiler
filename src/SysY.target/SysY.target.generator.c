@@ -60,7 +60,8 @@ void generator_func_head(struct FuncRegOffset* f_offset, FILE* out_file) {
     Fprintf(".align\t2\n");
     Fprintf(".global\t%s\n", name);
     Fprintf(".syntax\tunified\n");
-    Fprintf(".arch armv7-r\n");
+    Fprintf(".arch armv7-a\n");
+    Fprintf(".arm\n");
     Fprintf(".type\t%s,\t%%function\n", name);
     FprintfWithoutIdent("%s:\n", name);
     Fprintf("PUSH\t{%s}\n", reg_to_str(A4));
@@ -275,18 +276,23 @@ convert_ir_func_head(k_not) {
 convert_ir_bi_op(k_add, ADD);
 convert_ir_bi_op(k_sub, SUB);
 convert_ir_bi_op(k_mul, MUL);
-convert_ir_bi_op(k_div, SDIV);
 #undef convert_ir_bi_op
+
+convert_ir_func_head(k_div) {
+    get_op_macro;
+    convert_operand_read(op1, A1, A4, b_offset, args);
+    convert_operand_read(op2, A2, A4, b_offset, args);
+    Fprintf("LDR\t%s,\t=%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    Fprintf("BLX\t%s", reg_to_str(A3));
+    convert_operand_write(op3, A1, A4, b_offset, args);
+}
 
 convert_ir_func_head(k_mod) {
     get_op_macro;
     convert_operand_read(op1, A1, A4, b_offset, args);
     convert_operand_read(op2, A2, A4, b_offset, args);
-
-    Fprintf("SDIV\t%s,\t%s,\t%s\n", reg_to_str(A3), reg_to_str(A1), reg_to_str(A2));
-    Fprintf("MUL\t%s,\t%s,\t%s\n", reg_to_str(A4), reg_to_str(A2), reg_to_str(A3));
-    Fprintf("SUB\t%s,\t%s,\t%s\n", reg_to_str(A2), reg_to_str(A1), reg_to_str(A4));
-
+    Fprintf("LDR\t%s,\t=%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    Fprintf("BLX\t%s", reg_to_str(A3));
     convert_operand_write(op3, A2, A4, b_offset, args);
 }
 
