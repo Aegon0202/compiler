@@ -200,6 +200,9 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
 
     do {
         struct FuncRParam* frp = frps->funcrparam;
+        if (frp == NULL) {
+            break;
+        }
         OPERAND_TYPE* param_op = NULL;
         switch (frp->valuetype) {
             case STRING:
@@ -284,11 +287,11 @@ void __var_def_array_init(struct InitVals* initvals, struct ArrayTabElem* array,
             return;
         }
         switch (initval->valuetype) {
-            case CONSTEXP:
+            case EXP:
                 buffer[offset] = toSSAExp(initval->value.exp, basic_block);
                 offset += 1;
                 break;
-            case CONSTINITVALS:
+            case INITVALS:
                 t_array = __offset_to_max_hight_dis(array, offset);
                 __var_def_array_init(initval->value.initvals, t_array, basic_block, buffer + offset);
                 offset += t_array->elem_size / INT_SIZE;
@@ -845,13 +848,14 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
         elem->link = fte->parameters_ref;
         fte->parameters_size += elem->size;
         fte->parameters_ref = elem;
-        fte->var_offset_end = func_offset;
 
         funcfparams = funcfparams->next;
     } while (funcfparams != f_head);
 
     toSSABlock(funcdef->block, &basic_block);
     setBasicBlockSealed(basic_block);
+
+    fte->var_offset_end = max_func_offset;
 
     level--;
     removeLastDisplay(display);

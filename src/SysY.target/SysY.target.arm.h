@@ -7,13 +7,13 @@
 #define LR R14
 #define SP R13
 #define IP R12
+#define FP R11
 #define V8 R11
 #define V7 R10
 #define V6 R9
 #define SB R9
 #define TR R9
 #define V5 R8
-#define FP R7
 #define V4 R7
 #define V3 R6
 #define V2 R5
