@@ -9,6 +9,7 @@
 YYSTYPE result;
 int S_flag;
 int O_flag;
+int yyparse(void);
 void init();
 
 int main(int argc, char** argv) {

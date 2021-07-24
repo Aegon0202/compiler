@@ -40,7 +40,7 @@ test: compiler
 	./compiler < $(input_file) > $(output_file)
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)
-	bison -d $< -o $(BISON_DIR)/SysY.tab.h -o $(BISON_GEN_H) -o $(BISON_GEN_C)
+	bison -d $< -o $(BISON_GEN_H) -o $(BISON_GEN_C)
 
 $(FLEX_GEN): $(FLEX_SRC)
 	flex -o $@ $<
