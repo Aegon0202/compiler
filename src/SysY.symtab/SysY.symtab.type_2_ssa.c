@@ -918,7 +918,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
     } while (funcfparams != f_head);
 
     toSSABlock(funcdef->block, &basic_block);
-    newIR(RETURNSTMT, toSSAIntConst(getIntConstStatic(0), basic_block), NULL, NULL, basic_block);
+    newIR(RETURNSTMT, NULL, NULL, NULL, basic_block);
 
     setBasicBlockSealed(basic_block);
 

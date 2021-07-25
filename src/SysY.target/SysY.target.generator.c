@@ -327,7 +327,55 @@ convert_ir_bi_op(k_gt, GT, LE);
 convert_ir_bi_op(k_gte, GE, LT);
 #undef convert_ir_bi_op
 
-void convert_ir_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* out_file, struct travel_block_tmp_arg* args, struct DequeList* param_queue) {
+int __can_jump_to_return(IR_TYPE* ir) {
+    if (ir->type != JUMP) {
+        return 0;
+    }
+    if (ir->op3->type != BASIC_BLOCK) {
+        return 0;
+    }
+    BASIC_BLOCK_TYPE* basic_block = ir->op3->operand.v.b;
+    IR_TYPE* first_ir = le2struct(list_next(&basic_block->ir_list->ir_link), IR_TYPE, ir_link);
+    if (first_ir->type != RETURNSTMT && first_ir->type != JUMP) {
+        return 0;
+    }
+    if (first_ir->type == RETURNSTMT) {
+        if (first_ir->op1 == NULL) {
+            return 1;
+        }
+        return 0;
+    } else {
+        return __can_jump_to_return(first_ir);
+    }
+    return 0;
+}
+
+int __is_tail_call(IR_TYPE* ir, BASIC_BLOCK_TYPE* bsaic_bock) {
+    IR_TYPE* next_ir = le2struct(list_next(&ir->ir_link), IR_TYPE, ir_link);
+    if (ir->type != CALL) {
+        return 0;
+    }
+    if (next_ir->type != RETURNSTMT && next_ir->type != JUMP) {
+        return 0;
+    }
+    if (next_ir->type == RETURNSTMT) {
+        if (next_ir->op1 == NULL) {
+            return 1;
+        }
+        if (next_ir->op1->type != REGISTER) {
+            return 0;
+        }
+        if (next_ir->op1->operand.reg_idx != ir->op3->operand.reg_idx) {
+            return 0;
+        }
+        return 1;
+    } else {
+        return __can_jump_to_return(next_ir);
+    }
+    return 0;
+}
+
+void __normal_ir_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* out_file, struct travel_block_tmp_arg* args, struct DequeList* param_queue) {
     while (!isEmptyDequeList(param_queue)) {
         IR_TYPE* ir = popFrontDequeList(param_queue);
         OPERAND_TYPE* op2 = ir->op2;
@@ -361,6 +409,96 @@ void convert_ir_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* ou
         Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (((int)((4 - op2->operand.v.intValue) * INT_SIZE) >> 16)) & 0xffff);
         Fprintf("ADD\t%s,\t%s,\t%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
     }
+}
+
+void __tail_recusive_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* out_file, struct travel_block_tmp_arg* args, struct DequeList* param_queue) {
+    struct DequeList* b_param = newDequeList();
+    int fp_offset = -32;
+    while (!isEmptyDequeList(param_queue)) {
+        IR_TYPE* ir = popFrontDequeList(param_queue);
+        pushFrontDequeList(b_param, ir);
+        OPERAND_TYPE* op3 = ir->op3;
+        convert_operand_read(op3, A1, A2, b_offset, args);
+        Fprintf("PUSH\t{%s}\n", reg_to_str(A1));
+    }
+    fp_offset = 4;
+    while (!isEmptyDequeList(b_param)) {
+        popFrontDequeList(b_param);
+        Fprintf("POP\t{%s}\n", reg_to_str(A1));
+        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A3), fp_offset & 0xffff);
+        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A3), (fp_offset >> 16) & 0xffff);
+        Fprintf("STR\t%s,\t[%s,\t%s]\n", reg_to_str(A1), reg_to_str(FP), reg_to_str(A3));
+        fp_offset += INT_SIZE;
+    }
+    Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(A1), block_label(args->f_offset->funcelem->name, args->f_offset->funcelem->blocks));
+    Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(A1), block_label(args->f_offset->funcelem->name, args->f_offset->funcelem->blocks));
+    Fprintf("BX\t%s\n", reg_to_str(A1));
+    free(&b_param);
+}
+
+void __tail_normal_call_(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* out_file, struct travel_block_tmp_arg* args, struct DequeList* param_queue) {
+    struct DequeList* b_param = newDequeList();
+    while (!isEmptyDequeList(param_queue)) {
+        IR_TYPE* ir = popBackDequeList(param_queue);
+        pushFrontDequeList(b_param, ir);
+        OPERAND_TYPE* op3 = ir->op3;
+        convert_operand_read(op3, A1, A2, b_offset, args);
+        Fprintf("PUSH\t{%s}\n", reg_to_str(A1));
+    }
+    int fp_offset = -32;
+    while (!isEmptyDequeList(b_param)) {
+        IR_TYPE* ir = popFrontDequeList(b_param);
+        OPERAND_TYPE* op2 = ir->op2;
+        Fprintf("POP\t{%s}\n", reg_to_str(V1));
+        switch (op2->operand.v.intValue) {
+            case 0:
+                Fprintf("MOV\t%s,\t%s\n", reg_to_str(A1), reg_to_str(V1));
+                break;
+            case 1:
+                Fprintf("MOV\t%s,\t%s\n", reg_to_str(A2), reg_to_str(V1));
+                break;
+            case 2:
+                Fprintf("MOV\t%s,\t%s\n", reg_to_str(A3), reg_to_str(V1));
+                break;
+            case 3:
+                Fprintf("MOV\t%s,\t%s\n", reg_to_str(A4), reg_to_str(V1));
+                break;
+            default:
+                fp_offset -= INT_SIZE;
+                Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(V2), fp_offset & 0xffff);
+                Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(V2), (fp_offset >> 16) & 0xffff);
+                Fprintf("STR\t%s,\t[%s,\t%s]\n", reg_to_str(V1), reg_to_str(FP), reg_to_str(V2));
+                break;
+        }
+    }
+    struct FuncTabElem* target_func = (struct FuncTabElem*)(call_ir->op1->operand.v.funcID);
+    if (call_ir->op2->operand.v.intValue > 4) {
+        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(V2), ((int)((4 - call_ir->op2->operand.v.intValue - 8) * INT_SIZE)) & 0xffff);
+        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(V2), (((int)((4 - call_ir->op2->operand.v.intValue - 8) * INT_SIZE) >> 16)) & 0xffff);
+    } else {
+        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(V2), fp_offset & 0xffff);
+        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(V2), (fp_offset >> 16) & 0xffff);
+    }
+    Fprintf("ADD\t%s,\t%s,\t%s\n", reg_to_str(SP), reg_to_str(FP), reg_to_str(V2));
+    //Fprintf("MOV\t%s,\t%s\n", reg_to_str(SP), reg_to_str(V1));
+    Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(V1), target_func->name);
+    Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(V1), target_func->name);
+    Fprintf("BLX\t%s\n", reg_to_str(V1));
+    generator_func_return(args->f_offset, out_file);
+    Fprintf("BX\t%s\n", reg_to_str(LR));
+    freeDequeList(&b_param);
+    return;
+}
+
+void convert_ir_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* out_file, struct travel_block_tmp_arg* args, struct DequeList* param_queue) {
+    if (__is_tail_call(call_ir, b_offset->basic_block)) {
+        if (strcmp(args->f_offset->funcelem->name, ((struct FuncTabElem*)(call_ir->op1->operand.v.funcID))->name) == 0) {
+            return __tail_recusive_call(call_ir, b_offset, out_file, args, param_queue);
+        } else {
+            return __tail_normal_call_(call_ir, b_offset, out_file, args, param_queue);
+        }
+    }
+    __normal_ir_call(call_ir, b_offset, out_file, args, param_queue);
 }
 
 void convert_block_travel(BASIC_BLOCK_TYPE* basic_block, void* args) {

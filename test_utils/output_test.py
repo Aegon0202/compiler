@@ -1,15 +1,13 @@
 import subprocess
 import os.path
 import os
-
+in_out_fd = "../compiler2021/testcase/performance_test2021_pre"
 
 for f in os.listdir("./tmp_result"):
     print(f"testing {f}")
     f_name, f_ext = os.path.splitext(f)
-    in_f = os.path.join(
-        "../compiler2021/testcase/function_test2020", f"{f_name}.in")
-    out_f = os.path.join(
-        "../compiler2021/testcase/function_test2020", f"{f_name}.out")
+    in_f = os.path.join(in_out_fd, f"{f_name}.in")
+    out_f = os.path.join(in_out_fd, f"{f_name}.out")
     p = os.path.join("./tmp_result", f)
     cmd: subprocess.CompletedProcess = subprocess.run(
         ["gcc", "-g", "-march=armv7-a", p, "-o", "tmp.o", "-L", "-lsysy", "./libsysy.a"], capture_output=True, text=True)

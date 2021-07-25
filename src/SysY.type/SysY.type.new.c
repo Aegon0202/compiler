@@ -7,26 +7,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../parser/SysY.tab.h"
-#include "./SysY.type.def.h"
 #include "../utils/NullPointMacro.h"
 #include "../utils/PrintHelper.h"
+#include "./SysY.type.def.h"
+extern int yylineno;
+
 //YYSTYPE yylval;
 
 #define ListLikeNewGenerator1(funcname, listype, datatype1, dataname1) \
-    listype *funcname(int type, datatype1 dataname1, listype *prev)    \
-    {                                                                  \
+    listype *funcname(int type, datatype1 dataname1, listype *prev) {  \
         listype *nrtp = (listype *)malloc(sizeof(listype));            \
         EnsureNotNull(nrtp);                                           \
         nrtp->type = type;                                             \
         nrtp->dataname1 = dataname1;                                   \
-        if (prev == NULL)                                              \
-        {                                                              \
+        if (prev == NULL) {                                            \
             nrtp->prev = nrtp;                                         \
             nrtp->next = nrtp;                                         \
-        }                                                              \
-        else                                                           \
-        {                                                              \
+        } else {                                                       \
             nrtp->prev = prev;                                         \
             nrtp->next = prev->next;                                   \
             prev->next->prev = nrtp;                                   \
@@ -36,20 +35,16 @@
     }
 
 #define ListLikeNewGenerator2(funcname, listype, datatype1, dataname1, datatype2, dataname2) \
-    listype *funcname(int type, datatype1 dataname1, datatype2 dataname2, listype *prev)     \
-    {                                                                                        \
+    listype *funcname(int type, datatype1 dataname1, datatype2 dataname2, listype *prev) {   \
         listype *nrtp = (listype *)malloc(sizeof(listype));                                  \
         EnsureNotNull(nrtp);                                                                 \
         nrtp->type = type;                                                                   \
         nrtp->dataname1 = dataname1;                                                         \
         nrtp->dataname2 = dataname2;                                                         \
-        if (prev == NULL)                                                                    \
-        {                                                                                    \
+        if (prev == NULL) {                                                                  \
             nrtp->prev = nrtp;                                                               \
             nrtp->next = nrtp;                                                               \
-        }                                                                                    \
-        else                                                                                 \
-        {                                                                                    \
+        } else {                                                                             \
             nrtp->prev = prev;                                                               \
             nrtp->next = prev->next;                                                         \
             prev->next->prev = nrtp;                                                         \
@@ -59,8 +54,7 @@
     }
 
 #define OnlyDataNewGenerator1(funcname, returntype, datatype1, dataname1) \
-    returntype *funcname(int type, datatype1 dataname1)                   \
-    {                                                                     \
+    returntype *funcname(int type, datatype1 dataname1) {                 \
         returntype *rt = (returntype *)malloc(sizeof(returntype));        \
         EnsureNotNull(rt);                                                \
         rt->type = type;                                                  \
@@ -69,8 +63,7 @@
     }
 
 #define OnlyDataNewGenerator2(funcname, returntype, datatype1, dataname1, datatype2, dataname2) \
-    returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2)                    \
-    {                                                                                           \
+    returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2) {                  \
         returntype *rt = (returntype *)malloc(sizeof(returntype));                              \
         EnsureNotNull(rt);                                                                      \
         rt->type = type;                                                                        \
@@ -80,8 +73,7 @@
     }
 
 #define OnlyDataNewGenerator3(funcname, returntype, datatype1, dataname1, datatype2, dataname2, datatype3, dataname3) \
-    returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2, datatype3 dataname3)                     \
-    {                                                                                                                 \
+    returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2, datatype3 dataname3) {                   \
         returntype *rt = (returntype *)malloc(sizeof(returntype));                                                    \
         EnsureNotNull(rt);                                                                                            \
         rt->type = type;                                                                                              \
@@ -92,8 +84,7 @@
     }
 
 #define OnlyDataNewGenerator4(funcname, returntype, datatype1, dataname1, datatype2, dataname2, datatype3, dataname3, datatype4, dataname4) \
-    returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2, datatype3 dataname3, datatype4 dataname4)                      \
-    {                                                                                                                                       \
+    returntype *funcname(int type, datatype1 dataname1, datatype2 dataname2, datatype3 dataname3, datatype4 dataname4) {                    \
         returntype *rt = (returntype *)malloc(sizeof(returntype));                                                                          \
         EnsureNotNull(rt);                                                                                                                  \
         rt->type = type;                                                                                                                    \
@@ -105,8 +96,7 @@
     }
 
 #define OnlyUnionNewGenerator(funcname, returntype, value_in_union_type, value_in_union_name) \
-    returntype *funcname(int type, int valuetype, void *value_in_union_name)                  \
-    {                                                                                         \
+    returntype *funcname(int type, int valuetype, void *value_in_union_name) {                \
         returntype *rt = (returntype *)malloc(sizeof(returntype));                            \
         EnsureNotNull(rt);                                                                    \
         rt->type = type;                                                                      \
@@ -115,8 +105,7 @@
         return rt;                                                                            \
     }
 
-struct Keyword *newKeyword(int type, int keytype, const char *keyword)
-{
+struct Keyword *newKeyword(int type, int keytype, const char *keyword) {
     struct Keyword *kp = (struct Keyword *)malloc(sizeof(struct Keyword));
     EnsureNotNull(kp);
     kp->type = type;
@@ -125,33 +114,24 @@ struct Keyword *newKeyword(int type, int keytype, const char *keyword)
     return kp;
 }
 
-struct IntConst *newIntConst(int type, char *number)
-{
+struct IntConst *newIntConst(int type, char *number) {
     struct IntConst *intconst = (struct IntConst *)malloc(sizeof(struct IntConst));
     EnsureNotNull(intconst);
     int sum = 0, base = 10, n, k = 0;
-    if (number[0] == '0')
-    {
+    if (number[0] == '0') {
         k = 1;
         base = 8;
-        if (number[1] == 'X' || number[1] == 'x')
-        {
+        if (number[1] == 'X' || number[1] == 'x') {
             k = 2;
             base = 16;
         }
     }
-    while ((n = number[k]))
-    {
-        if (n >= '0' && n <= '9')
-        {
+    while ((n = number[k])) {
+        if (n >= '0' && n <= '9') {
             n = n - '0';
-        }
-        else if (n >= 'A' && n <= 'F')
-        {
+        } else if (n >= 'A' && n <= 'F') {
             n = n - 'A' + 10;
-        }
-        else
-        {
+        } else {
             n = n - 'a' + 10;
         }
         sum = sum * base + n;
@@ -162,21 +142,17 @@ struct IntConst *newIntConst(int type, char *number)
     return intconst;
 }
 
-struct CompUnit *newCompUnit(int type, int valuetype, void *value, struct CompUnit *reducecp)
-{
+struct CompUnit *newCompUnit(int type, int valuetype, void *value, struct CompUnit *reducecp) {
     struct CompUnit *cp = (struct CompUnit *)malloc(sizeof(struct CompUnit));
     EnsureNotNull(cp);
     cp->type = type;
     cp->valuetype = valuetype;
     cp->value.decl = (struct Decl *)value;
 
-    if (reducecp == NULL)
-    {
+    if (reducecp == NULL) {
         cp->next = cp;
         cp->prev = cp;
-    }
-    else
-    {
+    } else {
         cp->prev = reducecp;
         cp->next = reducecp->next;
         reducecp->next->prev = cp;
@@ -255,8 +231,6 @@ OnlyDataNewGenerator1(newNumber, struct Number, struct IntConst *, intconst);
 
 OnlyUnionNewGenerator(newUnaryExp, struct UnaryExp, struct PrimaryExp *, primaryexp);
 
-OnlyDataNewGenerator2(newFuncImpl, struct FuncImpl, struct Ident *, ident, struct FuncRParams *, funcrparams);
-
 OnlyDataNewGenerator2(newUnaryExps, struct UnaryExps, struct UnaryOp *, unaryop, struct UnaryExp *, unaryexp);
 
 OnlyDataNewGenerator1(newUnaryOp, struct UnaryOp, int, typevalue);
@@ -287,8 +261,7 @@ ListLikeNewGenerator1(newLOrExp, struct LOrExp, struct LAndExp *, landexp);
 
 OnlyDataNewGenerator1(newConstExp, struct ConstExp, struct AddExp *, addexp);
 
-struct Ident *newIdent(int type, const char *name)
-{
+struct Ident *newIdent(int type, const char *name) {
     struct Ident *ident_p = (struct Ident *)malloc(sizeof(struct Ident));
     EnsureNotNull(ident_p);
     ident_p->type = type;
@@ -296,8 +269,7 @@ struct Ident *newIdent(int type, const char *name)
     return ident_p;
 }
 
-struct String *newString(int type, const char *content)
-{
+struct String *newString(int type, const char *content) {
     struct String *sp = (struct String *)malloc(sizeof(struct String));
     EnsureNotNull(sp);
     sp->type = type;
@@ -305,7 +277,26 @@ struct String *newString(int type, const char *content)
     return sp;
 }
 
-void yyerror(char const *s)
-{
+struct FuncImpl *newFuncImpl(int type, struct Ident *ident, struct FuncRParams *funcrparams) {
+    struct FuncImpl *rt = (struct FuncImpl *)malloc(sizeof(struct FuncImpl));
+    static char lineno_buf[64];
+    snprintf(lineno_buf, 64, "%d", yylineno);
+    EnsureNotNull(rt);
+    rt->type = type;
+    rt->ident = ident;
+    if (strcmp(ident->name, "starttime") == 0) {
+        ident->name = strdup("_sysy_starttime");
+        funcrparams->funcrparam = newFuncRParam(
+            FUNCRPARAM, EXP, newExp(EXP, newAddExp(ADDEXP, NULL, newMulExp(MULEXP, NULL, newUnaryExp(UNARYEXP, PRIMARYEXP, newPrimaryExp(PRIMARYEXP, NUMBER, newNumber(NUMBER, newIntConst(INTCONST, lineno_buf)))), NULL), NULL)));
+    } else if (strcmp(ident->name, "stoptime") == 0) {
+        ident->name = strdup("_sysy_stoptime");
+        funcrparams->funcrparam = newFuncRParam(
+            FUNCRPARAM, EXP, newExp(EXP, newAddExp(ADDEXP, NULL, newMulExp(MULEXP, NULL, newUnaryExp(UNARYEXP, PRIMARYEXP, newPrimaryExp(PRIMARYEXP, NUMBER, newNumber(NUMBER, newIntConst(INTCONST, lineno_buf)))), NULL), NULL)));
+    }
+    rt->funcrparams = funcrparams;
+    return rt;
+}
+
+void yyerror(char const *s) {
     PrintErrExit("%s\n", s);
 }
