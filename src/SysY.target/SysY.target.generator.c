@@ -472,14 +472,10 @@ void __tail_normal_call_(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE
         }
     }
     struct FuncTabElem* target_func = (struct FuncTabElem*)(call_ir->op1->operand.v.funcID);
-    if (call_ir->op2->operand.v.intValue > 4) {
-        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(V2), ((int)((4 - call_ir->op2->operand.v.intValue - 8) * INT_SIZE)) & 0xffff);
-        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(V2), (((int)((4 - call_ir->op2->operand.v.intValue - 8) * INT_SIZE) >> 16)) & 0xffff);
-    } else {
-        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(V2), fp_offset & 0xffff);
-        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(V2), (fp_offset >> 16) & 0xffff);
-    }
+    Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(V2), fp_offset & 0xffff);
+    Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(V2), (fp_offset >> 16) & 0xffff);
     Fprintf("ADD\t%s,\t%s,\t%s\n", reg_to_str(SP), reg_to_str(FP), reg_to_str(V2));
+
     //Fprintf("MOV\t%s,\t%s\n", reg_to_str(SP), reg_to_str(V1));
     Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(V1), target_func->name);
     Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(V1), target_func->name);
