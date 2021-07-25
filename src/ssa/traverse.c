@@ -59,3 +59,11 @@ void widthTraverseSuccessorsBasicBlock(BASIC_BLOCK_TYPE* basic_block_head, void 
         free(t);
     freeLinkedTable(&visited);
 }
+
+void gothrough_BasicBlockNode_list(list_entry_t* list_head, void (*func)(list_entry_t*, void*), void* args) {
+    list_entry_t* elem = list_next(list_head);
+    while (elem != list_head) {
+        func(elem, args);
+        elem = list_next(elem);
+    }
+}

@@ -13,17 +13,31 @@ typedef void* ID;
 
 typedef struct BasicBlockNode BasicBlockNode;
 typedef struct Ir Ir;
+typedef struct Phi Phi;
+typedef struct Operand Operand;
+
+typedef struct Phi_op_list {
+    Operand* value;
+    list_entry_t op_link;
+} Phi_operand_list, Phi;
 
 typedef struct BasicBlock {
     int is_sealed;                 //前驱节点是否已经确定
     int is_full;                   //
     Ir* ir_list;                   // 基本块内包含的ir
+    Ir* phi_list;                  //基本块内包含的phi函数
     int predecessor_num;           //前驱节点个数
     BasicBlockNode* predecessors;  //前驱节点
     int successor_num;             //后代个数
     BasicBlockNode* successors;    //后代节点
-    BasicBlockNode* dominantor;    //必经节点集
-    BasicBlockNode* i_dominator;   //直接必经结点，长度为1 的链表
+    BasicBlockNode* dominator;     //必经节点集
+    BasicBlockNode* i_dominator;   //直接必经结点，长度为1的链表
+    BasicBlockNode* I_dominant;    //该结点直接统治的结点集
+    BasicBlockNode* dominant_frontier;
+
+    //-----------------以下为生成ssa的辅助标号
+    int has_already;
+    int work;
 } BasicBlock;
 
 //基本块链表
@@ -41,13 +55,13 @@ typedef union {
 } Value;
 
 //放在ir中的操作数，可以是Value也可以是寄存器，type表示的是操作数的类型,如果是value则只能是address或者int
-typedef struct {
+typedef struct Operand {
     int type;
     union {
         Value v;
         int reg_idx;
     } operand;
-} Operand;
+};
 
 //IR
 struct Ir {
@@ -72,6 +86,7 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
 BasicBlock* create_new_block();
 Value* new_Value();
 
+Ir* create_new_phi(Phi* op1, Operand* op3);
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
 void add_user(int i, BasicBlock* block, Ir* ir);

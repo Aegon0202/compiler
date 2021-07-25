@@ -18,6 +18,7 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 | LOAD（加载数据）`op3`  `<-` mem[ `op1`+`op2` ]   | 基址     | 偏移量   | 目标操作数 |
 | STORE（存储数据）mem[ `op1`+`op2` ] `<-` `op3`   | 基址     | 偏移量   | 源操作数   |
 | ASSIGN（赋值）`op3`  `<-`  `op1`                 | 源操作数 | -        | 目标变量   |
+| Phi         `op3`  `<-`   `op1`
 | K_NOT（求反）`op3`  `<-`  `!`  `op1`             | 源操作数 | -        | 目标操作数 |
 | K_ADD（求和）`op3`  `<-`  `op1`  `+`  `op2`      | 源操作数 | 源操作数 | 目标操作数 |
 | K_SUB（求差）`op3`  `<-`  `op1`  `-`  `op2`      | 源操作数 | 源操作数 | 目标操作数 |
@@ -32,7 +33,7 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 | K_LTE（小于等于）`op3`  `<-`  `op1`  `<=`  `op2` | 源操作数 | 源操作数 | 目标操作数 |
 | K_GT（大于）`op3`  `<-`  `op1`  `>`  `op2`       | 源操作数 | 源操作数 | 目标操作数 |
 | K_GTE（大于等于）`op3`  `<-`  `op1`  `>=`  `op2` | 源操作数 | 源操作数 | 目标操作数 |
-
+｜ 
 ```c
 #define BASIC_BLOCK_TYPE BasicBlock
 #define OPERAND_TYPE Operand

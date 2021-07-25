@@ -30,7 +30,9 @@
         "memory": "c",
         "tuple": "c",
         "vector": "c",
-        "link.h": "c"
+        "link.h": "c",
+        "__locale": "c",
+        "locale": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
     "files.autoSave": "onFocusChange",

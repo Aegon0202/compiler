@@ -35,14 +35,21 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
     return ir;
 }
 
+Ir* create_new_phi(Phi* op1, Operand* op3) {
+    return create_new_ir(PHI, op1, NULL, op3);
+}
+
 //创建一个新的block
 BasicBlock* create_new_block() {
     MALLOC(block, BasicBlock, 1);
     MALLOC_WITHOUT_DECLARE(block->predecessors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);
-    MALLOC_WITHOUT_DECLARE(block->dominantor, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->phi_list, Ir, 1);
+    MALLOC_WITHOUT_DECLARE(block->dominator, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->i_dominator, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->I_dominant, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->dominant_frontier, BasicBlockNode, 1);
     block->is_sealed = 0;
     block->is_full = 0;
     block->predecessor_num = 0;
@@ -50,14 +57,26 @@ BasicBlock* create_new_block() {
     block->predecessors->value = NULL;
     block->successors->value = NULL;
     block->ir_list->type = NOP;
-    block->dominantor->value = NULL;
+    block->phi_list->type = NOP;
+    block->dominator->value = NULL;
     block->i_dominator->value = NULL;
+    block->I_dominant->value = NULL;
+    block->dominant_frontier->value = NULL;
+    block->has_already = 0;
+    block->work = 0;
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
-    list_init(&(block->dominantor->block_link));
+    list_init(&(block->phi_list->ir_link));
+    list_init(&(block->dominator->block_link));
     list_init(&(block->i_dominator->block_link));
+    list_init(&(block->I_dominant->block_link));
+    list_init(&(block->dominant_frontier->block_link));
     return block;
+}
+
+BasicBlock* get_idominator(BasicBlock* block) {
+    return le2BasicBlock(list_next(&(block->i_dominator->block_link)))->value;
 }
 
 //为两个block建立祖先和后继的关系
@@ -291,7 +310,7 @@ void __get_all_nodes(BasicBlock* block, void* node) {
 }
 
 void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* start) {
-    list_entry_t* head = &(block->dominantor->block_link);
+    list_entry_t* head = &(block->dominator->block_link);
     list_entry_t* head_node_set = &(node_set->block_link);
     list_entry_t* elem = list_next(head_node_set);
     MALLOC(node, BasicBlockNode, 1);
@@ -311,7 +330,7 @@ void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* s
 
 void __init_strict_dominator(BasicBlock* block, void* args) {
     list_entry_t* list = &(block->i_dominator->block_link);
-    list_entry_t* head = &(block->dominantor->block_link);
+    list_entry_t* head = &(block->dominator->block_link);
     list_entry_t* elem = list_next(head);
     BasicBlockNode* node;
     while (head != elem) {
@@ -366,8 +385,24 @@ list_entry_t* __intersection_list(list_entry_t* list1, list_entry_t* list2) {
     return result;
 }
 
+list_entry_t* __union_list(list_entry_t* list1, list_entry_t* list2) {
+    MALLOC(node, BasicBlockNode, 1);
+    node->value = NULL;
+    list_entry_t* list3 = &(node->block_link);
+    list_entry_t* elem1 = list_next(list1);
+
+    return list3;
+}
+
 //list1是不是list2的子集
 int __is_sublist(list_entry_t* list1, list_entry_t* list2) {
+    list_entry_t* elem = list_next(list1);
+    while (elem != list1) {
+        BasicBlock* value = le2BasicBlock(elem)->value;
+        if (!__search_BlockNode_elem(list2, value))
+            return 0;
+        elem = list_next(elem);
+    }
     return 1;
 }
 
@@ -375,9 +410,18 @@ int __list_equal(list_entry_t* list1, list_entry_t* list2) {
     return __is_sublist(list1, list2) && __is_sublist(list2, list1);
 }
 
-void caculate_dominance(BasicBlock* start) {
+void __caclulate_i_dominant(BasicBlock* block, void* args) {
+    list_entry_t* list = &(block->i_dominator->value->I_dominant->block_link);
+    if (!__search_BlockNode_elem(list, block)) {
+        MALLOC(node, BasicBlockNode, 1);
+        node->value = block;
+        list_add(list, &(node->block_link));
+    }
+}
+
+void __caculate_dominance(BasicBlock* start) {
     list_entry_t* head;
-    list_entry_t* list = &(start->dominantor->block_link);
+    list_entry_t* list = &(start->dominator->block_link);
     MALLOC(node, BasicBlockNode, 1);
     node->value = start;
     list_entry_t* elem = &(node->block_link);
@@ -407,7 +451,7 @@ void caculate_dominance(BasicBlock* start) {
             list_entry_t* pre_node_list = &(le2struct(elem, BasicBlockNode, block_link)->value->predecessors->block_link);
             list_entry_t* pre_node_elem = list_next(pre_node_list);
             while (pre_node_list != pre_node_elem) {
-                list_entry_t l = le2struct(pre_node_elem, BasicBlockNode, block_link)->value->dominantor->block_link;
+                list_entry_t l = le2struct(pre_node_elem, BasicBlockNode, block_link)->value->dominator->block_link;
                 list_entry_t* tmp = __intersection_list(new_list, &l);
                 __delet_list(new_list);
                 new_list = tmp;
@@ -418,17 +462,17 @@ void caculate_dominance(BasicBlock* start) {
                 node->value = value;
                 list_add(new_list, &(node->block_link));
             }
-            if (!__list_equal(new_list, &(value->dominantor->block_link))) {
+            if (!__list_equal(new_list, &(value->dominator->block_link))) {
                 change = 1;
-                __delet_list(&(value->dominantor->block_link));
-                value->dominantor = le2struct(new_list, BasicBlockNode, block_link);
+                __delet_list(&(value->dominator->block_link));
+                value->dominator = le2struct(new_list, BasicBlockNode, block_link);
             }
         }
     } while (change == 1);
 }
 
-void immediate_dominance(BasicBlock* start) {
-    caculate_dominance(start);
+void __immediate_dominance(BasicBlock* start) {
+    __caculate_dominance(start);
     deepTraverseSuccessorsBasicBlock(start, __init_strict_dominator, NULL);
     list_entry_t *head, *elem;
 
@@ -463,5 +507,98 @@ void immediate_dominance(BasicBlock* start) {
             s_elem = list_next(s_elem);
         }
         elem = list_next(elem);
+    }
+    deepTraverseSuccessorsBasicBlock(start, __caclulate_i_dominant, NULL);
+    __delet_list(node_set);
+}
+
+void __dominance_frontier(BasicBlock* start) {
+    __immediate_dominance(start);
+    list_entry_t *head, *elem;
+    BasicBlockNode* node;
+    //获取全部basic block
+    MALLOC(node_set, BasicBlockNode, 1);
+    list_init(&(node_set->block_link));
+    deepTraverseSuccessorsBasicBlock(start, __get_all_nodes, node_set);
+    head = &(node_set->block_link);
+    elem = list_next(head);
+
+    while (elem != head) {
+        BasicBlock* value = le2BasicBlock(elem)->value;
+        list_entry_t* y_head = &(le2BasicBlock(elem)->value->successors->block_link);
+        list_entry_t* y_elem = list_next(y_head);
+        list_entry_t* z_head = &(le2BasicBlock(elem)->value->I_dominant->block_link);
+        list_entry_t* z_elem = list_next(z_head);
+
+        while (y_head != y_elem) {
+            BasicBlock* y_value = le2BasicBlock(y_elem)->value;
+            if (get_idominator(y_value) != value) {
+                MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+                node->value = y_value;
+                list_add(&(value->dominant_frontier->block_link), &(node->block_link));
+            }
+            y_elem = list_next(y_elem);
+        }
+
+        while (z_elem != z_head) {
+            BasicBlock* z_value = le2BasicBlock(z_elem)->value;
+            y_head = &(z_value->dominant_frontier->block_link);
+            y_elem = list_next(y_head);
+            while (y_head != y_elem) {
+                BasicBlock* y_value = le2BasicBlock(y_elem)->value;
+                if (get_idominator(y_value) != value) {
+                    MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+                    node->value = y_value;
+                    list_add(&(value->dominant_frontier->block_link), &(node->block_link));
+                }
+                y_elem = list_next(y_elem);
+            }
+
+            z_elem = list_next(z_elem);
+        }
+    }
+    elem = list_next(elem);
+}
+
+list_entry_t* caculate_DF_set(list_entry_t* list) {
+    BasicBlockNode* node;
+    MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+    node->value = NULL;
+    list_entry_t* result = &(node->block_link);
+    list_entry_t* elem = list_next(list);
+    while (elem != list) {
+        list_entry_t* list_df = &(le2BasicBlock(elem)->value->dominant_frontier->block_link);
+        list_entry_t* tmp = __union_list(result, list_df);
+        __delet_list(result);
+        result = tmp;
+        elem = list_next(elem);
+    }
+    return result;
+}
+
+list_entry_t* DF_plus(list_entry_t* list) {
+    list_entry_t* result;
+    list_entry_t* tmp;
+    int change = 1;
+    result = caculate_DF_set(list);
+    while (change != 0) {
+        change = 0;
+        tmp = __union_list(result, list);
+        if (!__list_equal(tmp, result)) {
+            __delet_list(result);
+            result = tmp;
+            change = 1;
+        } else
+            __delet_list(tmp);
+    }
+    return result;
+}
+
+void __placement_phi(BasicBlock* start) {
+    __dominance_frontier(start);
+    int iter_count = 0;
+    int loop_val = 0;
+    list_entry_t* worklist;
+    for (loop_val = 0; loop_val < current_size; loop_val++) {
     }
 }
