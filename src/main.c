@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     generateAllToOutFile(output_file);
+
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);

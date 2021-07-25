@@ -255,7 +255,7 @@ void freeString(struct String *string, int recusive) {
     free(string);
 }
 
-void initFreeToken() {
+void initFreeToken(void) {
     freeToken_p = (struct freeToken_t *)malloc(sizeof(struct freeToken_t));
     EnsureNotNull(freeToken_p);
     freeToken_p->visitKeyword = freeKeyword;
