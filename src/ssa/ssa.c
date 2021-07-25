@@ -12,6 +12,7 @@
 
 #include "../utils/DequeList.h"
 #include "../utils/LinkedTable.h"
+#include "traverse.h"
 
 int current_size;
 int max_capacity;
@@ -41,6 +42,7 @@ BasicBlock* create_new_block() {
     MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);
     MALLOC_WITHOUT_DECLARE(block->dominantor, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->i_dominator, BasicBlockNode, 1);
     block->is_sealed = 0;
     block->is_full = 0;
     block->predecessor_num = 0;
@@ -49,10 +51,12 @@ BasicBlock* create_new_block() {
     block->successors->value = NULL;
     block->ir_list->type = NOP;
     block->dominantor->value = NULL;
+    block->i_dominator->value = NULL;
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
     list_init(&(block->dominantor->block_link));
+    list_init(&(block->i_dominator->block_link));
     return block;
 }
 
@@ -280,10 +284,10 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
 
 //ssa form construct-------------------------------------------------------------------
 
-void __get_all_nodes(BasicBlock* block, BasicBlockNode* node) {
+void __get_all_nodes(BasicBlock* block, void* node) {
     MALLOC(new_node, BasicBlockNode, 1);
     new_node->value = block;
-    list_add(&(node->block_link), &(new_node->block_link));
+    list_add_before(&(((BasicBlockNode*)(node))->block_link), &(new_node->block_link));
 }
 
 void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* start) {
@@ -305,14 +309,29 @@ void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* s
     return;
 }
 
-int __search_BlockNode_elem(list_entry_t* list, BasicBlock* value) {
+void __init_strict_dominator(BasicBlock* block, void* args) {
+    list_entry_t* list = &(block->i_dominator->block_link);
+    list_entry_t* head = &(block->dominantor->block_link);
+    list_entry_t* elem = list_next(head);
+    BasicBlockNode* node;
+    while (head != elem) {
+        if (le2BasicBlock(elem)->value != block) {
+            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+            node->value = le2BasicBlock(elem)->value;
+            list_add(list, &(node->block_link));
+        }
+        elem = list_next(elem);
+    }
+}
+
+list_entry_t* __search_BlockNode_elem(list_entry_t* list, BasicBlock* value) {
     list_entry_t* elem = list_next(list);
     while (elem != list) {
         if (le2struct(elem, BasicBlockNode, block_link)->value == value)
-            return 1;
+            return elem;
         elem = list_next(elem);
     }
-    return 0;
+    return NULL;
 }
 
 void __delet_list(list_entry_t* list1) {
@@ -366,7 +385,7 @@ void caculate_dominance(BasicBlock* start) {
 
     MALLOC(node_set, BasicBlockNode, 1);
     list_init(&(node_set->block_link));
-    __get_all_nodes(start, node_set);
+    deepTraverseSuccessorsBasicBlock(start, __get_all_nodes, node_set);
     head = &(node_set->block_link);
     elem = list_next(head);
 
@@ -406,4 +425,43 @@ void caculate_dominance(BasicBlock* start) {
             }
         }
     } while (change == 1);
+}
+
+void immediate_dominance(BasicBlock* start) {
+    caculate_dominance(start);
+    deepTraverseSuccessorsBasicBlock(start, __init_strict_dominator, NULL);
+    list_entry_t *head, *elem;
+
+    //获取全部basic block
+    MALLOC(node_set, BasicBlockNode, 1);
+    list_init(&(node_set->block_link));
+    deepTraverseSuccessorsBasicBlock(start, __get_all_nodes, node_set);
+    head = &(node_set->block_link);
+    elem = list_next(head);
+
+    //对所有非起始结点
+    while (head != elem) {
+        BasicBlock* n_value = le2BasicBlock(elem);
+        list_entry_t* s_head = &(le2BasicBlock(elem)->value->i_dominator->block_link);
+        list_entry_t* s_elem = list_next(s_head);
+        while (s_head != s_elem) {
+            BasicBlock* s_value = le2BasicBlock(s_elem);
+            list_entry_t* t_head = &(le2BasicBlock(elem)->value->i_dominator->block_link);
+            list_entry_t* t_elem = list_next(t_head);
+            while (t_head != t_elem) {
+                BasicBlock* t_value = le2BasicBlock(t_elem);
+                if (t_value == s_value)
+                    continue;
+                list_entry_t* del = __search_BlockNode_elem(&(s_value->i_dominator->block_link), t_value);
+                if (del) {
+                    BasicBlockNode* del_node = le2BasicBlock(del);
+                    list_del(del);
+                    free(del_node);
+                }
+                t_elem = list_next(t_elem);
+            }
+            s_elem = list_next(s_elem);
+        }
+        elem = list_next(elem);
+    }
 }

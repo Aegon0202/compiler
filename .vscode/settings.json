@@ -29,7 +29,8 @@
         "limits": "c",
         "memory": "c",
         "tuple": "c",
-        "vector": "c"
+        "vector": "c",
+        "link.h": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
     "files.autoSave": "onFocusChange",

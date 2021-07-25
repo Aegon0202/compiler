@@ -59,9 +59,3 @@ void widthTraverseSuccessorsBasicBlock(BASIC_BLOCK_TYPE* basic_block_head, void 
         free(t);
     freeLinkedTable(&visited);
 }
-
-void gothrough_list_entry_t(list_entry_t* head, void (*func)(void*, void*), void* args) {
-    list_entry_t* elem = list_next(head);
-    while (elem != head) {
-        }
-}

@@ -23,7 +23,7 @@ typedef struct BasicBlock {
     int successor_num;             //后代个数
     BasicBlockNode* successors;    //后代节点
     BasicBlockNode* dominantor;    //必经节点集
-
+    BasicBlockNode* i_dominator;   //直接必经结点，长度为1 的链表
 } BasicBlock;
 
 //基本块链表
@@ -59,10 +59,10 @@ struct Ir {
 #define le2struct(le, type, member) \
     to_struct((le), type, member)
 
+#define le2BasicBlock(elem) le2struct(elem, BasicBlockNode, block_link)
+
 extern int current_size;
-
 extern int max_capacity;
-
 extern Value* reg_list[MAX_CAPACITY];  //寄存器堆，在这个阶段，寄存器的数量为无限大
 
 extern struct LinearList* id_list;            //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
