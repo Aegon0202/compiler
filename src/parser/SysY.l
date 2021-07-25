@@ -6,7 +6,7 @@
     #include "../SysY.type/SysY.type.def.h"
     #include "../SysY.type/SysY.type.new.h"
     #include "./SysY.tab.h"
-    #define PRINT(type,text) 
+    #define PRINT(type,text)
     int fileno(FILE* stream);
     //fprintf(yyout, "( " #type " , %s )\n", text)
 %}
@@ -17,7 +17,7 @@
 
 0|[1-9][0-9]*  |
 0[1-7][0-7]+ |
-(0x|0X)[0-9a-fA-F]  {
+(0x|0X)[0-9a-fA-F]+  {
     PRINT(INTCONST,yytext);
     yylval.intconst = newIntConst(INTCONST,yytext);
     return INTCONST;

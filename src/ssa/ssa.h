@@ -80,6 +80,7 @@ int read_variable(ID id, BasicBlock* block);
 void write_variable(ID operand, BasicBlock* block, Ir* ir);
 void seal_block();
 int alloc_register();
+const char* _op_to_str(Operand* op);
 
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir

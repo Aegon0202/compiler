@@ -60,7 +60,8 @@ void generator_func_head(struct FuncRegOffset* f_offset, FILE* out_file) {
     Fprintf(".align\t2\n");
     Fprintf(".global\t%s\n", name);
     Fprintf(".syntax\tunified\n");
-    Fprintf(".arch armv7-r\n");
+    Fprintf(".arch armv7-a\n");
+    Fprintf(".arm\n");
     Fprintf(".type\t%s,\t%%function\n", name);
     FprintfWithoutIdent("%s:\n", name);
     Fprintf("PUSH\t{%s}\n", reg_to_str(A4));
@@ -72,7 +73,8 @@ void generator_func_head(struct FuncRegOffset* f_offset, FILE* out_file) {
     Fprintf("PUSH\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(V1), reg_to_str(V2), reg_to_str(V3), reg_to_str(V4), reg_to_str(V5), reg_to_str(V6), reg_to_str(V7));
 
     Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(FP), reg_to_str(SP), 32);
-    Fprintf("LDR\t%s,=%d\n", reg_to_str(A1), f_offset->max_offset);
+    Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), f_offset->max_offset & 0xffff);
+    Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (f_offset->max_offset >> 16) & 0xffff);
     Fprintf("ADD\t%s,%s,%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
 }
 
@@ -144,7 +146,8 @@ void convert_operand_write(OPERAND_TYPE* op,
         case REGISTER:
             offset_p = getLinearList(b_offset->reg_offset, op->operand.reg_idx);
             EnsureNotNull(offset_p);
-            Fprintf("LDR\t%s,\t=%d\n", reg_to_str(temp_reg), *offset_p);
+            Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(temp_reg), (*offset_p) & 0xffff);
+            Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(temp_reg), ((*offset_p) >> 16) & 0xffff);
             Fprintf("STR\t%s,\t[%s,\t%s]\n", reg_to_str(src_reg), reg_to_str(FP), reg_to_str(temp_reg));
             break;
         default:
@@ -163,33 +166,40 @@ void convert_operand_read(OPERAND_TYPE* op,
     FILE* out_file = args->out_file;
     switch (op->type) {
         case INT:
-            Fprintf("LDR\t%s,\t=%d\n", reg_to_str(target_reg), (int)op->operand.v.intValue);
+            Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(target_reg), ((int)op->operand.v.intValue) & 0xffff);
+            Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(target_reg), (((int)op->operand.v.intValue) >> 16) & 0xffff);
             break;
         case REGISTER:
             offset_p = getLinearList(b_offset->reg_offset, op->operand.reg_idx);
             EnsureNotNull(offset_p);
-            Fprintf("LDR\t%s,\t=%d\n", reg_to_str(temp_reg), *offset_p);
+            Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(temp_reg), (*offset_p) & 0xffff);
+            Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(temp_reg), ((*offset_p) >> 16) & 0xffff);
             Fprintf("LDR\t%s,\t[%s,\t%s]\n", reg_to_str(target_reg), reg_to_str(FP), reg_to_str(temp_reg));
             break;
         case FRAMEPOINT:
-            Fprintf("LDR\t%s,\t=%d\n", reg_to_str(temp_reg), (int)op->operand.v.intValue);
+            Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(temp_reg), ((int)op->operand.v.intValue) & 0xffff);
+            Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(temp_reg), (((int)op->operand.v.intValue) >> 16) & 0xffff);
             Fprintf("ADD\t%s,\t%s,\t%s\n", reg_to_str(target_reg), reg_to_str(FP), reg_to_str(temp_reg));
             break;
         case GLOBALDATA:
-            Fprintf("LDR\t%s,=%s\n", reg_to_str(target_reg), ((struct VarTabElem*)op->operand.v.intValue)->name);
+            Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(target_reg), ((struct VarTabElem*)op->operand.v.intValue)->name);
+            Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(target_reg), ((struct VarTabElem*)op->operand.v.intValue)->name);
             break;
         case ConstSTRING:
             MALLOC_WITHOUT_DECLARE(item, struct Item, 1);
             item->key = strdup(string_label(args->f_offset->funcelem->name, op->operand.v.str));
             item->value = op->operand.v.str;
             pushFrontDequeList(args->string_queue, item);
-            Fprintf("LDR\t%s,\t=%s\n", reg_to_str(target_reg), item->key);
+            Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(target_reg), item->key);
+            Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(target_reg), item->key);
             break;
         case FUNCID:
-            Fprintf("LDR\t%s,\t=%s\n", reg_to_str(target_reg), ((struct FuncTabElem*)(op->operand.v.funcID))->name);
+            Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(target_reg), ((struct FuncTabElem*)(op->operand.v.funcID))->name);
+            Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(target_reg), ((struct FuncTabElem*)(op->operand.v.funcID))->name);
             break;
         case BASIC_BLOCK:
-            Fprintf("LDR\t%s,\t=%s\n", reg_to_str(target_reg), block_label(args->f_offset->funcelem->name, op->operand.v.b));
+            Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(target_reg), block_label(args->f_offset->funcelem->name, op->operand.v.b));
+            Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(target_reg), block_label(args->f_offset->funcelem->name, op->operand.v.b));
             break;
         default:
             PrintErrExit("error %s", EnumTypeToString(op->type));
@@ -275,18 +285,25 @@ convert_ir_func_head(k_not) {
 convert_ir_bi_op(k_add, ADD);
 convert_ir_bi_op(k_sub, SUB);
 convert_ir_bi_op(k_mul, MUL);
-convert_ir_bi_op(k_div, SDIV);
 #undef convert_ir_bi_op
+
+convert_ir_func_head(k_div) {
+    get_op_macro;
+    convert_operand_read(op1, A1, A4, b_offset, args);
+    convert_operand_read(op2, A2, A4, b_offset, args);
+    Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    Fprintf("BLX\t%s\n", reg_to_str(A3));
+    convert_operand_write(op3, A1, A4, b_offset, args);
+}
 
 convert_ir_func_head(k_mod) {
     get_op_macro;
     convert_operand_read(op1, A1, A4, b_offset, args);
     convert_operand_read(op2, A2, A4, b_offset, args);
-
-    Fprintf("SDIV\t%s,\t%s,\t%s\n", reg_to_str(A3), reg_to_str(A1), reg_to_str(A2));
-    Fprintf("MUL\t%s,\t%s,\t%s\n", reg_to_str(A4), reg_to_str(A2), reg_to_str(A3));
-    Fprintf("SUB\t%s,\t%s,\t%s\n", reg_to_str(A2), reg_to_str(A1), reg_to_str(A4));
-
+    Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    Fprintf("BLX\t%s\n", reg_to_str(A3));
     convert_operand_write(op3, A2, A4, b_offset, args);
 }
 
@@ -340,7 +357,8 @@ void convert_ir_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* ou
     Fprintf("BLX\t%s\n", reg_to_str(V1));
     convert_operand_write(op3, A1, A2, b_offset, args);
     if (op2->operand.v.intValue > 4) {
-        Fprintf("LDR\t%s,=%d\n", reg_to_str(A1), (int)((4 - op2->operand.v.intValue) * INT_SIZE));
+        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), ((int)((4 - op2->operand.v.intValue) * INT_SIZE)) & 0xffff);
+        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (((int)((4 - op2->operand.v.intValue) * INT_SIZE) >> 16)) & 0xffff);
         Fprintf("ADD\t%s,\t%s,\t%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
     }
 }
@@ -358,6 +376,10 @@ void convert_block_travel(BASIC_BLOCK_TYPE* basic_block, void* args) {
 
     while (head != next) {
         IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
+        Fprintf("@op: %12s", EnumTypeToString(ir->type));
+        Fprintf("op1: %-20s", _op_to_str(ir->op1));
+        Fprintf("op2: %-20s", _op_to_str(ir->op2));
+        Fprintf("op3: %-20s\n", _op_to_str(ir->op3));
         switch (ir->type) {
             case NOP:
                 break;

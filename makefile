@@ -37,7 +37,8 @@ compiler: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC)
 	objdump -d -S $@ > tmp_parser.asm
 
 test: compiler
-	./compiler < $(input_file) > $(output_file)
+	./compiler -S -o  tmp.s tmp/input
+	scp tmp.s pi@192.168.4.1:/home/pi/Documents/git_repo/tmp/
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)
 	bison -d $< -o $(BISON_GEN_H) -o $(BISON_GEN_C)

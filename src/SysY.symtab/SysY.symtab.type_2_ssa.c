@@ -114,6 +114,7 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
         array = array->elem_ref;
     } while (exparraydefs != head && array != NULL);
 
+    *result_is_array = 0;
     if (exparraydefs == head && array != NULL) {
         *result_is_array = 1;
     }
@@ -128,7 +129,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
     struct VarTabElem* elem;
     OPERAND_TYPE* operand = NULL;
     OPERAND_TYPE* t_op;
-    int is_array;
+    int is_array = 0;
     switch (lval->valuetype) {
         case IDENT:
             elem = getVarTabElemByName(lval->value.ident->name, display);
@@ -137,13 +138,20 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                     case 0:
                         return toSSAOffset(GLOBALDATA, (unsigned long long)elem, basic_block);
                     case 1:
+                        operand = toSSATempVariable(basic_block);
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
                         return operand;
                     default:
                         return toSSAOffset(FRAMEPOINT, elem->offset, basic_block);
                 }
             } else {
-                return toSSAVarTabElemRead(elem, basic_block);
+                if (elem->level == 0) {
+                    operand = toSSATempVariable(basic_block);
+                    newIR(LOAD, toSSAOffset(GLOBALDATA, (long long)elem, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
+                    return operand;
+                } else {
+                    return toSSAVarTabElemRead(elem, basic_block);
+                }
             }
             PrintErrExit("unknown error happen");
 
@@ -200,6 +208,9 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
 
     do {
         struct FuncRParam* frp = frps->funcrparam;
+        if (frp == NULL) {
+            break;
+        }
         OPERAND_TYPE* param_op = NULL;
         switch (frp->valuetype) {
             case STRING:
@@ -227,8 +238,22 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
 
 OPERAND_TYPE* toSSAUnaryExps(struct UnaryExps* unaryexps, BASIC_BLOCK_TYPE* basic_block) {
     OPERAND_TYPE* op = toSSAUnaryExp(unaryexps->unaryexp, basic_block);
-    OPERAND_TYPE* r_op = toSSATempVariable(basic_block);
-    newIR(unaryexps->unaryop->typevalue, toSSAIntConst(getIntConstStatic(0), basic_block), op, r_op, basic_block);
+    OPERAND_TYPE* r_op = NULL;
+    switch (unaryexps->unaryop->typevalue) {
+        case K_ADD:
+            r_op = op;
+            break;
+        case K_SUB:
+            r_op = toSSATempVariable(basic_block);
+            newIR(K_SUB, toSSAIntConst(getIntConstStatic(0), basic_block), op, r_op, basic_block);
+            break;
+        case K_NOT:
+            r_op = toSSATempVariable(basic_block);
+            newIR(K_NOT, op, NULL, r_op, basic_block);
+            break;
+        default:
+            PrintErrExit("UnaryExps not support valuetype %s", EnumTypeToString(unaryexps->unaryop->typevalue));
+    }
     return r_op;
 }
 
@@ -250,6 +275,7 @@ OPERAND_TYPE* toSSAUnaryExp(struct UnaryExp* unaryexp, BASIC_BLOCK_TYPE* basic_b
     OPERAND_TYPE* toSSA##exp_type(struct exp_type* exp, BASIC_BLOCK_TYPE* basic_block) { \
         struct exp_type* head = exp;                                                     \
         OPERAND_TYPE* op1 = NULL;                                                        \
+        IfNull(exp, return NULL;);                                                       \
         do {                                                                             \
             OPERAND_TYPE* op2 = toSSA##sub_type(exp->sub_name, basic_block);             \
             if (exp->op_name) {                                                          \
@@ -280,12 +306,15 @@ void __var_def_array_init(struct InitVals* initvals, struct ArrayTabElem* array,
     struct ArrayTabElem* t_array;
     do {
         struct InitVal* initval = initvals->initval;
+        if (initval == NULL) {
+            return;
+        }
         switch (initval->valuetype) {
-            case CONSTEXP:
+            case EXP:
                 buffer[offset] = toSSAExp(initval->value.exp, basic_block);
                 offset += 1;
                 break;
-            case CONSTINITVALS:
+            case INITVALS:
                 t_array = __offset_to_max_hight_dis(array, offset);
                 __var_def_array_init(initval->value.initvals, t_array, basic_block, buffer + offset);
                 offset += t_array->elem_size / INT_SIZE;
@@ -303,6 +332,9 @@ void __global_def_array_init(struct InitVals* initvals, struct ArrayTabElem* arr
     struct ArrayTabElem* t_array;
     do {
         struct InitVal* initval = initvals->initval;
+        if (initval == NULL) {
+            return;
+        }
         switch (initval->valuetype) {
             case EXP:
                 buffer[offset] = calcConstExp(initval->value.exp);
@@ -347,7 +379,11 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
             OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
             int offset = elem->offset;
             for (int i = 0; i < total_num; i++) {
-                newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                if (operand_buffer[i] == NULL) {
+                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+                } else {
+                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                }
                 offset += INT_SIZE;
             }
         } else {
@@ -424,6 +460,9 @@ void __const_def_array_init(struct ConstInitVals* constinitvals, struct ArrayTab
     struct ArrayTabElem* t_array;
     do {
         struct ConstInitVal* constinitval = constinitvals->constinitval;
+        if (constinitval == NULL) {
+            return;
+        }
         switch (constinitval->valuetype) {
             case CONSTEXP:
                 buffer[offset] = calcConstConstExp(constinitval->value.constexp);
@@ -442,6 +481,9 @@ void __const_def_array_init(struct ConstInitVals* constinitvals, struct ArrayTab
 }
 
 void __const_def_init(struct ConstDef* constdef, struct VarTabElem* elem, BASIC_BLOCK_TYPE* basic_block) {
+    if (elem->level == 1) {
+        PrintErrExit("function paramentor not support const value");
+    }
     EnsureNotNull(constdef->constinitval);
     MALLOC_WITHOUT_DECLARE(elem->const_init_value, int, elem->size / INT_SIZE);
     if (elem->is_array) {
@@ -449,11 +491,24 @@ void __const_def_init(struct ConstDef* constdef, struct VarTabElem* elem, BASIC_
             PrintErrExit("not support use const exp to init array: %s", elem->name);
         }
         __const_def_array_init(constdef->constinitval->value.constinitvals, elem->array_ref, elem->const_init_value);
+
     } else {
         if (constdef->constinitval->valuetype != CONSTEXP) {
             PrintErrExit("not support use const initvals to init variable: %s", elem->name);
         }
         *(elem->const_init_value) = calcConstConstExp(constdef->constinitval->value.constexp);
+    }
+
+    if (elem->level == 0) {
+        return;
+    }
+
+    int total_num = elem->size / INT_SIZE;
+    OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
+    int offset = elem->offset;
+    for (int i = 0; i < total_num; i++) {
+        newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(elem->const_init_value[i]), basic_block), basic_block);
+        offset += INT_SIZE;
     }
 }
 
@@ -525,6 +580,8 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
     struct ArrayTabElem* head_array = NULL;
     struct ArrayTabElem* prev_array = NULL;
     struct ArrayTabElem* array = NULL;
+    struct DequeList* array_size_op = newDequeList();
+    struct DequeList* array_queue = newDequeList();
 
     do {
         struct ExpArrayDef* exparraydef = exparraydefs->exparraydef;
@@ -544,13 +601,32 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
 
         if (exparraydef->exp != NULL) {
             OPERAND_TYPE* num_op = toSSAExp(exparraydef->exp, basic_block);
-            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
+            pushFrontDequeList(array_size_op, num_op);
         } else {
-            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+            pushFrontDequeList(array_size_op, toSSAIntConst(getIntConstStatic(INT_SIZE), basic_block));
         }
+        pushFrontDequeList(array_queue, array);
 
         exparraydefs = exparraydefs->next;
     } while (exparraydefs != head);
+
+    OPERAND_TYPE* elem_size_op = NULL;
+    while (!isEmptyDequeList(array_size_op)) {
+        array = popFrontDequeList(array_queue);
+        if (elem_size_op == NULL) {
+            OPERAND_TYPE* num_op = popBackDequeList(array_size_op);
+            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
+            elem_size_op = num_op;
+        } else {
+            OPERAND_TYPE* num_op = popFrontDequeList(array_size_op);
+            OPERAND_TYPE* new_size = toSSATempVariable(basic_block);
+            newIR(K_MUL, elem_size_op, num_op, new_size, basic_block);
+            newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), new_size, basic_block);
+            elem_size_op = new_size;
+        }
+    }
+    freeDequeList(&array_size_op);
+    freeDequeList(&array_queue);
 
     return head_array;
 }
@@ -837,13 +913,16 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
         elem->link = fte->parameters_ref;
         fte->parameters_size += elem->size;
         fte->parameters_ref = elem;
-        fte->var_offset_end = func_offset;
 
         funcfparams = funcfparams->next;
     } while (funcfparams != f_head);
 
     toSSABlock(funcdef->block, &basic_block);
+    newIR(RETURNSTMT, toSSAIntConst(getIntConstStatic(0), basic_block), NULL, NULL, basic_block);
+
     setBasicBlockSealed(basic_block);
+
+    fte->var_offset_end = max_func_offset;
 
     level--;
     removeLastDisplay(display);

@@ -228,8 +228,8 @@ VARDEF
 
 INITVAL
     :   EXP { $$ = newInitVal(INITVAL,EXP,$1); }
-    |   K_CURLY_L K_CURLY_R { $$ = newInitVal(INITVAL,INITVAL,newInitVals(INITVALS,NULL,NULL)); }
-    |   K_CURLY_L INITVALS K_CURLY_R    { $$ = newInitVal(INITVAL,INITVAL,$2->next); }
+    |   K_CURLY_L K_CURLY_R { $$ = newInitVal(INITVAL,INITVALS,newInitVals(INITVALS,NULL,NULL)); }
+    |   K_CURLY_L INITVALS K_CURLY_R    { $$ = newInitVal(INITVAL,INITVALS,$2->next); }
     ;
 
 INITVALS
@@ -252,7 +252,7 @@ FUNCFPARAMS
 FUNCFPARAM
     :   K_INT IDENT { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,NULL); }
     |   K_INT IDENT K_SQUARE_L K_SQUARE_R   { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),NULL)); }
-    |   K_INT IDENT K_SQUARE_L K_SQUARE_R EXPARRAYDEFS  { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),$5->next)); }
+    |   K_INT IDENT K_SQUARE_L K_SQUARE_R EXPARRAYDEFS  { $$ = newFuncFParam(FUNCFPARAM,newBType(BTYPE,K_INT),$2,newExpArrayDefs(EXPARRAYDEFS,newExpArrayDef(EXPARRAYDEF,NULL),$5)); }
     ;
 
 EXPARRAYDEFS

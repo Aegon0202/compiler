@@ -5,7 +5,10 @@
 #include "SysY.symtab/SysY.symtab.ssa.h"
 #include "SysY.target/SysY.target.arm.h"
 #include "SysY.type/SysY.type.def.h"
+#include "SysY.type/SysY.type.print.h"
 #include "parser/SysY.tab.h"
+#include "ssa/ssa.h"
+#include "ssa/traverse.h"
 YYSTYPE result;
 int S_flag;
 int O_flag;
@@ -30,4 +33,8 @@ int main(int argc, char** argv) {
     //printASTAll(funcsymtable_p->head);
     //printToken(result.compunit, printToken_ins);
     return 0;
+}
+
+void __debug_pause_there() {
+    printf("debug pause there");
 }
