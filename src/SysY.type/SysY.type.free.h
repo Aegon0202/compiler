@@ -2,11 +2,11 @@
 #define SYSY_TYPE_FREE_H
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "../utils/NullPointMacro.h"
 #include "./SysY.type.visitor.h"
 
-struct freeToken_t
-{
+struct freeToken_t {
     void (*visitKeyword)(struct Keyword *, int);
     void (*visitIntConst)(struct IntConst *, int);
     void (*visitCompUnit)(struct CompUnit *, int);
@@ -66,7 +66,7 @@ struct freeToken_t
 };
 void freeToken(void *token, struct freeToken_t *visitor, int);
 
-void initFreeToken();
+void initFreeToken(void);
 
 void freeKeyword(struct Keyword *, int recusive);
 void freeIntConst(struct IntConst *, int recusive);

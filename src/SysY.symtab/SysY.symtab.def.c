@@ -199,7 +199,7 @@ void add_library_funcs(struct FuncTable* func_table) {
 
     func = newFuncTabElem("putf", func_table);
 
-    func = newFuncTabElem("starttime", func_table);
+    func = newFuncTabElem("_sysy_starttime", func_table);
 
-    func = newFuncTabElem("stoptime", func_table);
+    func = newFuncTabElem("_sysy_stoptime", func_table);
 }

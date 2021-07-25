@@ -76,7 +76,7 @@
     #include <string.h>
     #define YYERROR_VERBOSE
     extern YYSTYPE result;
-    int yylex();
+    int yylex(void);
     void yyerror(const char *s);
 
 #line 83 "src/parser/SysY.tab.c"
