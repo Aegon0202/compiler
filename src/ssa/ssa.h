@@ -4,8 +4,7 @@
 #include "../SysY.symtab/SysY.symtab.def.h"
 #include "../SysY.type/SysY.type.def.h"
 #include "../utils/Malloc.h"
-#include "defs.h"
-#include "link.h"
+#include "../utils/link.h"
 #define MAX_CAPACITY 1000000
 #define DEF_TABLE_SIZE 1000
 
@@ -16,10 +15,10 @@ typedef struct Ir Ir;
 typedef struct Phi Phi;
 typedef struct Operand Operand;
 
-typedef struct Phi_op_list {
+struct Phi {
     Operand* value;
     list_entry_t op_link;
-} Phi_operand_list, Phi;
+};
 
 typedef struct BasicBlock {
     int is_sealed;                 //前驱节点是否已经确定
@@ -55,7 +54,7 @@ typedef union {
 } Value;
 
 //放在ir中的操作数，可以是Value也可以是寄存器，type表示的是操作数的类型,如果是value则只能是address或者int
-typedef struct Operand {
+struct Operand {
     int type;
     union {
         Value v;

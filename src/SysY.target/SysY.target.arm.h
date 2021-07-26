@@ -2,7 +2,7 @@
 #define SYSY_TARGET_ARM_H
 
 #include "../ENUM.h"
-#include "../ssa/link.h"
+#include "../utils/link.h"
 #define PC R15
 #define LR R14
 #define SP R13

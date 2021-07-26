@@ -27,7 +27,7 @@ SYSY_TARGET_SRC = $(SYSY_TARGET_DIR)/SysY.target.offset.c \
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
 
-IR = src/ssa/ssa.c src/ssa/link.c src/ssa/traverse.c
+IR = src/ssa/ssa.c  src/ssa/traverse.c
 
 MAIN = src/main.c src/init.c
 

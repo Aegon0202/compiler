@@ -70,7 +70,7 @@ void list_del_init(list_entry_t *listelm) {
  * list_empty - tests whether a list is empty
  * @list:       the list to test.
  * */
-bool list_empty(list_entry_t *list) {
+int list_empty(list_entry_t *list) {
     return list->next == list;
 }
 

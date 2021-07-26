@@ -647,3 +647,6 @@ void __placement_phi(BasicBlock* start) {
         }
     }
 }
+
+void variable_renaming() {
+}

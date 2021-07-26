@@ -1,8 +1,15 @@
 #ifndef __LIBS_LIST_H__
 #define __LIBS_LIST_H__
 
-#include "defs.h"
+#define offset(type, member) ((size_t) & (((type *)(void *)0)->member))
 
+/* to_struct - get the struct from a ptr
+ * @ptr:    a struct pointer of member
+ * @type:   the type of the struct this is embedded in
+ * @member: the name of the member within the struct
+ * */
+#define to_struct(ptr, type, member) \
+    ((type *)((char *)(ptr)-offset(type, member)))
 /* *
  * Simple doubly linked list implementation.
  *
@@ -24,7 +31,7 @@ void list_add_before(list_entry_t *listelm, list_entry_t *elm);
 void list_add_after(list_entry_t *listelm, list_entry_t *elm);
 void list_del(list_entry_t *listelm);
 void list_del_init(list_entry_t *listelm);
-bool list_empty(list_entry_t *list);
+int list_empty(list_entry_t *list);
 list_entry_t *list_next(list_entry_t *listelm);
 list_entry_t *list_prev(list_entry_t *listelm);
 
