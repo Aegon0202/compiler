@@ -27,7 +27,8 @@ int main(int argc, char** argv) {
     output_file = fopen(output_file_name, "w");
     yyparse();
     toSSACompUnit(result.compunit);
-    generateAllToOutFile(output_file);
+    __caculate_dominance(getFuncTabElemByName("main", func_table)->blocks);
+    //    generateAllToOutFile(output_file);
 
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);

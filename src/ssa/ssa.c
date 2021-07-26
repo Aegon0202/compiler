@@ -21,13 +21,15 @@ Ir* currentIr;
 struct LinearList* id_list;  // index: VarTabElem* value: int* 这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量
 
 struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
-
+struct LinearList* reg2def;            //
 //--------以下3个变量用于构造ssa形式
 struct LinearList* def_block;  // index: register index, value: list_entry_t*
 struct LinearList* construct_Stack;
 struct LinearList* construct_Counter;
 struct LinearList* variable_bottom_index;  //每个变量不同下标到definition位置的映射
 
+void __search_block(BasicBlock*);
+list_entry_t* __search_BlockNode_elem(list_entry_t*, BasicBlock*);
 int alloc_register() {
     return current_size++;
 }
@@ -42,7 +44,10 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
 }
 
 Ir* create_new_phi(Phi* op1, Operand* op3) {
-    return create_new_ir(PHI, op1, NULL, op3);
+    MALLOC(op, Operand, 1);
+    op->type = COMPLEX;
+    op->operand.v.phi_op_list = &(op1->op_link);
+    return create_new_ir(PHI, op, NULL, op3);
 }
 
 struct Definition* create_new_definition(int reg, Ir* ir, BasicBlock* block) {
@@ -98,6 +103,8 @@ BasicBlock* get_idominator(BasicBlock* block) {
 
 //为两个block建立祖先和后继的关系
 void connect_block(BasicBlock* pre, BasicBlock* suc) {
+    pre->successor_num++;
+    suc->predecessor_num++;
     BasicBlockNode* tmp = (BasicBlockNode*)malloc(sizeof(BasicBlockNode));
     tmp->value = suc;
     list_add(&(pre->successors->block_link), &(tmp->block_link));
@@ -117,21 +124,10 @@ int read_variable(ID id, BasicBlock* block) {
     }
 }
 
-void write_variable(ID id, BasicBlock* block, Ir* ir) {
-    //定义这个变量
-    int reg = alloc_register();
-
-    MALLOC(reg_p, int, 1);
-    *reg_p = reg;
-    setLinearList(id_list, (size_t)id, reg_p);
-}
-
 BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
     BasicBlock* b = create_new_block();
-    if (predecessor) {
-        b->predecessor_num++;
+    if (predecessor)
         connect_block(predecessor, b);
-    }
 
     return b;
 }
@@ -173,15 +169,23 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
         op->type = REGISTER;
         op->operand.reg_idx = res;
     } else {
-        int new_reg = alloc_register();
+        res = alloc_register();
         op->type = REGISTER;
-        op->operand.reg_idx = new_reg;
+        op->operand.reg_idx = res;
 
         MALLOC(reg_p, int, 1);
-        *reg_p = new_reg;
+        *reg_p = res;
         setLinearList(id_list, (size_t)vte, reg_p);
         setLinearList(reg_id_vartabelem, *reg_p, vte);
     }
+    list_entry_t* list = getLinearList(def_block, res);
+
+    if (!__search_BlockNode_elem(list, basic_block)) {
+        MALLOC(node, BasicBlockNode, 1);
+        node->value = basic_block;
+        list_add(list, &(node->block_link));
+    }
+
     return op;
 }
 
@@ -405,8 +409,26 @@ list_entry_t* __union_list(list_entry_t* list1, list_entry_t* list2) {
     MALLOC(node, BasicBlockNode, 1);
     node->value = NULL;
     list_entry_t* list3 = &(node->block_link);
-    list_entry_t* elem1 = list_next(list1);
-
+    list_entry_t* elem = list_next(list1);
+    while (elem != list1) {
+        BasicBlock* value = le2BasicBlock(elem)->value;
+        if (!__search_BlockNode_elem(list1, value)) {
+            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+            node->value = value;
+            list_add(list3, &(node->block_link));
+        }
+        elem = list_next(elem);
+    }
+    elem = list_next(list2);
+    while (elem != list2) {
+        BasicBlock* value = le2BasicBlock(elem)->value;
+        if (!__search_BlockNode_elem(list2, value)) {
+            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+            node->value = value;
+            list_add(list3, &(node->block_link));
+        }
+        elem = list_next(elem);
+    }
     return list3;
 }
 
@@ -501,15 +523,14 @@ void __immediate_dominance(BasicBlock* start) {
 
     //对所有非起始结点
     while (head != elem) {
-        BasicBlock* n_value = le2BasicBlock(elem);
         list_entry_t* s_head = &(le2BasicBlock(elem)->value->i_dominator->block_link);
         list_entry_t* s_elem = list_next(s_head);
         while (s_head != s_elem) {
-            BasicBlock* s_value = le2BasicBlock(s_elem);
+            BasicBlock* s_value = le2BasicBlock(s_elem)->value;
             list_entry_t* t_head = &(le2BasicBlock(elem)->value->i_dominator->block_link);
             list_entry_t* t_elem = list_next(t_head);
             while (t_head != t_elem) {
-                BasicBlock* t_value = le2BasicBlock(t_elem);
+                BasicBlock* t_value = le2BasicBlock(t_elem)->value;
                 if (t_value == s_value)
                     continue;
                 list_entry_t* del = __search_BlockNode_elem(&(s_value->i_dominator->block_link), t_value);
@@ -525,7 +546,7 @@ void __immediate_dominance(BasicBlock* start) {
         elem = list_next(elem);
     }
     deepTraverseSuccessorsBasicBlock(start, __caclulate_i_dominant, NULL);
-    __delet_list(node_set);
+    __delet_list(&(node_set->block_link));
 }
 
 void __dominance_frontier(BasicBlock* start) {
@@ -646,7 +667,19 @@ void __placement_phi(BasicBlock* start) {
                     MALLOC(op_3, Operand, 1);
                     op_3->type = REGISTER;
                     op_3->operand.reg_idx = loop_val;
-                    Ir* ir = create_new_phi(NULL, &op_3);
+                    MALLOC(phi_func, Phi, 1);
+                    int i = 0;
+                    phi_func->value = NULL;
+
+                    for (i = 0; i < Y_value->predecessor_num; i++) {
+                        MALLOC(op_node, Phi, 1);
+                        MALLOC_WITHOUT_DECLARE(op_node->value, Operand, 1);
+                        op_node->value->type = REGISTER;
+                        op_node->value->operand.reg_idx = loop_val;
+                        list_add(&(phi_func->op_link), &(op_node->op_link));
+                    }
+
+                    Ir* ir = create_new_phi(phi_func, op_3);
                     list_add(&(Y_value->phi_list->ir_link), &(ir->ir_link));
                     Y_value->has_already = iter_count;
                     if (Y_value->work < iter_count) {
@@ -701,12 +734,20 @@ void renaming_variable(BasicBlock* start) {
         setLinearList(construct_Counter, cur_var, 0);
         setLinearList(construct_Stack, cur_var, stack);
     }
+    __search_block(start);
+}
 
+void __search_block(BasicBlock* block) {
     //-------------
-    list_entry_t* ir_head = &(start->ir_list->ir_link);
+    list_entry_t* ir_head = &(block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
+    list_entry_t* phi_head = &(block->phi_list->ir_link);
+    while (ir_elem != phi_head) {
+        if (ir_elem == ir_head) {
+            ir_elem = list_next(phi_head);
+            continue;
+        }
 
-    while (ir_elem != ir_head) {
         Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
         if (__is_ordinary_assignment(ir_value)) {
             Operand* op1 = ir_value->op1;
@@ -714,16 +755,14 @@ void renaming_variable(BasicBlock* start) {
             Operand* op3 = ir_value->op3;
             if (op1 && op1->type == REGISTER) {
                 int index = op1->operand.reg_idx;
-                void* var_id = getLinearList(reg_id_vartabelem, index);
-                struct DequeList* stack = getLinearList(construct_Stack, cur_var);
+                struct DequeList* stack = getLinearList(construct_Stack, index);
                 int* i = getFrontDequeList(stack);
                 EnsureNotNull(i);
                 op1->bottom_index = *i;
             }
             if (op2 && op2->type == REGISTER) {
                 int index = op2->operand.reg_idx;
-                void* var_id = getLinearList(reg_id_vartabelem, index);
-                struct DequeList* stack = getLinearList(construct_Stack, cur_var);
+                struct DequeList* stack = getLinearList(construct_Stack, index);
                 int* i = getFrontDequeList(stack);
                 EnsureNotNull(i);
                 op2->bottom_index = *i;
@@ -733,12 +772,62 @@ void renaming_variable(BasicBlock* start) {
             int* i = getLinearList(construct_Counter, def_index);
             op3->bottom_index = *i;
             MALLOC(j, int, 1);
-            j = *i + 1;
-            struct Definition* def = create_new_definition(def_index, ir_value, start);
+            *j = *i + 1;
+            struct Definition* def = create_new_definition(def_index, ir_value, block);
             struct LinearList* bottom_index_def = getLinearList(variable_bottom_index, def_index);
             setLinearList(bottom_index_def, *i, def);
-            pushFrontDequeList(getLinearList(construct_Stack, def_index), &j);
+            pushFrontDequeList(getLinearList(construct_Stack, def_index), *j);
         }
         ir_elem = list_next(ir_head);
     }
+
+    list_entry_t* suc_head = &(block->successors->block_link);
+    list_entry_t* suc_elem = list_next(suc_head);
+    int which = 1;
+    while (suc_elem != suc_head) {
+        list_entry_t* phi_ir_head = &(le2BasicBlock(suc_elem)->value->phi_list->ir_link);
+        list_entry_t* phi_ir_elem = list_next(phi_ir_head);
+        while (phi_ir_elem != phi_ir_head) {
+            Ir* phi_ir = le2struct(phi_ir_elem, Ir, ir_link);
+            list_entry_t* phi_op_list = phi_ir->op1->operand.v.phi_op_list;
+            list_entry_t* phi_op_elem = list_next(phi_op_list);
+            int j = 1;
+            while (phi_op_list != phi_op_elem) {
+                if (j == which) {
+                    int* i = getLinearList(construct_Counter, phi_ir->op3->operand.reg_idx);
+                    le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = *i;
+                }
+            }
+
+            phi_ir_elem = list_next(phi_ir_elem);
+        }
+        suc_elem = list_next(suc_elem);
+        which++;
+    }
+
+    list_entry_t* children_head = &(block->I_dominant->block_link);
+    list_entry_t* children_elem = list_next(children_head);
+    while (children_head != children_elem) {
+        BasicBlock* c_block = le2BasicBlock(children_elem)->value;
+        __search_block(c_block);
+    }
+
+    ir_elem = list_next(ir_head);
+    while (ir_elem != phi_head) {
+        if (ir_elem == ir_head) {
+            ir_elem = list_next(phi_head);
+            continue;
+        }
+        Ir* ir = le2struct(ir_elem, Ir, ir_link);
+        if (__is_ordinary_assignment(ir) || ir->type == PHI) {
+            Operand* op = ir->op3;
+            int index = op->operand.reg_idx;
+            struct DequeList* stack = getLinearList(construct_Stack, index);
+            popFrontDequeList(stack);
+        }
+        ir_elem = list_next(ir_elem);
+    }
+}
+
+void reallocate_register(BasicBlock* block) {
 }

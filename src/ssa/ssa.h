@@ -52,6 +52,7 @@ typedef union {
     void* funcID;
     BasicBlock* b;
     Ir* complex_value;
+    list_entry_t* phi_op_list;
 } Value;
 
 //放在ir中的操作数，可以是Value也可以是寄存器，type表示的是操作数的类型,如果是value则只能是address或者int
@@ -119,7 +120,7 @@ const char* _op_to_str(Operand* op);
 void delete_operand(Operand*);
 void delete_user(Operand* def, Operand* user);
 void add_user(Operand* def, Operand* user);
-
+void __caculate_dominance(BasicBlock* start);
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand
