@@ -20,6 +20,7 @@ Ir* currentIr;
 Value value_list[MAX_CAPACITY];
 struct LinearList* id_list;            // index: VarTabElem* value: int*
 struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
+struct LinearList* def_block;          // index: register index, value: list_entry_t*
 //ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 
 int alloc_register() {
@@ -598,7 +599,51 @@ void __placement_phi(BasicBlock* start) {
     __dominance_frontier(start);
     int iter_count = 0;
     int loop_val = 0;
-    list_entry_t* worklist;
+    MALLOC(node, BasicBlockNode, 1);
+    list_entry_t* worklist = &(node->block_link);
+    list_init(worklist);
+
+    //遍历每个变量
     for (loop_val = 0; loop_val < current_size; loop_val++) {
+        iter_count += 1;
+        list_entry_t* head = getLinearList(def_block, loop_val);
+        list_entry_t* elem = list_next(head);
+        while (head != elem) {
+            BasicBlock* X_value = le2BasicBlock(elem)->value;
+            X_value->work = iter_count;
+
+            if (!__search_BlockNode_elem(worklist, X_value)) {
+                MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+                node->value = X_value;
+                list_add_before(worklist, &(node->block_link));
+            }
+        }
+
+        while (worklist != list_next(worklist)) {
+            list_entry_t* worklist_elem = list_next(worklist);
+            BasicBlock* worklist_value = le2BasicBlock(worklist_elem)->value;
+
+            list_entry_t* Y_head = &(worklist_value->dominant_frontier->block_link);
+            list_entry_t* Y_elem = list_next(Y_head);
+            while (Y_elem != Y_head) {
+                BasicBlock* Y_value = le2BasicBlock(Y_elem)->value;
+                if (Y_value->has_already < iter_count) {
+                    MALLOC(op_3, Operand, 1);
+                    op_3->type = REGISTER;
+                    op_3->operand.reg_idx = loop_val;
+                    Ir* ir = create_new_phi(NULL, &op_3);
+                    list_add(&(Y_value->phi_list->ir_link), &(ir->ir_link));
+                    Y_value->has_already = iter_count;
+                    if (Y_value->work < iter_count) {
+                        Y_value->work = iter_count;
+                        if (!__search_BlockNode_elem(worklist, Y_value)) {
+                            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+                            node->value = Y_value;
+                            list_add_before(worklist, &(node->block_link));
+                        }
+                    }
+                }
+            }
+        }
     }
 }

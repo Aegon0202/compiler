@@ -1,7 +1,7 @@
 #include "peephole.h"
 
 #include "../ENUM.h"
-/*
+
 int __is_const_op(Operand* op, const int n) {
     if (op->type == INT)
         if (op->operand.v.intValue == n)
@@ -94,7 +94,7 @@ void constFolding(BasicBlock* block, void* not_use) {
             }
     }
 }
-/*
+
 //代数化简
 void algebraic_simplification(BasicBlock* block, void* notuse) {
     list_entry_t* head = &(block->ir_list->ir_link);
@@ -170,4 +170,4 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                     break;
             }
     }
-}*/
+}
