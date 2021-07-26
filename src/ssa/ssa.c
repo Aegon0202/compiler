@@ -113,6 +113,9 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
     tmp->value = pre;
     list_add(&(suc->predecessors->block_link), &(tmp->block_link));
 }
+void disconnect_block(BasicBlcok* pre, BasicBlcok* suc){
+
+}
 
 int read_variable(ID id, BasicBlock* block) {
     //根据id寻找是否在次之前定义过这个变量
