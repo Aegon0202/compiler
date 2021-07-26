@@ -61,6 +61,7 @@ struct Operand {
         Value v;
         int reg_idx;
     } operand;
+    int bottom_index;
 };
 
 //IR
@@ -81,9 +82,9 @@ typedef struct def_use_chain {
 } def_use_chain;
 
 struct Definition {
-    int variable;         //存放这个变量的寄存器编号
-    Address def_address;  //这个变量被定义的位置
-    def_use_chain chain;
+    int variable;          //存放这个变量的寄存器编号
+    Address* def_address;  //这个变量被定义的位置
+    def_use_chain* chain;
 };
 
 #define le2struct(le, type, member) \

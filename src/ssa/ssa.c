@@ -45,6 +45,17 @@ Ir* create_new_phi(Phi* op1, Operand* op3) {
     return create_new_ir(PHI, op1, NULL, op3);
 }
 
+struct Definition* create_new_definition(int reg, Ir* ir, BasicBlock* block) {
+    MALLOC(def, struct Definition, 1);
+    MALLOC_WITHOUT_DECLARE(def->chain, def_use_chain, 1);
+    MALLOC_WITHOUT_DECLARE(def->def_address, Address, 1);
+    def->chain->user = -1;
+    def->variable = reg;
+    def->def_address->block = block;
+    def->def_address->ir = ir;
+    return def;
+}
+
 //创建一个新的block
 BasicBlock* create_new_block() {
     MALLOC(block, BasicBlock, 1);
@@ -694,18 +705,20 @@ void renaming_variable(BasicBlock* start) {
     //-------------
     list_entry_t* ir_head = &(start->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
+
     while (ir_elem != ir_head) {
-        Ir* value = le2struct(ir_elem, Ir, ir_link);
-        if (__is_ordinary_assignment(value)) {
-            Operand* op1 = value->op1;
-            Operand* op2 = value->op2;
-            Operand* op3 = value->op3;
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        if (__is_ordinary_assignment(ir_value)) {
+            Operand* op1 = ir_value->op1;
+            Operand* op2 = ir_value->op2;
+            Operand* op3 = ir_value->op3;
             if (op1 && op1->type == REGISTER) {
                 int index = op1->operand.reg_idx;
                 void* var_id = getLinearList(reg_id_vartabelem, index);
                 struct DequeList* stack = getLinearList(construct_Stack, cur_var);
                 int* i = getFrontDequeList(stack);
                 EnsureNotNull(i);
+                op1->bottom_index = *i;
             }
             if (op2 && op2->type == REGISTER) {
                 int index = op2->operand.reg_idx;
@@ -713,14 +726,19 @@ void renaming_variable(BasicBlock* start) {
                 struct DequeList* stack = getLinearList(construct_Stack, cur_var);
                 int* i = getFrontDequeList(stack);
                 EnsureNotNull(i);
+                op2->bottom_index = *i;
             }
 
             int def_index = op3->operand.reg_idx;
             int* i = getLinearList(construct_Counter, def_index);
-            //replace with v_i
-            pushFrontDequeList(getLinearList(construct_Stack, def_index), );
+            op3->bottom_index = *i;
+            MALLOC(j, int, 1);
+            j = *i + 1;
+            struct Definition* def = create_new_definition(def_index, ir_value, start);
+            struct LinearList* bottom_index_def = getLinearList(variable_bottom_index, def_index);
+            setLinearList(bottom_index_def, *i, def);
+            pushFrontDequeList(getLinearList(construct_Stack, def_index), &j);
         }
-
         ir_elem = list_next(ir_head);
     }
 }
