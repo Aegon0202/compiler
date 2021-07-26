@@ -27,7 +27,7 @@ struct LinearList* def_block;  // index: register index, value: list_entry_t*
 struct LinearList* construct_Stack;
 struct LinearList* construct_Counter;
 struct LinearList* variable_bottom_index;  //每个变量不同下标到definition位置的映射
-
+void __debug_pause_there();
 void __search_block(BasicBlock*);
 list_entry_t* __search_BlockNode_elem(list_entry_t*, BasicBlock*);
 int alloc_register() {
@@ -113,8 +113,7 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
     tmp->value = pre;
     list_add(&(suc->predecessors->block_link), &(tmp->block_link));
 }
-void disconnect_block(BasicBlcok* pre, BasicBlcok* suc){
-
+void disconnect_block(BasicBlock* pre, BasicBlock* suc) {
 }
 
 int read_variable(ID id, BasicBlock* block) {
@@ -180,6 +179,12 @@ OPERAND_TYPE* toSSAVarTabElemWrite(struct VarTabElem* vte, BASIC_BLOCK_TYPE* bas
         *reg_p = res;
         setLinearList(id_list, (size_t)vte, reg_p);
         setLinearList(reg_id_vartabelem, *reg_p, vte);
+
+        MALLOC(node, BasicBlockNode, 1);
+        node->value = NULL;
+        list_entry_t* l = &(node->block_link);
+        list_init(l);
+        setLinearList(def_block, res, l);
     }
     list_entry_t* list = getLinearList(def_block, res);
 
@@ -336,13 +341,10 @@ void __init_dominator(BasicBlock* block, BasicBlockNode* node_set, BasicBlock* s
     list_entry_t* head = &(block->dominator->block_link);
     list_entry_t* head_node_set = &(node_set->block_link);
     list_entry_t* elem = list_next(head_node_set);
-    MALLOC(node, BasicBlockNode, 1);
-    node->value = node_set->value;
-    list_add(head, &(node->block_link));
 
     while (head_node_set != elem) {
         if (le2struct(elem, BasicBlockNode, block_link)->value != start) {
-            MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
+            MALLOC(node, BasicBlockNode, 1);
             node->value = le2struct(elem, BasicBlockNode, block_link)->value;
             list_add(head, &(node->block_link));
         }
@@ -368,12 +370,15 @@ void __init_strict_dominator(BasicBlock* block, void* args) {
 
 list_entry_t* __search_BlockNode_elem(list_entry_t* list, BasicBlock* value) {
     list_entry_t* elem = list_next(list);
+    list_entry_t* res = NULL;
     while (elem != list) {
-        if (le2struct(elem, BasicBlockNode, block_link)->value == value)
-            return elem;
+        BasicBlock* b = le2struct(elem, BasicBlockNode, block_link)->value;
+        if (b == value) {
+            res = elem;
+        }
         elem = list_next(elem);
     }
-    return NULL;
+    return res;
 }
 
 void __delet_list(list_entry_t* list1) {
@@ -440,8 +445,9 @@ int __is_sublist(list_entry_t* list1, list_entry_t* list2) {
     list_entry_t* elem = list_next(list1);
     while (elem != list1) {
         BasicBlock* value = le2BasicBlock(elem)->value;
-        if (!__search_BlockNode_elem(list2, value))
+        if (!__search_BlockNode_elem(list2, value)) {
             return 0;
+        }
         elem = list_next(elem);
     }
     return 1;
@@ -476,6 +482,7 @@ void __caculate_dominance(BasicBlock* start) {
 
     //对每一个basicblock结点初始化
     while (head != elem) {
+        //__print_basic_block(le2BasicBlock(elem)->value, NULL);
         __init_dominator(le2struct(elem, BasicBlockNode, block_link)->value, node_set, start);
         elem = list_next(elem);
     }
@@ -486,14 +493,19 @@ void __caculate_dominance(BasicBlock* start) {
         elem = list_next(head);
         //遍历所有结点
         while (elem != head) {
-            list_entry_t* new_list = &(node_set->block_link);
+            MALLOC(node_set_sub, BasicBlockNode, 1);
+            list_init(&(node_set_sub)->block_link);
+            deepTraverseSuccessorsBasicBlock(start, __get_all_nodes, node_set_sub);
+            list_entry_t* new_list = &(node_set_sub->block_link);
+
             BasicBlock* value = le2struct(elem, BasicBlockNode, block_link)->value;
             //遍历所有前驱结点
             list_entry_t* pre_node_list = &(le2struct(elem, BasicBlockNode, block_link)->value->predecessors->block_link);
             list_entry_t* pre_node_elem = list_next(pre_node_list);
             while (pre_node_list != pre_node_elem) {
-                list_entry_t l = le2struct(pre_node_elem, BasicBlockNode, block_link)->value->dominator->block_link;
-                list_entry_t* tmp = __intersection_list(new_list, &l);
+                __debug_pause_there();
+                list_entry_t* l = &(le2struct(pre_node_elem, BasicBlockNode, block_link)->value->dominator->block_link);
+                list_entry_t* tmp = __intersection_list(new_list, l);
                 __delet_list(new_list);
                 new_list = tmp;
                 pre_node_elem = list_next(pre_node_elem);
@@ -507,8 +519,11 @@ void __caculate_dominance(BasicBlock* start) {
                 change = 1;
                 __delet_list(&(value->dominator->block_link));
                 value->dominator = le2struct(new_list, BasicBlockNode, block_link);
-            }
+            } else
+                __delet_list(new_list);
+            elem = list_next(elem);
         }
+
     } while (change == 1);
 }
 
@@ -779,7 +794,7 @@ void __search_block(BasicBlock* block) {
             struct Definition* def = create_new_definition(def_index, ir_value, block);
             struct LinearList* bottom_index_def = getLinearList(variable_bottom_index, def_index);
             setLinearList(bottom_index_def, *i, def);
-            pushFrontDequeList(getLinearList(construct_Stack, def_index), *j);
+            pushFrontDequeList(getLinearList(construct_Stack, def_index), j);
         }
         ir_elem = list_next(ir_head);
     }

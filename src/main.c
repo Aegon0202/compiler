@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     __caculate_dominance(getFuncTabElemByName("main", func_table)->blocks);
-    //    generateAllToOutFile(output_file);
+    //generateAllToOutFile(output_file);
 
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);

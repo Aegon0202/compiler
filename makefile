@@ -48,3 +48,6 @@ $(FLEX_GEN): $(FLEX_SRC)
 
 clean:
 	rm -f $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) compiler
+
+debug: compiler
+	gdb --args ./compiler -S -o tmp.o tmp.c

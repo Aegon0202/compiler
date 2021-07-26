@@ -107,9 +107,9 @@ extern struct LinearList* variable_bottom_index;
 Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
 BasicBlock* create_new_block();
 Value* new_Value();
-void disconnect_block(BasicBlcok* pre, BasicBlcok* suc);
+void disconnect_block(BasicBlock* pre, BasicBlock* suc);
 Ir* create_new_phi(Phi* op1, Operand* op3);
-void update_CFG(BasicBlcok* start);
+void update_CFG(BasicBlock* start);
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
 int read_variable(ID id, BasicBlock* block);
