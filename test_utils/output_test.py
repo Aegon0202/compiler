@@ -2,6 +2,8 @@ import subprocess
 import os.path
 import os
 in_out_fd = "../compiler2021/testcase/performance_test2021_pre"
+# in_out_fd = "../compiler2021/testcase/function_test2020"
+#in_out_fd = "../compiler2021/testcase/function_test2021"
 
 for f in os.listdir("./tmp_result"):
     print(f"testing {f}")
@@ -26,10 +28,12 @@ for f in os.listdir("./tmp_result"):
     else:
         cmd: subprocess.CompletedProcess = subprocess.run(
             ["./tmp.o"], text=True, capture_output=True)
-    if len(cmd.stderr) and not cmd.stderr.startswith("TOTAL:"):
+    if len(cmd.stderr) and not cmd.stderr.startswith("TOTAL:") and not cmd.stderr.startswith("Timer"):
         print(f"run time error {f}")
         print(cmd.stderr)
         break
+    if len(cmd.stderr):
+        print(cmd.stderr)
     out_content = ""
     if len(cmd.stdout):
         if cmd.stdout[-1] == '\n':

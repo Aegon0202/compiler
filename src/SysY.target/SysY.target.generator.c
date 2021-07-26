@@ -405,8 +405,8 @@ void __normal_ir_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* o
     Fprintf("BLX\t%s\n", reg_to_str(V1));
     convert_operand_write(op3, A1, A2, b_offset, args);
     if (op2->operand.v.intValue > 4) {
-        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), ((int)((4 - op2->operand.v.intValue) * INT_SIZE)) & 0xffff);
-        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (((int)((4 - op2->operand.v.intValue) * INT_SIZE) >> 16)) & 0xffff);
+        Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), ((int)((op2->operand.v.intValue - 4) * INT_SIZE)) & 0xffff);
+        Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (((int)((op2->operand.v.intValue - 4) * INT_SIZE) >> 16)) & 0xffff);
         Fprintf("ADD\t%s,\t%s,\t%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
     }
 }
