@@ -33,7 +33,7 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 | K_LTE（小于等于）`op3`  `<-`  `op1`  `<=`  `op2` | 源操作数 | 源操作数 | 目标操作数 |
 | K_GT（大于）`op3`  `<-`  `op1`  `>`  `op2`       | 源操作数 | 源操作数 | 目标操作数 |
 | K_GTE（大于等于）`op3`  `<-`  `op1`  `>=`  `op2` | 源操作数 | 源操作数 | 目标操作数 |
-｜ 
+
 ```c
 #define BASIC_BLOCK_TYPE BasicBlock
 #define OPERAND_TYPE Operand

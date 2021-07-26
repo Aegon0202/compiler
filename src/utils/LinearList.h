@@ -109,4 +109,13 @@ struct LinearList* mapLinearList(struct LinearList* linear, unsigned long long i
  */
 void* reduceLinearList(struct LinearList* linear, unsigned long long int begin_index, unsigned long long int end_index, void* (*reduce_func)(void*, void*, void*), void* init_value, void* args);
 
+/**
+ * 将LinearList转成DequeList，并且释放掉原有的LinearList。
+ * 
+ * :param (struct LinearList*) linear 要转化的LinearList
+ * 
+ * :return (struct DequeList*) 生成的DequeList，是新创建的，不需要时记得释放。
+ */
+struct DequeList* convertToDequeList(struct LinearList* linear);
+
 #endif
