@@ -8,6 +8,8 @@ int __is_const_op(Operand* op, const int n) {
             return 2;
         else
             return 1;
+    else if (op->type == FRAMEPOINT || op->type == STACKPOINT)
+        return 1;
     return 0;
 }
 

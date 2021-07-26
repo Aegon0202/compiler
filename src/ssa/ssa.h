@@ -3,6 +3,7 @@
 #include "../ENUM.h"
 #include "../SysY.symtab/SysY.symtab.def.h"
 #include "../SysY.type/SysY.type.def.h"
+#include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
 #include "../utils/link.h"
 #define MAX_CAPACITY 1000000
@@ -69,6 +70,22 @@ struct Ir {
     list_entry_t ir_link;
 };
 
+typedef struct Address {
+    BasicBlock* block;
+    Ir* ir;
+} Address;
+
+typedef struct def_use_chain {
+    int user;  //
+    list_entry_t DU_chain;
+} def_use_chain;
+
+struct Definition {
+    int variable;         //存放这个变量的寄存器编号
+    Address def_address;  //这个变量被定义的位置
+    def_use_chain chain;
+};
+
 #define le2struct(le, type, member) \
     to_struct((le), type, member)
 
@@ -81,6 +98,10 @@ extern Value* reg_list[MAX_CAPACITY];  //寄存器堆，在这个阶段，寄存
 extern struct LinearList* id_list;            //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
 extern struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
 
+extern struct LinearList* def_block;  // index: register index, value: list_entry_t*
+extern struct LinearList* construct_Stack;
+extern struct LinearList* construct_Counter;
+extern struct LinearList* variable_bottom_index;
 Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
 BasicBlock* create_new_block();
 Value* new_Value();
@@ -88,13 +109,15 @@ Value* new_Value();
 Ir* create_new_phi(Phi* op1, Operand* op3);
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
-void add_user(int i, BasicBlock* block, Ir* ir);
-void delete_user(int, Ir*);
 int read_variable(ID id, BasicBlock* block);
 void write_variable(ID operand, BasicBlock* block, Ir* ir);
 void seal_block();
 int alloc_register();
 const char* _op_to_str(Operand* op);
+
+void delete_operand(Operand*);
+void delete_user(Operand* def, Operand* user);
+void add_user(Operand* def, Operand* user);
 
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir

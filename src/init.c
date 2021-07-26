@@ -4,5 +4,9 @@
 void init() {
     id_list = newLinearList();
     reg_id_vartabelem = newLinearList();
+    def_block = newLinearList();
+    construct_Counter = newLinearList();
+    construct_Stack = newLinearList();
+    variable_bottom_index = newLinearList();
     init_all_table();
 }

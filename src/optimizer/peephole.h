@@ -1,5 +1,5 @@
-#include"../ssa/ssa.h"
+#include "../ssa/ssa.h"
 
 int peep_optimize(BasicBlock* start_block);
-int constFolding(BasicBlock* block);
+void constFolding(BasicBlock* block, void*);
 int constProp(BasicBlock* block);

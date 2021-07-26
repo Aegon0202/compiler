@@ -17,11 +17,16 @@
 int current_size;
 int max_capacity;
 Ir* currentIr;
-Value value_list[MAX_CAPACITY];
-struct LinearList* id_list;            // index: VarTabElem* value: int*
+
+struct LinearList* id_list;  // index: VarTabElem* value: int* 这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量
+
 struct LinearList* reg_id_vartabelem;  // index: int value: VarTabElem*
-struct LinearList* def_block;          // index: register index, value: list_entry_t*
-//ID id_list[MAX_CAPACITY];  //这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量的
+
+//--------以下3个变量用于构造ssa形式
+struct LinearList* def_block;  // index: register index, value: list_entry_t*
+struct LinearList* construct_Stack;
+struct LinearList* construct_Counter;
+struct LinearList* variable_bottom_index;  //每个变量不同下标到definition位置的映射
 
 int alloc_register() {
     return current_size++;
@@ -108,7 +113,6 @@ void write_variable(ID id, BasicBlock* block, Ir* ir) {
     MALLOC(reg_p, int, 1);
     *reg_p = reg;
     setLinearList(id_list, (size_t)id, reg_p);
-    value_list[reg].complex_value = ir;
 }
 
 BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
@@ -648,5 +652,75 @@ void __placement_phi(BasicBlock* start) {
     }
 }
 
-void variable_renaming() {
+int __is_ordinary_assignment(Ir* ir) {
+    int type = ir->type;
+    int ans;
+    switch (type) {
+        case LOAD:
+        case K_ADD:
+        case K_SUB:
+        case ASSIGN:
+        case K_MUL:
+        case K_DIV:
+        case K_MOD:
+        case K_AND:
+        case K_OR:
+        case K_EQ:
+        case K_NEQ:
+        case K_LT:
+        case K_LTE:
+        case K_GT:
+        case K_GTE:
+        case CALL:
+            ans = 1;
+            break;
+
+        default:
+            ans = 0;
+            break;
+    }
+    return ans;
+}
+
+void renaming_variable(BasicBlock* start) {
+    int cur_var = 0;
+
+    for (cur_var = 0; cur_var < current_size; cur_var++) {
+        struct DequeList* stack = newDequeList();
+        setLinearList(construct_Counter, cur_var, 0);
+        setLinearList(construct_Stack, cur_var, stack);
+    }
+
+    //-------------
+    list_entry_t* ir_head = &(start->ir_list->ir_link);
+    list_entry_t* ir_elem = list_next(ir_head);
+    while (ir_elem != ir_head) {
+        Ir* value = le2struct(ir_elem, Ir, ir_link);
+        if (__is_ordinary_assignment(value)) {
+            Operand* op1 = value->op1;
+            Operand* op2 = value->op2;
+            Operand* op3 = value->op3;
+            if (op1 && op1->type == REGISTER) {
+                int index = op1->operand.reg_idx;
+                void* var_id = getLinearList(reg_id_vartabelem, index);
+                struct DequeList* stack = getLinearList(construct_Stack, cur_var);
+                int* i = getFrontDequeList(stack);
+                EnsureNotNull(i);
+            }
+            if (op2 && op2->type == REGISTER) {
+                int index = op2->operand.reg_idx;
+                void* var_id = getLinearList(reg_id_vartabelem, index);
+                struct DequeList* stack = getLinearList(construct_Stack, cur_var);
+                int* i = getFrontDequeList(stack);
+                EnsureNotNull(i);
+            }
+
+            int def_index = op3->operand.reg_idx;
+            int* i = getLinearList(construct_Counter, def_index);
+            //replace with v_i
+            pushFrontDequeList(getLinearList(construct_Stack, def_index), );
+        }
+
+        ir_elem = list_next(ir_head);
+    }
 }
