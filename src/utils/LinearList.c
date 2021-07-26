@@ -1,5 +1,6 @@
 #include "./LinearList.h"
 
+#include "./DequeList.h"
 #include "./Malloc.h"
 #include "./NullPointMacro.h"
 #define TOTAL_LEVEL 16
@@ -165,4 +166,14 @@ void* reduceLinearList(struct LinearList* linear, ull begin_index, ull end_index
         value = reduce_func(value, getLinearList(linear, i), args);
     }
     return value;
+}
+
+struct DequeList* convertToDequeList(struct LinearList* linear) {
+    struct DequeList* queue = newDequeList();
+    void* value = NULL;
+    while ((value = popLinearList(linear)) != NULL) {
+        pushFrontDequeList(queue, value);
+    }
+    freeLinearList(&linear);
+    return queue;
 }
