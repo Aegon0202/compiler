@@ -27,7 +27,7 @@ SYSY_TARGET_SRC = $(SYSY_TARGET_DIR)/SysY.target.offset.c \
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
 
-IR = src/ssa/ssa.c  src/ssa/traverse.c
+IR = src/ssa/*.c
 
 MAIN = src/main.c src/init.c
 
@@ -50,4 +50,4 @@ clean:
 	rm -f $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) compiler
 
 debug: compiler
-	gdb --args ./compiler -S -o tmp.o tmp.c
+	gdb --args ./compiler -S -o tmp.o tmp2.c

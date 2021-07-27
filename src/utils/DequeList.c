@@ -27,6 +27,7 @@ int pushBackDequeList(struct DequeList* deque, void* value) {
 }
 
 int pushFrontDequeList(struct DequeList* deque, void* value) {
+    EnsureNotNull(deque);
     EnsureNotNull(value);
     IfNull(deque, return -1;);
     IfNull(deque->content, return -1;);

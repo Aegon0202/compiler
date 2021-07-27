@@ -14,6 +14,9 @@ int S_flag;
 int O_flag;
 int yyparse(void);
 void init();
+void __debug_pause_there();
+int df_plus_test(BasicBlock* start);
+void __placement_phi(BasicBlock* start);
 
 int main(int argc, char** argv) {
     init();
@@ -27,9 +30,8 @@ int main(int argc, char** argv) {
     output_file = fopen(output_file_name, "w");
     yyparse();
     toSSACompUnit(result.compunit);
-    __caculate_dominance(getFuncTabElemByName("main", func_table)->blocks);
+    convert2ssa(getFuncTabElemByName("main", func_table)->blocks);
     //generateAllToOutFile(output_file);
-
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);
