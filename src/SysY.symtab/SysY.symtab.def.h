@@ -34,6 +34,7 @@ struct FuncTabElem {
     struct VarTabElem* parameters_ref;  // 参数的最后一个引用
     int parameters_size;                // 参数的大小
     int var_offset_end;                 // 变量在栈中用到的最后的偏移
+    int has_side_effect;                // 是否有副作用，每次同样的参数会不会有不同的影响
 #ifdef BASIC_BLOCK_TYPE
     BASIC_BLOCK_TYPE* blocks;
 #else

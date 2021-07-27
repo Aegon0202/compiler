@@ -13,6 +13,7 @@ int global_offset = 0;
 static int func_offset = 0;  // variable maybe offset of $fp
 static int func_fparam_offset = 0;
 static int max_func_offset = 0;
+static int has_side_effect = 1;
 struct ArrayTabElem* __offset_to_max_hight_dis(struct ArrayTabElem* array, int offset);
 
 struct IntConst* getIntConstStatic(int value) {
@@ -146,6 +147,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                 }
             } else {
                 if (elem->level == 0) {
+                    has_side_effect = 1;
                     operand = toSSATempVariable(basic_block);
                     newIR(LOAD, toSSAOffset(GLOBALDATA, (long long)elem, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
                     return operand;
@@ -164,6 +166,9 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
             if (is_array) {
                 return operand;
             } else {
+                if (elem->level == 0 || elem->level == 1) {
+                    has_side_effect = 1;
+                }
                 t_op = toSSATempVariable(basic_block);
                 newIR(LOAD, operand, toSSAIntConst(getIntConstStatic(0), basic_block), t_op, basic_block);
                 return t_op;
@@ -200,6 +205,10 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
     struct FuncTabElem* fte = getFuncTabElemByName(funcimpl->ident->name, func_table);
     OPERAND_TYPE* func_op = toSSAFuncName(fte, basic_block);
     OPERAND_TYPE* result_op = toSSATempVariable(basic_block);
+
+    if (fte->has_side_effect) {
+        has_side_effect = 1;
+    }
 
     struct LinearList* param_list = newLinearList();
     int param_next = 0;
@@ -643,6 +652,8 @@ void toSSALValWrite(struct LVal* lval, OPERAND_TYPE* result, BASIC_BLOCK_TYPE* b
                 PrintErrExit("not support assign to array");
             }
             if (elem->level == 0) {
+                has_side_effect = 1;
+
                 t_op = toSSAOffset(GLOBALDATA, (unsigned long long)elem, basic_block);
                 newIR(STORE, t_op, toSSAIntConst(getIntConstStatic(0), basic_block), result, basic_block);
             } else {
@@ -658,6 +669,10 @@ void toSSALValWrite(struct LVal* lval, OPERAND_TYPE* result, BASIC_BLOCK_TYPE* b
             operand = toSSAArrayImplAddress(lval->value.arrayimpl, elem, &is_array, basic_block);
             if (is_array) {
                 PrintErrExit("not support assign to array");
+            }
+
+            if (elem->level == 0 || elem->level == 1) {
+                has_side_effect = 1;
             }
 
             newIR(STORE, operand, toSSAIntConst(getIntConstStatic(0), basic_block), result, basic_block);
@@ -869,6 +884,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
     func_offset = -32;       // 32:
     func_fparam_offset = 4;  // $fp, $lr
     max_func_offset = 0;
+    has_side_effect = 0;
 
     struct FuncFParams* f_head = funcdef->funcfparams;
     struct FuncFParams* funcfparams = f_head;
@@ -923,7 +939,7 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
     setBasicBlockSealed(basic_block);
 
     fte->var_offset_end = max_func_offset;
-
+    fte->has_side_effect = has_side_effect;
     level--;
     removeLastDisplay(display);
 }

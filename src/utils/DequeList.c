@@ -111,3 +111,16 @@ int freeDequeList(struct DequeList** deque_p) {
     *deque_p = NULL;
     return 0;
 }
+
+struct LinearList* convertToLinearList(struct DequeList* queue, unsigned long long int* num) {
+    unsigned long long int i = 0;
+    struct LinearList* linear = newLinearList();
+    void* value = NULL;
+    while ((value = popBackDequeList(queue))) {
+        setLinearList(linear, i, value);
+        i++;
+    }
+    freeDequeList(&queue);
+    *num = i;
+    return linear;
+}
