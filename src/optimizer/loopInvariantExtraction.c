@@ -11,11 +11,11 @@ void __find_back_edge(BASIC_BLOCK_TYPE* basic_block, void* args) {
     list_entry_t* succ_head = &basic_block->successors->block_link;
     list_entry_t* succ_next = list_next(succ_head);
     while (succ_head != succ_next) {
-        BASIC_BLOCK_TYPE* succ_block = le2BasicBlock(succ_next);
+        BASIC_BLOCK_TYPE* succ_block = (le2BasicBlock(succ_next)->value);
         list_entry_t* dom_head = &basic_block->dominator->block_link;
         list_entry_t* dom_next = &basic_block->dominator->block_link;
         while (dom_next != dom_head) {
-            BASIC_BLOCK_TYPE* dom_block = le2BasicBlock(dom_next);
+            BASIC_BLOCK_TYPE* dom_block = (le2BasicBlock(dom_next)->value);
             if (succ_block == dom_block) {
                 MALLOC(item, struct Item, 1);  // key为basic_block value为必经节点
                 item->key = basic_block;
@@ -41,7 +41,7 @@ struct DequeList* __get_loop_basic_block(BASIC_BLOCK_TYPE* basic_block, BASIC_BL
             list_entry_t* head = &b_block->predecessors->block_link;
             list_entry_t* next = list_next(head);
             while (head != next) {
-                BASIC_BLOCK_TYPE* p_block = le2BasicBlock(next);
+                BASIC_BLOCK_TYPE* p_block = (le2BasicBlock(next)->value);
                 void* value = setLinearList(loop_all, (size_t)p_block, p_block);
                 if (value == NULL) {
                     pushFrontDequeList(stack, p_block);
@@ -126,7 +126,7 @@ int __is_block_in_BasicBlockNode(BASIC_BLOCK_TYPE* basic_block, BasicBlockNode* 
     list_entry_t* head = &node->block_link;
     list_entry_t* next = list_next(head);
     while (head != next) {
-        BASIC_BLOCK_TYPE* b = le2BasicBlock(next);
+        BASIC_BLOCK_TYPE* b = (le2BasicBlock(next)->value);
         if (b == basic_block) {
             return 1;
         }
@@ -272,7 +272,7 @@ void __add_loop_outblock(struct LoopBlocks* lb) {
         list_entry_t* head = &b->successors->block_link;
         list_entry_t* next = list_next(head);
         while (head != next) {
-            BASIC_BLOCK_TYPE* succ = le2BasicBlock(next);
+            BASIC_BLOCK_TYPE* succ = (le2BasicBlock(next)->value);
             if (!__is_block_in_liner_list(succ, lb->list, lb->loop_block_num) &&
                 !__is_block_in_liner_list(succ, lb->out_blocks, lb->out_blocks_num)) {
                 setLinearList(lb->out_blocks, lb->out_blocks_num, succ);
@@ -288,7 +288,7 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
     list_entry_t* head = &lb->loop_entry->predecessors->block_link;
     list_entry_t* next = list_next(next);
     while (head != next) {
-        BASIC_BLOCK_TYPE* block = le2BasicBlock(next);
+        BASIC_BLOCK_TYPE* block = (le2BasicBlock(next)->value);
         if (!__is_block_in_liner_list(block, lb->list, lb->loop_block_num)) {
             disconnect_block(block, lb->loop_entry);
             connect_block(block, new_b);
