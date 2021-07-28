@@ -56,6 +56,31 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
     return ir;
 }
 
+//删除一条单独的ir，没有在任何一条ir链中，除了自身
+void delete_operand(Operand* op) {
+    if (op->type != PHI)
+        free(op);
+    else {
+        list_entry_t* phi_head = op->operand.v.phi_op_list;
+        list_entry_t* phi_elem = list_next(phi_head);
+        while (phi_head != phi_elem) {
+            Operand* d_op = le2struct(phi_elem, Phi, op_link)->value;
+            list_entry_t* tmp_elem = phi_elem;
+            phi_elem = list_next(phi_elem);
+
+            list_del(tmp_elem);
+            free(d_op);
+        }
+    }
+}
+
+void delete_ir(Ir* ir) {
+    delete_operand(ir->op1);
+    delete_operand(ir->op2);
+    delete_operand(ir->op3);
+    free(ir);
+}
+
 Ir* create_new_phi(Phi* op1, Operand* op3, Operand* op2) {
     MALLOC(op, Operand, 1);
     op->type = PHI_OP;
@@ -115,6 +140,17 @@ BasicBlock* create_new_block() {
     list_init(&(block->Children->block_link));
     list_init(&(block->dominant_frontier->block_link));
     return block;
+}
+
+Operand* create_new_operand(int type, int reg, long long value) {
+    MALLOC(op, Operand, 1);
+    op->type = type;
+    if (type == REGISTER)
+        op->operand.reg_idx = reg, op->bottom_index = 0;
+    else {
+        op->operand.v.intValue = value;
+    }
+    return op;
 }
 
 BasicBlock* get_idominator(BasicBlock* block) {
@@ -877,12 +913,17 @@ void __process_read_op(Operand* op) {
         int* i = getFrontDequeList(stack);
         EnsureNotNull(i);
         op->bottom_index = *i;
+        if (op->operand.reg_idx == 3) {
+            __debug_pause_there();
+        }
     }
 }
 
 void __process_write_op(Operand* op3, Ir* ir_value, BasicBlock* block) {
-    if (op3->operand.reg_idx == 4)
+    if (op3->operand.reg_idx == 3) {
         __debug_pause_there();
+    }
+
     EnsureNotNull(op3);
     int def_index = op3->operand.reg_idx;
     int* i = getLinearList(construct_Counter, def_index);
@@ -1071,7 +1112,7 @@ void __search_block(BasicBlock* block) {
         __operand_decode(ir_value, block);
         ir_elem = list_next(ir_elem);
     }
-
+    __debug_pause_there();
     list_entry_t* suc_head = &(block->successors->block_link);
     list_entry_t* suc_elem = list_next(suc_head);
     int which;
@@ -1188,16 +1229,56 @@ void reallocate_register(BasicBlock* start) {
     modify_op_global(start);
 }
 
+void convertOutssa_local(BasicBlock* block, void* args) {
+    list_entry_t* ir_head = &(block->ir_list->ir_link);
+    list_entry_t* ir_elem = list_next(ir_head);
+
+    while (ir_head != ir_elem) {
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        if (ir_value->type == PHI) {
+            //遍历phi中的操作数
+            list_entry_t* op_head = ir_value->op1->operand.v.phi_op_list;
+            list_entry_t* op_elem = list_next(op_head);
+            Operand* write_op = ir_value->op3;
+            int write_reg = write_op->operand.reg_idx;
+            while (op_head != op_elem) {
+                Operand* op_value = le2struct(op_elem, Phi, op_link)->value;
+                int read_reg = op_value->operand.reg_idx;
+                list_entry_t* target_ir_list = &(get_op_definition(op_value)->def_address->block->ir_list->ir_link);
+                Operand* op2 = create_new_operand(INT, -1, 0);
+                Operand* op1 = create_new_operand(REGISTER, read_reg, 0);
+                Operand* op3 = create_new_operand(REGISTER, write_reg, 0);
+                Ir* new_ir = create_new_ir(K_ADD, op1, op2, op3);
+                list_add_before(target_ir_list, &(new_ir->ir_link));
+
+                op_elem = list_next(op_elem);
+            }
+        }
+        ir_elem = list_next(ir_elem);
+    }
+    //从原来的基本块中删除所有phi函数
+    ir_elem = list_next(ir_head);
+    while (ir_elem != ir_head) {
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        if (ir_value->type != PHI)
+            break;
+
+        list_entry_t* tmp_elem = ir_elem;
+        ir_elem = list_next(ir_elem);
+        list_del(tmp_elem);
+        delete_ir(ir_value);
+    }
+}
+
 void convertOutssa(BasicBlock* start) {
+    deepTraverseSuccessorsBasicBlock(start, convertOutssa_local, NULL);
     return;
 }
 
 void convert2ssa(BasicBlock* start) {
     __placement_phi(start);
-    renaming_variable(start);
-
-    reallocate_register(start);
-
     deepTraverseSuccessorsBasicBlock(start, __print_basic_block, NULL);
+    renaming_variable(start);
+    reallocate_register(start);
     convertOutssa(start);
 }

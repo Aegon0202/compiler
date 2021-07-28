@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     convert2ssa(getFuncTabElemByName("main", func_table)->blocks);
-    //generateAllToOutFile(output_file);
+    generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);

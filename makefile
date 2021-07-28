@@ -50,4 +50,4 @@ clean:
 	rm -f $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) compiler
 
 debug: compiler
-	gdb --args ./compiler -S -o tmp.o tmp2.c
+	gdb --args ./compiler -S -o tmp.s tmp3.c
