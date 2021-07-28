@@ -22,18 +22,18 @@ struct Phi {
 };
 
 typedef struct BasicBlock {
-    int is_sealed;                 //前驱节点是否已经确定
-    int is_full;                   //
-    Ir* ir_list;                   // 基本块内包含的ir
-    Ir* phi_list;                  //基本块内包含的phi函数
-    int predecessor_num;           //前驱节点个数
-    BasicBlockNode* predecessors;  //前驱节点
-    int successor_num;             //后代个数
-    BasicBlockNode* successors;    //后代节点
-    BasicBlockNode* dominator;     //必经节点集
-    BasicBlockNode* i_dominator;   //直接必经结点，长度为1的链表
-    BasicBlockNode* I_dominant;    //该结点直接统治的结点集
-    BasicBlockNode* dominant_frontier;
+    int is_sealed;                      //前驱节点是否已经确定
+    int is_full;                        //
+    Ir* ir_list;                        // 基本块内包含的ir
+    Ir* phi_list;                       //基本块内包含的phi函数
+    int predecessor_num;                //前驱节点个数
+    BasicBlockNode* predecessors;       //前驱节点
+    int successor_num;                  //后代个数
+    BasicBlockNode* successors;         //后代节点
+    BasicBlockNode* dominator;          //必经节点集
+    BasicBlockNode* i_dominator;        //直接必经结点，长度为1的链表
+    BasicBlockNode* Children;           //该结点直接统治的结点集
+    BasicBlockNode* dominant_frontier;  //该结点的必经边界
 
     //-----------------以下为生成ssa的辅助标号
     int has_already;
@@ -104,11 +104,14 @@ extern struct LinearList* def_block;  // index: register index, value: list_entr
 extern struct LinearList* construct_Stack;
 extern struct LinearList* construct_Counter;
 extern struct LinearList* variable_bottom_index;
+extern struct LinearList* bottom_index2New_reg;
+extern struct LinearList* reg2def;
+
 Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
 BasicBlock* create_new_block();
 Value* new_Value();
 void disconnect_block(BasicBlock* pre, BasicBlock* suc);
-Ir* create_new_phi(Phi* op1, Operand* op3);
+Ir* create_new_phi(Phi* op1, Operand* op3, Operand*);
 void update_CFG(BasicBlock* start);
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
@@ -116,12 +119,19 @@ int read_variable(ID id, BasicBlock* block);
 void write_variable(ID operand, BasicBlock* block, Ir* ir);
 void seal_block();
 int alloc_register();
+int get_init_register();
 const char* _op_to_str(Operand* op);
 
 void delete_operand(Operand*);
 void delete_user(Operand* def, Operand* user);
 void add_user(Operand* def, Operand* user);
+
+void __dominance_frontier(BasicBlock* start);
 void __caculate_dominance(BasicBlock* start);
+void __immediate_dominance(BasicBlock* start);
+list_entry_t* DF_plus(list_entry_t* list);
+void __get_all_nodes(BasicBlock* block, void* node);
+void convert2ssa(BasicBlock* start);
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand
