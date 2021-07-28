@@ -5,12 +5,13 @@
   -   `REGISTER` 寄存器
 
  <br/>   
-  
+
 - `struct Immi_8` 8位立即数
   -   `int8_t`  `:`  `num` 立即数
   
+
 <br/>   
-  
+
 -  `struct Immi_12` 12位立即数:
     -  `int16_t`  `:`  `num` 立即数
 
@@ -23,7 +24,7 @@
 
 -  `struct Register`  `ARM` 中的寄存器
     -   `int`  `:`  `reg` 寄存器编号从 `R0`  `~`  `R15` 
-  
+
  <br/>   
 
 - `struct Operand2` 灵活的操作数2:
@@ -112,5 +113,6 @@
 | `ARM_STR_R_POST`  `mem`  `[`  `op2`  `]`  `<-`  `op1` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `STR`  `op1`  `,`  `[`  `op2`  `]`  `,`  `op3` | `struct Register *`   | `struct Register *` | `struct Operand2*`  | `NULL`            |
 | `ARM_PUSH` 将列表 `op1`  中的寄存器（共有 `op2` 个）中的值 `PUSH` 到栈中 | `struct LinearList *` | `int *`             | `NULL`              | `NULL`            |
 | `ARM_POP` 将列表 `op1`  中的寄存器（共有 `op2` 个）中的值从栈中 `POP` 出来 | `struct LinearList *` | `int *`             | `NULL`              | `NULL`            |
+| `ARM_LABEL`  `op1` 就是当前的label                           | `struct Label *`      |                     |                     |                   |
 
   
