@@ -104,6 +104,9 @@ extern struct LinearList* def_block;  // index: register index, value: list_entr
 extern struct LinearList* construct_Stack;
 extern struct LinearList* construct_Counter;
 extern struct LinearList* variable_bottom_index;
+extern struct LinearList* bottom_index2New_reg;
+extern struct LinearList* reg2def;
+
 Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
 BasicBlock* create_new_block();
 Value* new_Value();
@@ -116,6 +119,7 @@ int read_variable(ID id, BasicBlock* block);
 void write_variable(ID operand, BasicBlock* block, Ir* ir);
 void seal_block();
 int alloc_register();
+int get_init_register();
 const char* _op_to_str(Operand* op);
 
 void delete_operand(Operand*);
@@ -132,15 +136,15 @@ void convert2ssa(BasicBlock* start);
 #define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand
 #define IR_TYPE Ir
-    //需要在SSA中完成的函数
-    /**
+//需要在SSA中完成的函数
+/**
  * 生成一个新的基本块
  * 
  * :param (BASIC_BLOCK_TYPE*) predecessor 一个前驱，可能为NULL
  * 
  * :return (BASIC_BLOCK_TYPE*) 一个新生成的基本块
  */
-    BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor);
+BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor);
 
 /**
  * 设置一个基本块已封闭

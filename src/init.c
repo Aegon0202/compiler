@@ -8,5 +8,7 @@ void init() {
     construct_Counter = newLinearList();
     construct_Stack = newLinearList();
     variable_bottom_index = newLinearList();
+    bottom_index2New_reg = newLinearList();
+    reg2def = newLinearList();
     init_all_table();
 }

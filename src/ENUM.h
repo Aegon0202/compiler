@@ -80,6 +80,7 @@ enum {
     ARRAY,
 
     //operand type
+    PHI_OP,
     COMPLEX,
     PHI,
     INT,

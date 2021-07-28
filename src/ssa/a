@@ -1,0 +1,76 @@
+op:        K_ADD        op1:   int: $1                  op2:   int: $0                  op3:   reg: %10_0        
+op:        K_ADD        op1:   int: $2                  op2:   int: $0                  op3:   reg: %15_0        
+op:        K_ADD        op1:   int: $0                  op2:   int: $0                  op3:   reg: %18_0        
+op:        K_ADD        op1:   int: $10                 op2:   int: $0                  op3:   reg: %21_0        
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5a7d0      
+block address 0x5a7d0:
+op:          PHI        op1:   phi: 0x636e4             op2:   int: $2                  op3:   reg: %19_1        
+phi_op:      reg: %20_2      reg: %18_0
+op:          PHI        op1:   phi: 0x63334             op2:   int: $2                  op3:   reg: %16_1        
+phi_op:      reg: %17_2      reg: %15_0
+op:          PHI        op1:   phi: 0x51684             op2:   int: $2                  op3:   reg: %11_1        
+phi_op:      reg: %14_4      reg: %10_0
+op:        K_LTE        op1:   reg: %11_1               op2:   reg: %21_0               op3:   reg: %4_0         
+op:       BRANCH        op1:   reg: %4_0                op2: block: 0x5a8b0             op3: block: 0x5a990      
+block address 0x5a8b0:
+op:        K_MUL        op1:   reg: %16_1               op2:   int: $2                  op3:   reg: %5_0         
+op:        K_ADD        op1:   reg: %5_0                op2:   int: $0                  op3:   reg: %17_2        
+op:        K_ADD        op1:   int: $1                  op2:   int: $0                  op3:   reg: %20_2        
+op:        K_ADD        op1:   reg: %11_1               op2:   int: $1                  op3:   reg: %6_0         
+op:        K_ADD        op1:   reg: %6_0                op2:   int: $0                  op3:   reg: %14_4        
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5a7d0      
+block address 0x5a990:
+op:       BRANCH        op1:   reg: %19_1               op2: block: 0x5f4a0             op3: block: 0x5f540      
+block address 0x5f4a0:
+op:        PARAM        op1:  func: putint              op2:   int: $0                  op3:   reg: %16_1        
+op:         CALL        op1:  func: putint              op2:   int: $1                  op3:   reg: %7_0         
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5f620      
+block address 0x5f620:
+op:          PHI        op1:   phi: 0x62d24             op2:   int: $2                  op3:   reg: %13_3        
+phi_op:      reg: %12_2      reg: %11_1
+op:   RETURNSTMT        op1:   int: $0                  op2:     -: -                   op3:     -: -            
+op:   RETURNSTMT        op1:     -: -                   op2:     -: -                   op3:     -: -            
+block address 0x5f540:
+op:        K_ADD        op1:   reg: %11_1               op2:   int: $1                  op3:   reg: %8_0         
+op:        K_ADD        op1:   reg: %8_0                op2:   int: $0                  op3:   reg: %12_2        
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5f620 
+
+
+
+
+op:        K_ADD        op1:   int: $1                  op2:   int: $0                  op3:   reg: %0_0         
+op:        K_ADD        op1:   int: $2                  op2:   int: $0                  op3:   reg: %1_0         
+op:        K_ADD        op1:   int: $0                  op2:   int: $0                  op3:   reg: %2_0         
+op:        K_ADD        op1:   int: $10                 op2:   int: $0                  op3:   reg: %3_0         
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5a7d0      
+block address 0x5a7d0:
+op:          PHI        op1:   phi: 0x636e4             op2:   int: $2                  op3:   reg: %2_1         
+phi_op:       reg: %2_2       reg: %2_0
+op:          PHI        op1:   phi: 0x63334             op2:   int: $2                  op3:   reg: %1_1         
+phi_op:       reg: %1_2       reg: %1_0
+op:          PHI        op1:   phi: 0x51684             op2:   int: $2                  op3:   reg: %0_1         
+phi_op:       reg: %0_4       reg: %0_0
+op:        K_LTE        op1:   reg: %0_1                op2:   reg: %3_0                op3:   reg: %4_0         
+op:       BRANCH        op1:   reg: %4_0                op2: block: 0x5a8b0             op3: block: 0x5a990      
+block address 0x5a8b0:
+op:        K_MUL        op1:   reg: %1_1                op2:   int: $2                  op3:   reg: %5_0         
+op:        K_ADD        op1:   reg: %5_0                op2:   int: $0                  op3:   reg: %1_2         
+op:        K_ADD        op1:   int: $1                  op2:   int: $0                  op3:   reg: %2_2         
+op:        K_ADD        op1:   reg: %0_1                op2:   int: $1                  op3:   reg: %6_0         
+op:        K_ADD        op1:   reg: %6_0                op2:   int: $0                  op3:   reg: %0_4         
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5a7d0      
+block address 0x5a990:
+op:       BRANCH        op1:   reg: %2_1                op2: block: 0x5f4a0             op3: block: 0x5f540      
+block address 0x5f4a0:
+op:        PARAM        op1:  func: putint              op2:   int: $0                  op3:   reg: %1_1         
+op:         CALL        op1:  func: putint              op2:   int: $1                  op3:   reg: %7_0         
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5f620      
+block address 0x5f620:
+op:          PHI        op1:   phi: 0x62d24             op2:   int: $2                  op3:   reg: %0_3         
+phi_op:       reg: %0_2       reg: %0_1
+op:   RETURNSTMT        op1:   int: $0                  op2:     -: -                   op3:     -: -            
+op:   RETURNSTMT        op1:     -: -                   op2:     -: -                   op3:     -: -            
+block address 0x5f540:
+op:        K_ADD        op1:   reg: %0_1                op2:   int: $1                  op3:   reg: %8_0         
+op:        K_ADD        op1:   reg: %8_0                op2:   int: $0                  op3:   reg: %0_2         
+op:         JUMP        op1:     -: -                   op2:     -: -                   op3: block: 0x5f620   
