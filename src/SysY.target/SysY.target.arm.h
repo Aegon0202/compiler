@@ -29,8 +29,20 @@ struct Immi_8 {
     int8_t num;
 };
 
+struct Immi_12 {
+    int16_t num;
+};
+
 struct Immi_16 {
     int16_t num;
+};
+
+struct Register {
+    int reg;
+};
+
+struct Label {
+    char* label;
 };
 
 struct Operand2 {
@@ -51,67 +63,17 @@ struct CondOp {
     int type;  // EQ, NE, CS, CC, MI, PL, VS, VC, HI, LS, GE, LT, GT, LE, AL
 };
 
-// OP_ADD: Rd:=Rn+operand2
-// OP_SUB: Rd:=Rn-operand2
-// OP_CMP: 更新Rn-operand2的CPSR标记
-struct OP_Operand2 {
-    list_entry_t list;
-    int type;  // OP_ADD OP_SUB
-    int Rd;
-    int Rn;
-    struct Operand2* operand2;
-};
-
-// OP_MUL: Rd:=Rm*Rs
-// OP_SDIV: Rd:=Rm/Rs
-// OP_BX: PC:=Rd
-struct OP_REG3 {
-    list_entry_t list;
+struct ArmIr {
     int type;
-    int Rd;
-    int Rm;
-    int Rs;
+    struct CondOp* cond;
+    void* op1;
+    void* op2;
+    void* op3;
+    void* op4;
+    list_entry_t ir_link;
 };
-
-// OP_B: PC:=label <+-32MB>
-// OP_LABEL: just a label
-// OP_BL: LR:=PC, PC:=label
-struct OP_B {
-    list_entry_t list;
-    int type;
-    const char* label;
-};
-
-// OP_LTR: Rd:=[Rd,offset]
-// OP_STR:
-struct OP_LS {
-    list_entry_t list;
-    int type;
-    int Rd;
-    int Rn;
-    int offset;  // optional, immi
-};
-
-struct OP_ARM {
-    int type;
-
-    int op1_flag;  // REGISTER
-    union {
-        int reg;
-    } op1;
-
-    int op2_flag;  // REGISTER OPERAND2
-    union {
-        int reg;
-        const char* label;
-        struct Operand2* operand2;
-    } op2;
-
-    int op3_flag;  // REGISTER
-    union {
-        int reg;
-    } op3;
-    list_entry_t* list;
+struct ArmBlock {
+    list_entry_t* ir_link;
 };
 
 void generateAllToOutFile(FILE* out_file);

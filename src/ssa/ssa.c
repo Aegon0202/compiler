@@ -1139,13 +1139,22 @@ void convertAlltoSSAform() {
     for (int i = 0; i < func_table->next_func_index; i++) {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
-            deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
             __search_block(elem->blocks);
         }
     }
 
     reallocate_register(NULL);
 
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks != NULL) {
+            modify_op_global(elem->blocks);
+        }
+    }
+}
+
+void convertAllOutSSAform() {
+    struct FuncTabElem* elem;
     for (int i = 0; i < func_table->next_func_index; i++) {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {

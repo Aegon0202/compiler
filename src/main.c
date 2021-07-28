@@ -18,6 +18,7 @@ void __debug_pause_there();
 int df_plus_test(BasicBlock* start);
 void __placement_phi(BasicBlock* start);
 void convertAlltoSSAform();
+void convertAllOutSSAform();
 
 int main(int argc, char** argv) {
     init();
@@ -32,6 +33,7 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     convertAlltoSSAform();
+    convertAllOutSSAform();
     generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
