@@ -413,7 +413,6 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
     do {
         struct VarDef* vardef = vardefs->vardef;
         struct VarTabElem* elem = newVarTabElem(vardef->ident->name, var_table);
-        toSSAVarTabElemWrite(elem, basic_block);
         elem->level = level;
         elem->is_const = 0;
         elem->const_init_value = NULL;
@@ -529,7 +528,6 @@ int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
     do {
         struct ConstDef* constdef = constdefs->constdef;
         struct VarTabElem* elem = newVarTabElem(constdef->ident->name, var_table);
-        toSSAVarTabElemWrite(elem, basic_block);
         elem->level = level;
         elem->is_const = 0;
         elem->const_init_value = NULL;
@@ -902,7 +900,6 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
             break;
         }
         struct VarTabElem* elem = newVarTabElem(funcfparam->ident->name, var_table);
-        toSSAVarTabElemWrite(elem, basic_block);
         elem->size = INT_SIZE;
         elem->level = level;
         elem->const_init_value = NULL;
