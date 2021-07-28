@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include "../utils/DequeList.h"
+#include "../utils/IrType.h"
 #include "../utils/LinkedTable.h"
 #include "traverse.h"
 
@@ -863,36 +864,6 @@ void __placement_phi(BasicBlock* start) {
     }
 }
 
-int __is_ordinary_assignment(Ir* ir) {
-    int type = ir->type;
-    int ans;
-    switch (type) {
-        case LOAD:
-        case K_ADD:
-        case K_SUB:
-        case ASSIGN:
-        case K_MUL:
-        case K_DIV:
-        case K_MOD:
-        case K_AND:
-        case K_OR:
-        case K_EQ:
-        case K_NEQ:
-        case K_LT:
-        case K_LTE:
-        case K_GT:
-        case K_GTE:
-        case CALL:
-            ans = 1;
-            break;
-
-        default:
-            ans = 0;
-            break;
-    }
-    return ans;
-}
-
 void renaming_variable(BasicBlock* start) {
     int cur_var = 0;
 
@@ -941,69 +912,7 @@ void __process_write_op(Operand* op3, Ir* ir_value, BasicBlock* block) {
 void __operand_decode(Ir* ir, BasicBlock* block) {
 #define READ_OP(num) __process_read_op(ir->op##num)
 #define WRITE_OP(num) __process_write_op(ir->op##num, ir, block)
-    switch (ir->type) {
-        case NOP:
-            break;
-        case PARAM:
-            READ_OP(3);
-            break;
-        case CALL:
-            READ_OP(1);
-            READ_OP(2);
-            WRITE_OP(3);
-            break;
-        case JUMP:
-            READ_OP(3);
-            break;
-        case BRANCH:
-            READ_OP(1);
-            READ_OP(2);
-            READ_OP(3);
-            break;
-        case RETURNSTMT:
-            READ_OP(1);
-            break;
-        case LOAD:
-            READ_OP(1);
-            READ_OP(2);
-            WRITE_OP(3);
-            break;
-        case STORE:
-            READ_OP(1);
-            READ_OP(2);
-            READ_OP(3);
-            break;
-        case ASSIGN:
-            READ_OP(1);
-            WRITE_OP(3);
-            break;
-        case K_NOT:
-            READ_OP(1);
-            WRITE_OP(3);
-            break;
-        case K_ADD:
-        case K_SUB:
-        case K_MUL:
-        case K_DIV:
-        case K_MOD:
-        case K_AND:
-        case K_OR:
-        case K_EQ:
-        case K_NEQ:
-        case K_LT:
-        case K_LTE:
-        case K_GT:
-        case K_GTE:
-            READ_OP(1);
-            READ_OP(2);
-            WRITE_OP(3);
-            break;
-        case PHI:
-            WRITE_OP(3);
-            break;
-        default:
-            PrintErrExit("Not support ir type %s", EnumTypeToString(ir->type));
-    }
+    IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
 }
@@ -1018,69 +927,7 @@ void __pop_op(Operand* op) {
 void __pop_search(Ir* ir, BasicBlock* block) {
 #define READ_OP(num)
 #define WRITE_OP(num) __pop_op(ir->op##num)
-    switch (ir->type) {
-        case NOP:
-            break;
-        case PARAM:
-            READ_OP(3);
-            break;
-        case CALL:
-            READ_OP(1);
-            READ_OP(2);
-            WRITE_OP(3);
-            break;
-        case JUMP:
-            READ_OP(3);
-            break;
-        case BRANCH:
-            READ_OP(1);
-            READ_OP(2);
-            READ_OP(3);
-            break;
-        case RETURNSTMT:
-            READ_OP(1);
-            break;
-        case LOAD:
-            READ_OP(1);
-            READ_OP(2);
-            WRITE_OP(3);
-            break;
-        case STORE:
-            READ_OP(1);
-            READ_OP(2);
-            READ_OP(3);
-            break;
-        case ASSIGN:
-            READ_OP(1);
-            WRITE_OP(3);
-            break;
-        case K_NOT:
-            READ_OP(1);
-            WRITE_OP(3);
-            break;
-        case K_ADD:
-        case K_SUB:
-        case K_MUL:
-        case K_DIV:
-        case K_MOD:
-        case K_AND:
-        case K_OR:
-        case K_EQ:
-        case K_NEQ:
-        case K_LT:
-        case K_LTE:
-        case K_GT:
-        case K_GTE:
-            READ_OP(1);
-            READ_OP(2);
-            WRITE_OP(3);
-            break;
-        case PHI:
-            WRITE_OP(3);
-            break;
-        default:
-            PrintErrExit("Not support ir type %s", EnumTypeToString(ir->type));
-    }
+    IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
 }

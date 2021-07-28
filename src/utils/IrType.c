@@ -8,6 +8,8 @@ int isWriteOp(IR_TYPE* ir, int op_index) {
     IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, break);
 
     return 0;
+#undef READ_OP
+#undef WRITE_OP
 }
 int isReadOp(IR_TYPE* ir, int op_index) {
 #define WRITE_OP(num) \
@@ -18,4 +20,6 @@ int isReadOp(IR_TYPE* ir, int op_index) {
     IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, break);
 
     return 0;
+#undef READ_OP
+#undef WRITE_OP
 }
