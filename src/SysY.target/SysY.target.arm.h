@@ -1,6 +1,8 @@
 #ifndef SYSY_TARGET_ARM_H
 #define SYSY_TARGET_ARM_H
 
+#include <stdint.h>
+
 #include "../ENUM.h"
 #include "../utils/link.h"
 #define PC R15
@@ -23,12 +25,30 @@
 #define A2 R1
 #define A1 R0
 
+struct Immi_8 {
+    int8_t num;
+};
+
+struct Immi_16 {
+    int16_t num;
+};
+
 struct Operand2 {
-    int valuetype;  // REGISTER, INT
+    int type;  // IMMI_8, REGISTER
     union {
+        struct Immi_8* immi_8;
         int reg;
-        int value;  // immi 8bit
-    };
+    } Rm;
+    int shift_type;  // NOP, LSL, LSR, ASR, ROR, RRX
+    int shift_op;    // IMMI_8, REGISTER
+    union {
+        struct Immi_8* immi_8;
+        int reg;
+    } shift;
+};
+
+struct CondOp {
+    int type;  // EQ, NE, CS, CC, MI, PL, VS, VC, HI, LS, GE, LT, GT, LE, AL
 };
 
 // OP_ADD: Rd:=Rn+operand2

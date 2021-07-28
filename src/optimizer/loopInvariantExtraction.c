@@ -4,7 +4,7 @@
 #include "../utils/LinkedTable.h"
 #include "./local_op.h"
 
-int __is_const_op_in_loop(OPERAND_TYPE* op, struct LoopBlocks* loop);
+int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct LoopBlocks* loop);
 
 void __find_back_edge(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct DequeList* queue = (struct DequeList*)args;
@@ -57,28 +57,6 @@ struct DequeList* __get_loop_basic_block(BASIC_BLOCK_TYPE* basic_block, BASIC_BL
     }
     freeLinearList(&loop_all);
     return stack;
-}
-
-int __is_type_inviriant_extraction(IR_TYPE* ir) {
-    switch (ir->type) {
-        case K_NOT:
-        case K_ADD:
-        case K_MUL:
-        case K_EQ:
-        case K_NEQ:
-        case K_SUB:
-        case K_DIV:
-        case K_MOD:
-        case K_LT:
-        case K_LTE:
-        case K_GT:
-        case K_GTE:
-        case ASSIGN:
-        case CALL:
-            return 1;
-        default:
-            return 0;
-    }
 }
 
 struct LoopBlocks {
@@ -145,13 +123,27 @@ int __is_block_in_liner_list(BASIC_BLOCK_TYPE* basi_block, struct LinearList* li
     return 0;
 }
 
-int __is_const_ir_in_loop(IR_TYPE* ir, struct LoopBlocks* loop) {
-    int is_const = 0;
+int __is_op_can_extraction(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* basic_block, struct LoopBlocks* loop) {
+    if (op->type != REGISTER) {
+        return 1;
+    }
+    struct Definition* def = getOperandDefinition(op);
+    for (int i = 0; i < loop->loop_block_num; i++) {
+        BASIC_BLOCK_TYPE* b = getLinearList(loop->list, i);
+        if (b == def->def_address->block) {
+            return __is_op_can_extraction(def->def_address->ir, basic_block, loop);
+        }
+    }
+    return 1;
+}
+
+int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct LoopBlocks* loop) {
+    int is_can_extract = 0;
 
     switch (ir->type) {
         case K_NOT:
         case ASSIGN:
-            is_const = __is_const_op_in_loop(ir->op1, loop);
+            is_can_extract = __is_op_can_extraction(ir->op1, basic_block, loop);
             break;
         case K_ADD:
         case K_MUL:
@@ -164,71 +156,63 @@ int __is_const_ir_in_loop(IR_TYPE* ir, struct LoopBlocks* loop) {
         case K_LTE:
         case K_GT:
         case K_GTE:
-            is_const = __is_const_op_in_loop(ir->op1, loop) && __is_const_op_in_loop(ir->op2, loop);
+            is_can_extract = __is_op_can_extraction(ir->op1, basic_block, loop) && __is_op_can_extraction(ir->op2, basic_block, loop);
             break;
+        case PARAM:
+            pushFrontDequeList(loop->func_param, ir);
         default:
-            is_const = 0;
+            is_can_extract = 0;
             break;
     }
+
     if (ir->type == CALL) {
-        if (((struct FuncTabElem*)(ir->op1->operand.v.funcID))->has_side_effect) {
-            is_const = 0;
-        } else {
-            is_const = 1;
+        if (!(((struct FuncTabElem*)(ir->op1->operand.v.funcID))->has_side_effect)) {
+            is_can_extract = 1;
             while (!isEmptyDequeList(loop->func_param)) {
                 IR_TYPE* p = popFrontDequeList(loop->func_param);
-                if (!__is_const_op_in_loop(p->op3, loop)) {
-                    is_const = 0;
+                if (is_can_extract && !__is_op_can_extraction(p->op3, basic_block, loop)) {
+                    is_can_extract = 0;
                 }
             }
         }
     }
-    if (is_const) {
+
+    if (is_can_extract) {
+        for (int i = 0; i < loop->out_blocks_num; i++) {
+            BASIC_BLOCK_TYPE* out = getLinearList(loop->out_blocks, i);
+            if (!__is_block_in_BasicBlockNode(basic_block, out->dominator)) {
+                is_can_extract = 0;
+                break;
+            }
+        }
+    }
+
+    if (is_can_extract) {
+        OPERAND_TYPE tmp_op;
+        tmp_op.type = REGISTER;
+
+        struct Definition* def = getOperandDefinition(ir->op3);
+        list_entry_t* head = &def->chain->DU_chain;
+        list_entry_t* next = list_next(head);
+        while (head != next) {
+            def_use_chain* use = le2struct(next, def_use_chain, DU_chain);
+            tmp_op.operand.reg_idx = use->user;
+            struct Definition* u_def = getOperandDefinition(&tmp_op);
+            if (!__is_block_in_BasicBlockNode(basic_block, u_def->def_address->block->dominator)) {
+                is_can_extract = 0;
+                break;
+            }
+
+            next = list_next(next);
+        }
+    }
+
+    if (is_can_extract) {
         pushFrontDequeList(loop->ir_rely, ir);
         return 1;
     }
-    void* value = NULL;
+
     return 0;
-}
-
-int __is_const_op_in_loop(OPERAND_TYPE* op, struct LoopBlocks* loop) {
-    if (op->type != REGISTER) {
-        return 1;
-    }
-    struct Definition* def = getOperandDefinition(op);
-    for (int i = 0; i < loop->loop_block_num; i++) {
-        BASIC_BLOCK_TYPE* b = getLinearList(loop->list, i);
-        if (b == def->def_address->block) {
-            return __is_const_ir_in_loop(def->def_address->ir, loop);
-        }
-    }
-    return 1;
-}
-
-int __is_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct LoopBlocks* loop) {
-    for (int i = 0; i < loop->out_blocks_num; i++) {
-        BASIC_BLOCK_TYPE* out = getLinearList(loop->out_blocks, i);
-        if (!__is_block_in_BasicBlockNode(basic_block, out->dominator)) {
-            return 0;
-        }
-    }
-    OPERAND_TYPE tmp_op;
-    tmp_op.type = REGISTER;
-
-    struct Definition* def = getOperandDefinition(ir->op3);
-    list_entry_t* head = &def->chain->DU_chain;
-    list_entry_t* next = list_next(head);
-    while (head != next) {
-        def_use_chain* use = le2struct(next, def_use_chain, DU_chain);
-        tmp_op.operand.reg_idx = use->user;
-        struct Definition* u_def = getOperandDefinition(&tmp_op);
-        if (!__is_block_in_BasicBlockNode(basic_block, u_def->def_address->block->dominator)) {
-            return 0;
-        }
-
-        next = list_next(next);
-    }
-    return 1;
 }
 
 void __loop_invariant_extraction(struct LoopBlocks* loop) {
@@ -244,9 +228,7 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
         while (head != next) {
             IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
             MALLOC(is_const, int, 1);
-            if (__is_type_inviriant_extraction(ir->type) &&
-                __is_const_ir_in_loop(ir, loop) &&
-                __is_can_extraction(ir, block, loop)) {
+            if (__is_ir_can_extraction(ir, block, loop)) {
                 while (!isEmptyDequeList(loop->ir_rely)) {
                     IR_TYPE* move_ir = popBackDequeList(loop->ir_rely);
                     struct Definition* def = getOperandDefinition(move_ir->op3);

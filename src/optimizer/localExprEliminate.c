@@ -93,27 +93,13 @@ void __local_expr_eliminate(BASIC_BLOCK_TYPE* basic_block, void* args) {
                 aeb = newAEB(ir, NULL);
                 setLinkedTable(table, ir, aeb);
             } else {
-                if (aeb->tmp == NULL) {
-                    OPERAND_TYPE* tmp = toSSATempVariable(basic_block);
-                    IR_TYPE* n_ir = newIR_WITH_SSA(ir->type, ir->op1, ir->op2, tmp);
-                    list_add_before(&(aeb->ir->ir_link), n_ir);
+                IfNotNull(ir->op1, {delete_user(ir->op1, ir->op3);delete_operand(ir->op1); });
+                IfNotNull(ir->op2, {delete_user(ir->op2, ir->op3);delete_operand(ir->op2); });
 
-                    IfNotNull(aeb->ir->op1, {delete_user(aeb->ir->op1, aeb->ir->op3);delete_operand(aeb->ir->op1); });
-                    IfNotNull(aeb->ir->op2, {delete_user(aeb->ir->op2, aeb->ir->op3);delete_operand(aeb->ir->op2); });
-
-                    aeb->ir->type = ASSIGN;
-                    aeb->ir->op1 = tmp;
-                    aeb->ir->op2 = NULL;
-                    add_user(tmp, aeb->ir->op3);
-                } else {
-                    IfNotNull(ir->op1, {delete_user(ir->op1, ir->op3);delete_operand(ir->op1); });
-                    IfNotNull(ir->op2, {delete_user(ir->op2, ir->op3);delete_operand(ir->op2); });
-
-                    ir->type = ASSIGN;
-                    ir->op1 = aeb->tmp;
-                    ir->op2 = NULL;
-                    add_user(aeb->tmp, ir->op3);
-                }
+                ir->type = ASSIGN;
+                ir->op1 = aeb->ir->op3;
+                ir->op2 = NULL;
+                add_user(aeb->ir->op3, ir->op3);
             }
         }
         next = list_next(next);
