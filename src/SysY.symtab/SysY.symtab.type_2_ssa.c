@@ -395,6 +395,7 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
                 }
                 offset += INT_SIZE;
             }
+            free(operand_buffer);
         } else {
             if (vardef->initval->valuetype != EXP) {
                 PrintErrExit("not support use initials to init variable: %s", elem->name);
