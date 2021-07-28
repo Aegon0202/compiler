@@ -784,7 +784,6 @@ list_entry_t* DF_plus(list_entry_t* list) {
 }
 
 void __placement_phi(BasicBlock* start) {
-    __dominance_frontier(start);
     int iter_count = 0;
     int loop_val = 0;
 
@@ -874,7 +873,6 @@ void renaming_variable(BasicBlock* start) {
         setLinearList(construct_Counter, cur_var, i);
         setLinearList(construct_Stack, cur_var, stack);
     }
-    __search_block(start);
 }
 
 void __process_read_op(Operand* op) {
@@ -1074,8 +1072,6 @@ void reallocate_register(BasicBlock* start) {
             def = getLinearList(bottom_index2def, b_index);
         } while (def);
     }
-
-    modify_op_global(start);
 }
 
 void convertOutssa_local(BasicBlock* block, void* args) {
@@ -1128,10 +1124,33 @@ void convertOutssa(BasicBlock* start) {
     return;
 }
 
-void convert2ssa(BasicBlock* start) {
-    __placement_phi(start);
-    //deepTraverseSuccessorsBasicBlock(start, __print_basic_block, NULL);
-    renaming_variable(start);
-    reallocate_register(start);
-    convertOutssa(start);
+void convertAlltoSSAform() {
+    struct FuncTabElem* elem;
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks != NULL) {
+            __dominance_frontier(elem->blocks);
+        }
+    }
+    __placement_phi(NULL);
+
+    renaming_variable(NULL);
+
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks != NULL) {
+            deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
+            __search_block(elem->blocks);
+        }
+    }
+
+    reallocate_register(NULL);
+
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks != NULL) {
+            modify_op_global(elem->blocks);
+            convertOutssa(elem->blocks);
+        }
+    }
 }

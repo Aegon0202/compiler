@@ -131,7 +131,7 @@ void __caculate_dominance(BasicBlock* start);
 void __immediate_dominance(BasicBlock* start);
 list_entry_t* DF_plus(list_entry_t* list);
 void __get_all_nodes(BasicBlock* block, void* node);
-void convert2ssa(BasicBlock* start);
+
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand
