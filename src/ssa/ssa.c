@@ -884,17 +884,10 @@ void __process_read_op(Operand* op) {
         int* i = getFrontDequeList(stack);
         EnsureNotNull(i);
         op->bottom_index = *i;
-        if (op->operand.reg_idx == 3) {
-            __debug_pause_there();
-        }
     }
 }
 
 void __process_write_op(Operand* op3, Ir* ir_value, BasicBlock* block) {
-    if (op3->operand.reg_idx == 3) {
-        __debug_pause_there();
-    }
-
     EnsureNotNull(op3);
     int def_index = op3->operand.reg_idx;
     int* i = getLinearList(construct_Counter, def_index);
@@ -959,7 +952,6 @@ void __search_block(BasicBlock* block) {
         __operand_decode(ir_value, block);
         ir_elem = list_next(ir_elem);
     }
-    __debug_pause_there();
     list_entry_t* suc_head = &(block->successors->block_link);
     list_entry_t* suc_elem = list_next(suc_head);
     int which;
@@ -977,8 +969,13 @@ void __search_block(BasicBlock* block) {
             while (phi_op_list != phi_op_elem) {
                 if (j == which) {
                     int* i = getFrontDequeList(getLinearList(construct_Stack, phi_ir->op3->operand.reg_idx));
-                    le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = *i;
-                    break;
+                    if (i) {
+                        le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = *i;
+                        break;
+                    } else {
+                        le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = -1;
+                        break;
+                    }
                 }
                 j++;
                 phi_op_elem = list_next(phi_op_elem);
@@ -1021,6 +1018,10 @@ void __modify_op(Operand* op) {
 
         while (phi_head != phi_elem) {
             Operand* op_sub = le2struct(phi_elem, Phi, op_link)->value;
+            if (op_sub->bottom_index == -1) {
+                phi_elem = list_next(phi_elem);
+                continue;
+            }
             __modify_op(op_sub);
             phi_elem = list_next(phi_elem);
         }
@@ -1073,6 +1074,7 @@ void reallocate_register(BasicBlock* start) {
             def = getLinearList(bottom_index2def, b_index);
         } while (def);
     }
+
     modify_op_global(start);
 }
 
@@ -1090,6 +1092,10 @@ void convertOutssa_local(BasicBlock* block, void* args) {
             int write_reg = write_op->operand.reg_idx;
             while (op_head != op_elem) {
                 Operand* op_value = le2struct(op_elem, Phi, op_link)->value;
+                if (op_value->bottom_index == -1) {
+                    op_elem = list_next(op_elem);
+                    continue;
+                }
                 int read_reg = op_value->operand.reg_idx;
                 list_entry_t* target_ir_list = &(get_op_definition(op_value)->def_address->block->ir_list->ir_link);
                 Operand* op2 = create_new_operand(INT, -1, 0);
@@ -1124,7 +1130,7 @@ void convertOutssa(BasicBlock* start) {
 
 void convert2ssa(BasicBlock* start) {
     __placement_phi(start);
-    deepTraverseSuccessorsBasicBlock(start, __print_basic_block, NULL);
+    //deepTraverseSuccessorsBasicBlock(start, __print_basic_block, NULL);
     renaming_variable(start);
     reallocate_register(start);
     convertOutssa(start);
