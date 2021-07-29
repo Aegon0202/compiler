@@ -37,8 +37,10 @@ struct FuncTabElem {
     int has_side_effect;                // 是否有副作用，每次同样的参数会不会有不同的影响
 #ifdef BASIC_BLOCK_TYPE
     BASIC_BLOCK_TYPE* blocks;
+    BASIC_BLOCK_TYPE* rcfg_blocks;
 #else
     void* blocks;
+    void* rcfg_blocks;
 #endif
 };
 

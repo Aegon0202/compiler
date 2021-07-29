@@ -122,6 +122,7 @@ int alloc_register();
 int get_init_register();
 const char* _op_to_str(Operand* op);
 
+void delete_ir(Ir* ir);
 void delete_operand(Operand*);
 void delete_user(Operand* def, Ir* user);
 void add_user(Operand* def, Ir* user);

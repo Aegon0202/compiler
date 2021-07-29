@@ -229,11 +229,13 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
             IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
             MALLOC(is_const, int, 1);
             if (__is_ir_can_extraction(ir, block, loop)) {
+                list_entry_t* prev = list_prev(next);
                 while (!isEmptyDequeList(loop->ir_rely)) {
                     IR_TYPE* move_ir = popBackDequeList(loop->ir_rely);
                     struct Definition* def = get_op_definition(move_ir->op3);
                     change_def_address(move_ir, def->def_address->block, before_entry, NULL);
                 }
+                next = prev;
             }
             while (!isEmptyDequeList(loop->ir_rely)) {
                 popBackDequeList(loop->ir_rely);
