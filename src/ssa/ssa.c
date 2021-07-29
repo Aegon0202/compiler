@@ -218,6 +218,15 @@ void __DU_process_ir(Ir* ir, BasicBlock* block) {
     IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
+    if (ir->type == PHI) {
+        list_entry_t* phi_op_head = ir->op1->operand.v.phi_op_list;
+        list_entry_t* elem = list_next(phi_op_head);
+        while (elem != phi_op_head) {
+            Operand* op = le2struct(elem, Phi, op_link)->value;
+            add_user(op, ir);
+            elem = list_next(elem);
+        }
+    }
 }
 
 void construct_DU_chain_local(BasicBlock* block, void* args) {
@@ -233,6 +242,22 @@ void construct_DU_chain_local(BasicBlock* block, void* args) {
 
 void construct_DU_chain_global(BasicBlock* start) {
     deepTraverseSuccessorsBasicBlock(start, construct_DU_chain_local, NULL);
+}
+
+void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir) {
+    list_del(&(old_ir->ir_link));
+    list_entry_t* ir_head = new_block->ir_list;
+    list_entry_t* ir_elem = list_next(ir_head);
+    while (ir_head != ir_elem) {
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        if (ir_value == new_before_ir) {
+            list_add_after(ir_elem, &(old_ir->ir_link));
+            return;
+        }
+        ir_elem = list_next(ir_elem);
+    }
+    list_add_before(ir_head, &(old_ir->ir_link));
+    return;
 }
 
 BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
