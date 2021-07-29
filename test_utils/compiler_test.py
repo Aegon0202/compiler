@@ -1,12 +1,14 @@
 import subprocess
 import os.path
 import os
+import shutil
 
 test_folder = "../compiler2021/testcase/performance_test2021_pre"
-# test_folder = "../compiler2021/testcase/function_test2021"
+#test_folder = "../compiler2021/testcase/function_test2021"
 #test_folder = "../compiler2021/testcase/function_test2020"
-if not os.path.exists("tmp_result"):
-    os.mkdir("tmp_result")
+if os.path.exists("tmp_result"):
+    shutil.rmtree("tmp_result")
+os.mkdir("tmp_result")
 for f in os.listdir(test_folder):
     f_name, f_ext = os.path.splitext(f)
     if f_ext == ".sy":

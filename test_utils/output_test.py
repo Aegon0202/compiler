@@ -2,7 +2,7 @@ import subprocess
 import os.path
 import os
 in_out_fd = "../compiler2021/testcase/performance_test2021_pre"
-# in_out_fd = "../compiler2021/testcase/function_test2020"
+#in_out_fd = "../compiler2021/testcase/function_test2020"
 #in_out_fd = "../compiler2021/testcase/function_test2021"
 
 for f in os.listdir("./tmp_result"):

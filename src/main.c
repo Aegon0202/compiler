@@ -34,6 +34,9 @@ int main(int argc, char** argv) {
     output_file = fopen(output_file_name, "w");
     yyparse();
     toSSACompUnit(result.compunit);
+
+    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, 1);
+    printf("\n\n\n");
     convertAlltoSSAform();
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);

@@ -433,7 +433,7 @@ void __tail_recusive_call(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FIL
     Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(A1), block_label(args->f_offset->funcelem->name, args->f_offset->funcelem->blocks));
     Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(A1), block_label(args->f_offset->funcelem->name, args->f_offset->funcelem->blocks));
     Fprintf("BX\t%s\n", reg_to_str(A1));
-    free(&b_param);
+    freeDequeList(&b_param);
 }
 
 void __tail_normal_call_(IR_TYPE* call_ir, struct BlockRegOffset* b_offset, FILE* out_file, struct travel_block_tmp_arg* args, struct DequeList* param_queue) {

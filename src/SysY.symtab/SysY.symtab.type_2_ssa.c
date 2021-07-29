@@ -698,7 +698,6 @@ void toSSAAssign(struct Assign* assign, BASIC_BLOCK_TYPE* basic_block) {
 
 void toSSALAndExp(struct LAndExp* landexp, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE* false_block, BASIC_BLOCK_TYPE* basic_block) {
     struct LAndExp* head = landexp;
-    BASIC_BLOCK_TYPE* block_head = basic_block;
     do {
         OPERAND_TYPE* cond = toSSAEqExp(landexp->eqexp, basic_block);
         if (landexp->next != head) {
@@ -706,17 +705,12 @@ void toSSALAndExp(struct LAndExp* landexp, BASIC_BLOCK_TYPE* true_block, BASIC_B
             newIR(BRANCH, cond, toSSABasicBlock(new_block, basic_block), toSSABasicBlock(false_block, basic_block), basic_block);
             addBasicBlockEdge(basic_block, new_block);
             addBasicBlockEdge(basic_block, false_block);
-            if (basic_block != block_head) {
-                setBasicBlockSealed(basic_block);
-            }
+
             basic_block = new_block;
         } else {
             newIR(BRANCH, cond, toSSABasicBlock(true_block, basic_block), toSSABasicBlock(false_block, basic_block), basic_block);
             addBasicBlockEdge(basic_block, true_block);
             addBasicBlockEdge(basic_block, false_block);
-            if (basic_block != block_head) {
-                setBasicBlockSealed(basic_block);
-            }
         }
         landexp = landexp->next;
     } while (landexp != head);
@@ -724,20 +718,14 @@ void toSSALAndExp(struct LAndExp* landexp, BASIC_BLOCK_TYPE* true_block, BASIC_B
 
 void toSSALOrExp(struct LOrExp* lorexp, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE* false_block, BASIC_BLOCK_TYPE* basic_block) {
     struct LOrExp* head = lorexp;
-    BASIC_BLOCK_TYPE* block_head = basic_block;
     do {
         if (lorexp->next != head) {
             BASIC_BLOCK_TYPE* new_block = newBasicBlock(NULL);
             toSSALAndExp(lorexp->landexp, true_block, new_block, basic_block);
-            if (basic_block != block_head) {
-                setBasicBlockSealed(basic_block);
-            }
+
             basic_block = new_block;
         } else {
             toSSALAndExp(lorexp->landexp, true_block, false_block, basic_block);
-            if (basic_block != block_head) {
-                setBasicBlockSealed(basic_block);
-            }
         }
         lorexp = lorexp->next;
     } while (lorexp != head);
@@ -747,28 +735,36 @@ void toSSACond(struct Cond* cond, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE
     toSSALOrExp(cond->lorexp, true_block, false_block, basic_block);
 }
 
-void toSSAIfStmt(struct IfStmt* ifstmt, BASIC_BLOCK_TYPE** basic_block_p) {
+int toSSAIfStmt(struct IfStmt* ifstmt, BASIC_BLOCK_TYPE** basic_block_p) {
     BASIC_BLOCK_TYPE* true_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* false_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* cond_block = *basic_block_p;
     toSSACond(ifstmt->cond, true_block, false_block, cond_block);
-    setBasicBlockSealed(cond_block);
+    int has_next = 0;
 
     if (toSSAStmt(ifstmt->then, &true_block) == 0) {
+        has_next = 1;
         newIR(JUMP, NULL, NULL, toSSABasicBlock(merge_block, true_block), true_block);
         addBasicBlockEdge(true_block, merge_block);
     }
-    setBasicBlockSealed(true_block);
     if (toSSAStmt(ifstmt->otherwise, &false_block) == 0) {
+        has_next = 1;
         newIR(JUMP, NULL, NULL, toSSABasicBlock(merge_block, false_block), false_block);
         addBasicBlockEdge(false_block, merge_block);
     }
-    setBasicBlockSealed(false_block);
-    *basic_block_p = merge_block;
+
+    if (has_next) {
+        *basic_block_p = merge_block;
+        return 0;
+    } else {
+        *basic_block_p = NULL;
+        // need free basic block
+        return 1;
+    }
 }
 
-void toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p) {
+int toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p) {
     BASIC_BLOCK_TYPE* cond_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* loop_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
@@ -776,7 +772,6 @@ void toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_
 
     newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, basic_block), basic_block);
     addBasicBlockEdge(basic_block, cond_block);
-    setBasicBlockSealed(basic_block);
 
     toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);
     pushFrontDequeList(break_target_queue, merge_block);
@@ -786,13 +781,12 @@ void toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_
         newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, loop_block), loop_block);
         addBasicBlockEdge(loop_block, cond_block);
     }
-    setBasicBlockSealed(loop_block);
-    setBasicBlockSealed(cond_block);
 
     popFrontDequeList(break_target_queue);
     popFrontDequeList(continue_target_queue);
 
     *basic_block_p = merge_block;
+    return 0;
 }
 
 void toSSAReturnStmt(struct ReturnStmt* returnstmt, BASIC_BLOCK_TYPE* basic_block) {
@@ -823,11 +817,9 @@ int toSSAStmt(struct Stmt* stmt, BASIC_BLOCK_TYPE** basic_block_p) {
         case BLOCK:
             return toSSABlock(stmt->value.block, basic_block_p);
         case IFSTMT:
-            toSSAIfStmt(stmt->value.ifstmt, basic_block_p);
-            return 0;
+            return toSSAIfStmt(stmt->value.ifstmt, basic_block_p);
         case WHILESTMT:
-            toSSAWhileStmt(stmt->value.whilestmt, basic_block_p);
-            return 0;
+            return toSSAWhileStmt(stmt->value.whilestmt, basic_block_p);
         case EXP:
             toSSAExp(stmt->value.exp, *basic_block_p);
             return 0;
@@ -944,9 +936,9 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
     } while (funcfparams != f_head);
 
     toSSABlock(funcdef->block, &basic_block);
-    newIR(RETURNSTMT, NULL, NULL, NULL, basic_block);
-
-    setBasicBlockSealed(basic_block);
+    if (basic_block != NULL) {
+        newIR(RETURNSTMT, NULL, NULL, NULL, basic_block);
+    }
 
     fte->var_offset_end = max_func_offset;
     fte->has_side_effect = has_side_effect;

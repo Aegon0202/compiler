@@ -25,7 +25,7 @@ void __find_back_edge(BASIC_BLOCK_TYPE* basic_block, void* args) {
     while (succ_head != succ_next) {
         BASIC_BLOCK_TYPE* succ_block = (le2BasicBlock(succ_next)->value);
         list_entry_t* dom_head = &basic_block->dominator->block_link;
-        list_entry_t* dom_next = &basic_block->dominator->block_link;
+        list_entry_t* dom_next = list_next(dom_head);
         while (dom_next != dom_head) {
             BASIC_BLOCK_TYPE* dom_block = (le2BasicBlock(dom_next)->value);
             if (succ_block == dom_block) {
@@ -233,7 +233,6 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
                     IR_TYPE* move_ir = popBackDequeList(loop->ir_rely);
                     struct Definition* def = get_op_definition(move_ir->op3);
                     change_def_address(move_ir, def->def_address->block, before_entry, NULL);
-                    PrintErrExit("");
                 }
             }
             while (!isEmptyDequeList(loop->ir_rely)) {
@@ -260,8 +259,8 @@ void __add_loop_outblock(struct LoopBlocks* lb) {
         while (head != next) {
             BASIC_BLOCK_TYPE* succ = (le2BasicBlock(next)->value);
             if (!__is_block_in_liner_list(succ, lb->list, lb->loop_block_num) &&
-                !__is_block_in_liner_list(succ, lb->out_blocks, lb->out_blocks_num)) {
-                setLinearList(lb->out_blocks, lb->out_blocks_num, succ);
+                !__is_block_in_liner_list(b, lb->out_blocks, lb->out_blocks_num)) {
+                setLinearList(lb->out_blocks, lb->out_blocks_num, b);
                 lb->out_blocks_num++;
             }
             next = list_next(next);
@@ -292,6 +291,7 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
 }
 
 void loopInvariantExtraction(struct FuncTabElem* elem) {
+    deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
     struct DequeList* back_edge = newDequeList();
     struct DequeList* loop_queue = newDequeList();
     struct LinearList* table = newLinearList();
@@ -356,4 +356,6 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
         free(lb);
     }
     freeLinearList(&loops_list);
+    printf("\n\n\n");
+    deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
 }

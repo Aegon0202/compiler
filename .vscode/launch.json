@@ -12,8 +12,8 @@
             "args": [
                 "-S",
                 "-o",
-                "tmp.s",
-                "tmp3.c"
+                "${workspaceFolder}/tmp.s",
+                "${workspaceFolder}/tmp.c"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

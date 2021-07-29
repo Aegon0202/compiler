@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -g -Wall -O2 -std=c11 -lm 
+CFLAGS = -g -Wall -std=c11 -lm 
 
 FLEX_DIR = src/parser
 FLEX_SRC = $(FLEX_DIR)/SysY.l
