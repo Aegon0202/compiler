@@ -512,12 +512,21 @@ void __const_def_init(struct ConstDef* constdef, struct VarTabElem* elem, BASIC_
         return;
     }
 
-    int total_num = elem->size / INT_SIZE;
-    OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
-    int offset = elem->offset;
-    for (int i = 0; i < total_num; i++) {
-        newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(elem->const_init_value[i]), basic_block), basic_block);
-        offset += INT_SIZE;
+    if (elem->is_array) {
+        int total_num = elem->size / INT_SIZE;
+        OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
+        int offset = elem->offset;
+        for (int i = 0; i < total_num; i++) {
+            newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(elem->const_init_value[i]), basic_block), basic_block);
+            offset += INT_SIZE;
+        }
+    } else {
+        OPERAND_TYPE* init_op = toSSAVarTabElemWrite(elem, basic_block);
+        MALLOC(int_c, struct IntConst, 1);
+        int_c->type = INTCONST;
+        int_c->value = 0;
+        newIR(K_ADD, toSSAIntConst(getIntConstStatic(elem->const_init_value[0]), basic_block), toSSAIntConst(int_c, basic_block), init_op, basic_block);
+        free(int_c);
     }
 }
 
@@ -927,6 +936,9 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
         elem->link = fte->parameters_ref;
         fte->parameters_size += elem->size;
         fte->parameters_ref = elem;
+
+        OPERAND_TYPE* init_param = toSSAVarTabElemWrite(elem, basic_block);
+        newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), init_param, basic_block);
 
         funcfparams = funcfparams->next;
     } while (funcfparams != f_head);

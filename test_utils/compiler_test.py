@@ -3,8 +3,8 @@ import os.path
 import os
 
 #test_folder = "../compiler2021/testcase/performance_test2021_pre"
-test_folder = "../compiler2021/testcase/function_test2021"
-#test_folder = "../compiler2021/testcase/function_test2020"
+#test_folder = "../compiler2021/testcase/function_test2021"
+test_folder = "../compiler2021/testcase/function_test2020"
 if not os.path.exists("tmp_result"):
     os.mkdir("tmp_result")
 for f in os.listdir(test_folder):
