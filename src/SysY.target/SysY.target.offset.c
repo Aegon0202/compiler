@@ -79,8 +79,8 @@ void __generator_block_active(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct BlockRegOffset* b_offset = newBlockRegOffset(basic_block, f_offset->now_offset);
     setLinearList(f_offset->block_offsets, (size_t)basic_block, b_offset);
 
-#define READ_OP(num) __read_reg_value_block(op##num, b_offset)
-#define WRITE_OP(num) __write_reg_value_block(op##num, b_offset)
+#define READ_OP(op) __read_reg_value_block(op, b_offset);
+#define WRITE_OP(op) __write_reg_value_block(op, b_offset);
 
     while (head != next) {
         IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
@@ -88,7 +88,7 @@ void __generator_block_active(BASIC_BLOCK_TYPE* basic_block, void* args) {
         OPERAND_TYPE* op2 = ir->op2;
         OPERAND_TYPE* op3 = ir->op3;
 
-        IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit("Not support ir type %s", EnumTypeToString(ir->type)););
+        IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit("Not support ir type %s", EnumTypeToString(ir->type)););
 
         next = list_next(next);
     }

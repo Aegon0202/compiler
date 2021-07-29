@@ -59,7 +59,7 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
 
 //删除一条单独的ir，没有在任何一条ir链中，除了自身
 void delete_operand(Operand* op) {
-    if (op->type != PHI)
+    if (op->type != PHI_OP)
         free(op);
     else {
         list_entry_t* phi_head = op->operand.v.phi_op_list;
@@ -75,7 +75,18 @@ void delete_operand(Operand* op) {
     }
 }
 
-void delete_ir(Ir* ir) {
+void __delete_DU_process_ir(Ir* ir, BasicBlock* block) {
+#define READ_OP(op) delete_user(op, ir)
+#define WRITE_OP(op)
+    IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit(" "););
+#undef READ_OP
+#undef WRITE_OP
+}
+//同时在这里维护du链
+void delete_ir(Ir* ir, BasicBlock* block) {
+    //change du link
+    __delete_DU_process_ir(ir, block);
+    list_del(&(ir->ir_link));
     delete_operand(ir->op1);
     delete_operand(ir->op2);
     delete_operand(ir->op3);
@@ -214,20 +225,11 @@ void delete_user(Operand* def, Ir* user) {
 }
 
 void __DU_process_ir(Ir* ir, BasicBlock* block) {
-#define READ_OP(num) add_user(ir->op##num, ir)
-#define WRITE_OP(num)
-    IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
+#define READ_OP(op) add_user(op, ir)
+#define WRITE_OP(op)
+    IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
-    if (ir->type == PHI) {
-        list_entry_t* phi_op_head = ir->op1->operand.v.phi_op_list;
-        list_entry_t* elem = list_next(phi_op_head);
-        while (elem != phi_op_head) {
-            Operand* op = le2struct(elem, Phi, op_link)->value;
-            add_user(op, ir);
-            elem = list_next(elem);
-        }
-    }
 }
 
 void construct_DU_chain_local(BasicBlock* block, void* args) {
@@ -272,9 +274,9 @@ void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block
     else
         list_add_before(ir_head, &(old_ir->ir_link));
 
-#define READ_OP(num)
-#define WRITE_OP(num) change_def(old_ir->op##num, new_block, NULL)
-    IR_OP_READ_WRITE(old_ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
+#define READ_OP(op)
+#define WRITE_OP(op) change_def(op, new_block, NULL)
+    IR_OP_READ_WRITE(old_ir, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
 }
@@ -971,7 +973,9 @@ void renaming_init(BasicBlock* start) {
     }
 }
 
-void __process_read_op(Operand* op) {
+void __process_read_op(Operand* op, Ir* ir) {
+    if (ir->type == PHI)
+        return;
     if (op && op->type == REGISTER) {
         int index = op->operand.reg_idx;
         struct DequeList* stack = getLinearList(construct_Stack, index);
@@ -997,9 +1001,9 @@ void __process_write_op(Operand* op3, Ir* ir_value, BasicBlock* block) {
 
 //输入ir, 将该ir的目的操作数和源操作数放到相应位置
 void __operand_decode(Ir* ir, BasicBlock* block) {
-#define READ_OP(num) __process_read_op(ir->op##num)
-#define WRITE_OP(num) __process_write_op(ir->op##num, ir, block)
-    IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
+#define READ_OP(op) __process_read_op(op, ir)
+#define WRITE_OP(op) __process_write_op(op, ir, block)
+    IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
 }
@@ -1012,9 +1016,9 @@ void __pop_op(Operand* op) {
 }
 
 void __pop_search(Ir* ir, BasicBlock* block) {
-#define READ_OP(num)
-#define WRITE_OP(num) __pop_op(ir->op##num)
-    IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
+#define READ_OP(op)
+#define WRITE_OP(op) __pop_op(op)
+    IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
 }
@@ -1209,11 +1213,9 @@ void convertOutssa_local(BasicBlock* block, void* args) {
         Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
         if (ir_value->type != PHI)
             break;
-
         list_entry_t* tmp_elem = ir_elem;
         ir_elem = list_next(ir_elem);
-        list_del(tmp_elem);
-        delete_ir(ir_value);
+        delete_ir(ir_value, block);
     }
 }
 
