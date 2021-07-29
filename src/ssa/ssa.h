@@ -125,6 +125,7 @@ const char* _op_to_str(Operand* op);
 void delete_operand(Operand*);
 void delete_user(Operand* def, Ir* user);
 void add_user(Operand* def, Ir* user);
+void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir);
 
 void __dominance_frontier(BasicBlock* start);
 void __caculate_dominance(BasicBlock* start);

@@ -244,6 +244,22 @@ void construct_DU_chain_global(BasicBlock* start) {
     deepTraverseSuccessorsBasicBlock(start, construct_DU_chain_local, NULL);
 }
 
+void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir) {
+    list_del(&(old_ir->ir_link));
+    list_entry_t* ir_head = new_block->ir_list;
+    list_entry_t* ir_elem = list_next(ir_head);
+    while (ir_head != ir_elem) {
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        if (ir_value == new_before_ir) {
+            list_add_after(ir_elem, &(old_ir->ir_link));
+            return;
+        }
+        ir_elem = list_next(ir_elem);
+    }
+    list_add_before(ir_head, &(old_ir->ir_link));
+    return;
+}
+
 BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
     BasicBlock* b = create_new_block();
     if (predecessor)
