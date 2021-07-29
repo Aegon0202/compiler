@@ -48,6 +48,8 @@ void set_init_register(int index) {
     begin_index = index;
 }
 
+
+
 Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
     Ir* ir = (Ir*)malloc(sizeof(Ir));
     ir->op1 = op1;
@@ -57,7 +59,6 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
     return ir;
 }
 
-//删除一条单独的ir，没有在任何一条ir链中，除了自身
 void delete_operand(Operand* op) {
     if (op->type != PHI_OP)
         free(op);
@@ -82,7 +83,9 @@ void __delete_DU_process_ir(Ir* ir, BasicBlock* block) {
 #undef READ_OP
 #undef WRITE_OP
 }
+
 //同时在这里维护du链
+//删除一条单独的ir，没有在任何一条ir链中，除了自身
 void delete_ir(Ir* ir, BasicBlock* block) {
     //change du link
     __delete_DU_process_ir(ir, block);
