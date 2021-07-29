@@ -21,10 +21,7 @@ void convertAlltoSSAform();
 void convertAllOutSSAform();
 
 int main(int argc, char** argv) {
-    for (int i = 0; i < argc; i++) {
-        printf("%s/n", argv[i]);
-    }
-    init();
+       init();
     int index;
     const char* input_file_name = argv[4];
     const char* output_file_name = argv[3];

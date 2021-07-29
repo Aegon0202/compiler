@@ -1092,6 +1092,7 @@ void __modify_op_local(BasicBlock* block, void* args) {
     }
 }
 
+//遍历所有基本块，将操作数对应的寄存器名以 reg_index, 改成newReg
 void modify_op_global(BasicBlock* start) {
     deepTraverseSuccessorsBasicBlock(start, __modify_op_local, NULL);
 }
@@ -1210,7 +1211,6 @@ void convertAllOutSSAform() {
     for (int i = 0; i < func_table->next_func_index; i++) {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
-            modify_op_global(elem->blocks);
             convertOutssa(elem->blocks);
         }
     }
