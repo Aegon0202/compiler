@@ -115,21 +115,11 @@ void deadCodeEliminate(struct FuncTabElem* func) {
     while (!isEmptyDequeList(work_list)) {
         struct AddressSet* address = popFrontDequeList(work_list);
 
-#define READ_OP(num) __read_op(address->address.ir->op##num, address, work_list, live, ir_2_address)
-#define WRITE_OP(num)
-        IR_OP_READ_WRITE(address->address.ir->type, READ_OP, WRITE_OP, break;);
+#define READ_OP(op) __read_op(op, address, work_list, live, ir_2_address)
+#define WRITE_OP(op)
+        IR_OP_READ_WRITE(address->address.ir, READ_OP, WRITE_OP, break;);
 #undef READ_OP
 #undef WRITE_OP
-
-        if (address->address.ir->type == PHI) {
-            list_entry_t* phi_head = address->address.ir->op1->operand.v.phi_op_list;
-            list_entry_t* phi_next = list_next(phi_head);
-            while (phi_next != phi_head) {
-                Phi* phi = le2struct(phi_next, Phi, op_link);
-                __read_op(phi->value, address, work_list, live, ir_2_address);
-                phi_next = list_next(phi_next);
-            }
-        }
 
         list_entry_t* rdf_head = &(((BasicBlock*)getLinearList(block_2_rcfg_block, (size_t)address->address.block))->dominant_frontier->block_link);
         list_entry_t* rdf_next = list_next(rdf_head);
