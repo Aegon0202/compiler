@@ -8,6 +8,7 @@
 
 #include "../SysY.type/SysY.type.def.h"
 #include "../utils/Malloc.h"
+#include "../utils/link.h"
 struct VarTable* var_table;
 struct BlockTable* block_table;
 struct Display* display;
@@ -135,6 +136,7 @@ struct FuncTabElem* newFuncTabElem(const char* name, struct FuncTable* table) {
     elem->parameters_size = 0;
     elem->return_type = K_VOID;
     elem->has_side_effect = 1;
+    elem->rcfg_blocks = NULL;
     IfNotNull(table, {
         addFuncTable(elem, table);
         setLinearList(table->all_funcs, table->next_func_index, elem);

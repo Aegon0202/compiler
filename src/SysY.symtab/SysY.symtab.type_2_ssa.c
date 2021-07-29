@@ -759,27 +759,29 @@ int toSSAIfStmt(struct IfStmt* ifstmt, BASIC_BLOCK_TYPE** basic_block_p) {
         return 0;
     } else {
         *basic_block_p = NULL;
-        // need free basic block
+        // need free merge block
         return 1;
     }
 }
 
 int toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p) {
-    BASIC_BLOCK_TYPE* cond_block = newBasicBlock(NULL);
+    BASIC_BLOCK_TYPE* cond_block = *basic_block_p;
     BASIC_BLOCK_TYPE* loop_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* basic_block = *basic_block_p;
 
-    newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, basic_block), basic_block);
-    addBasicBlockEdge(basic_block, cond_block);
-
     toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);
+
+    cond_block = newBasicBlock(NULL);
     pushFrontDequeList(break_target_queue, merge_block);
     pushFrontDequeList(continue_target_queue, cond_block);
 
     if (toSSAStmt(whilestmt->stmt, &loop_block) == 0) {
         newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, loop_block), loop_block);
         addBasicBlockEdge(loop_block, cond_block);
+        toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);
+    } else {
+        // need free cond block
     }
 
     popFrontDequeList(break_target_queue);

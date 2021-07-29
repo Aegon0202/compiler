@@ -260,7 +260,7 @@ void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block
     list_del(&(old_ir->ir_link));
     list_entry_t* ir_head = &(new_block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
-    if (!new_before_ir)
+    if (new_before_ir)
         while (ir_head != ir_elem) {
             Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
             if (ir_value == new_before_ir) {
