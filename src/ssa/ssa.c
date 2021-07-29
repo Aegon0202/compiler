@@ -218,6 +218,15 @@ void __DU_process_ir(Ir* ir, BasicBlock* block) {
     IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
+    if (ir->type == PHI) {
+        list_entry_t* phi_op_head = ir->op1->operand.v.phi_op_list;
+        list_entry_t* elem = list_next(phi_op_head);
+        while (elem != phi_op_head) {
+            Operand* op = le2struct(elem, Phi, op_link)->value;
+            add_user(op, ir);
+            elem = list_next(elem);
+        }
+    }
 }
 
 void construct_DU_chain_local(BasicBlock* block) {
