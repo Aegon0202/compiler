@@ -4,6 +4,18 @@
 #include "../utils/LinkedTable.h"
 #include "./local_op.h"
 
+struct LoopBlocks {
+    struct LinearList* list;
+    BASIC_BLOCK_TYPE* loop_entry;
+    BASIC_BLOCK_TYPE* loop_before;
+    int loop_block_num;
+    struct LinearList* out_blocks;
+    int out_blocks_num;
+
+    struct DequeList* func_param;
+    struct DequeList* ir_rely;
+};
+
 int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct LoopBlocks* loop);
 
 void __find_back_edge(BASIC_BLOCK_TYPE* basic_block, void* args) {
@@ -59,18 +71,6 @@ struct DequeList* __get_loop_basic_block(BASIC_BLOCK_TYPE* basic_block, BASIC_BL
     return stack;
 }
 
-struct LoopBlocks {
-    struct LinearList* list;
-    BASIC_BLOCK_TYPE* loop_entry;
-    BASIC_BLOCK_TYPE* loop_before;
-    int loop_block_num;
-    struct LinearList* out_blocks;
-    int out_blocks_num;
-
-    struct DequeList* func_param;
-    struct DequeList* ir_rely;
-};
-
 Address* __new_address(BASIC_BLOCK_TYPE* block, IR_TYPE* ir) {
     MALLOC(adr, Address, 1);
     adr->block = block;
@@ -78,7 +78,7 @@ Address* __new_address(BASIC_BLOCK_TYPE* block, IR_TYPE* ir) {
     return adr;
 }
 
-struct LoopBlock* newLoopBlock(struct LinearList* linear, BASIC_BLOCK_TYPE* loop_entry, int block_num) {
+struct LoopBlocks* newLoopBlock(struct LinearList* linear, BASIC_BLOCK_TYPE* loop_entry, int block_num) {
     MALLOC(lb, struct LoopBlocks, 1);
     lb->list = linear;
     lb->loop_entry = loop_entry;
@@ -132,7 +132,7 @@ int __is_op_can_extraction(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* basic_block, stru
     for (int i = 0; i < loop->loop_block_num; i++) {
         BASIC_BLOCK_TYPE* b = getLinearList(loop->list, i);
         if (b == def->def_address->block) {
-            return __is_op_can_extraction(def->def_address->ir, basic_block, loop);
+            return __is_ir_can_extraction(def->def_address->ir, basic_block, loop);
         }
     }
     return 1;
@@ -197,7 +197,7 @@ int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct Lo
         list_entry_t* next = list_next(head);
         while (head != next) {
             def_use_chain* use = le2struct(next, def_use_chain, DU_chain);
-            tmp_op.operand.reg_idx = use->user;
+            tmp_op.operand.reg_idx = use->user->op3->operand.reg_idx;
             struct Definition* u_def = get_op_definition(&tmp_op);
             if (!__is_block_in_BasicBlockNode(basic_block, u_def->def_address->block->dominator)) {
                 is_can_extract = 0;
@@ -220,7 +220,6 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
     BASIC_BLOCK_TYPE* before_entry = loop->loop_before;
     // index: basic block address value: LinearList< index: ir address value: is_invariant >
 
-    struct LinearList* invariant_block_ir = newLinearList();
     for (int i = 0; i < loop->loop_block_num; i++) {
         BASIC_BLOCK_TYPE* block = getLinearList(loop->list, i);
 
@@ -234,6 +233,7 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
                     IR_TYPE* move_ir = popBackDequeList(loop->ir_rely);
                     struct Definition* def = get_op_definition(move_ir->op3);
                     change_def_address(move_ir, def->def_address->block, before_entry, NULL);
+                    PrintErrExit("");
                 }
             }
             while (!isEmptyDequeList(loop->ir_rely)) {
@@ -272,13 +272,13 @@ void __add_loop_outblock(struct LoopBlocks* lb) {
 void __add_loop_entry_before(struct LoopBlocks* lb) {
     BASIC_BLOCK_TYPE* new_b = create_new_block();
     list_entry_t* head = &lb->loop_entry->predecessors->block_link;
-    list_entry_t* next = list_next(next);
+    list_entry_t* next = list_next(head);
     while (head != next) {
         BASIC_BLOCK_TYPE* block = (le2BasicBlock(next)->value);
         if (!__is_block_in_liner_list(block, lb->list, lb->loop_block_num)) {
             disconnect_block(block, lb->loop_entry);
             connect_block(block, new_b);
-            IR_TYPE* ir = block->ir_list->ir_link.prev;
+            IR_TYPE* ir = le2struct(block->ir_list->ir_link.prev, IR_TYPE, ir_link);
             if (ir->type == BRANCH && ir->op2->operand.v.b == lb->loop_entry) {
                 ir->op2->operand.v.b = new_b;
             } else {
@@ -300,10 +300,10 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
         unsigned long long int num;
         struct Item* item = popFrontDequeList(back_edge);
         struct LinearList* list = convertToLinearList(__get_loop_basic_block(item->key, item->value), &num);
-        struct LoopBlocks* o_b = getLinearList(table, item->value);
+        struct LoopBlocks* o_b = getLinearList(table, (size_t)item->value);
         if (o_b == NULL) {
             struct LoopBlocks* lb = newLoopBlock(list, item->value, num);
-            setLinearList(table, item->value, lb);
+            setLinearList(table, (size_t)item->value, lb);
             pushFrontDequeList(loop_queue, lb);
         } else {
             BASIC_BLOCK_TYPE* basic_block;
@@ -332,7 +332,7 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
         __add_loop_entry_before(lb);
     }
 
-    update_CFG(elem->blocks);
+    //    update_CFG(elem->blocks);
 
     for (unsigned long long int i = 0; i < loop_num; i++) {
         struct LoopBlocks* lb = getLinearList(loops_list, i);

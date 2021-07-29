@@ -38,7 +38,8 @@
                 "optional": "c",
                 "system_error": "c",
                 "array": "c",
-                "utility": "c"
+                "utility": "c",
+                "random": "c"
         },
         "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
         "files.autoSave": "onFocusChange",

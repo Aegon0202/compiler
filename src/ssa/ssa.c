@@ -246,7 +246,7 @@ void construct_DU_chain_global(BasicBlock* start) {
 
 void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir) {
     list_del(&(old_ir->ir_link));
-    list_entry_t* ir_head = new_block->ir_list;
+    list_entry_t* ir_head = &(new_block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
     while (ir_head != ir_elem) {
         Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
@@ -970,6 +970,9 @@ void __process_write_op(Operand* op3, Ir* ir_value, BasicBlock* block) {
     *j = *i;
     struct Definition* def = create_new_definition(def_index, ir_value, block);
     struct LinearList* bottom_index_def = getLinearList(variable_bottom_index, def_index);
+    if (def_index == 22) {
+        __debug_pause_there();
+    }
     setLinearList(bottom_index_def, *i, def);
     pushFrontDequeList(getLinearList(construct_Stack, def_index), j);
     *i = *i + 1;
@@ -1018,9 +1021,12 @@ int which_pre(BasicBlock* pre, BasicBlock* suc) {
 
 void __search_block(BasicBlock* block) {
     //-------------
+
     list_entry_t* ir_head = &(block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
-
+    if (block == 0x447af0) {
+        __debug_pause_there();
+    }
     while (ir_elem != ir_head) {
         Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
         __operand_decode(ir_value, block);
@@ -1207,6 +1213,8 @@ void convertAlltoSSAform() {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
             __dominance_frontier(elem->blocks);
+            printf("func name: %s\n", elem->name);
+            deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
         }
     }
     __placement_phi(NULL);

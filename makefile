@@ -24,7 +24,8 @@ SYSY_TARGET_SRC = $(SYSY_TARGET_DIR)/SysY.target.offset.c \
 					$(SYSY_TARGET_DIR)/SysY.target.generator.c
 
 OPTIMIZER_DIR = src/optimizer
-OPTIMIZER_SRC = $(OPTIMIZER_DIR)/localExprEliminate.c
+OPTIMIZER_SRC = $(OPTIMIZER_DIR)/localExprEliminate.c \
+				$(OPTIMIZER_DIR)/loopInvariantExtraction.c
 
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
@@ -39,7 +40,7 @@ compiler: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC)
 	objdump -d -S $@ > tmp_parser.asm
 
 test: compiler
-	./compiler -S -o  tmp.s tmp/input
+	./compiler -S -o  tmp.s tmp.c
 	scp tmp.s pi@192.168.4.1:/home/pi/Documents/git_repo/tmp/
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)
