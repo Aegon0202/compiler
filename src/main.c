@@ -6,9 +6,11 @@
 #include "SysY.target/SysY.target.arm.h"
 #include "SysY.type/SysY.type.def.h"
 #include "SysY.type/SysY.type.print.h"
+#include "optimizer/local_op.h"
 #include "parser/SysY.tab.h"
 #include "ssa/ssa.h"
 #include "ssa/traverse.h"
+
 YYSTYPE result;
 int S_flag;
 int O_flag;
@@ -21,7 +23,7 @@ void convertAlltoSSAform();
 void convertAllOutSSAform();
 
 int main(int argc, char** argv) {
-       init();
+    init();
     int index;
     const char* input_file_name = argv[4];
     const char* output_file_name = argv[3];
@@ -33,8 +35,15 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     convertAlltoSSAform();
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks) {
+            //localExprEliminate(elem);
+        }
+    }
     convertAllOutSSAform();
-    generateAllToOutFile(output_file);
+    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, 1);
+    //generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);

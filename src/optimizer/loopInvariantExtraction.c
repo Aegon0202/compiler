@@ -62,6 +62,7 @@ struct DequeList* __get_loop_basic_block(BASIC_BLOCK_TYPE* basic_block, BASIC_BL
 struct LoopBlocks {
     struct LinearList* list;
     BASIC_BLOCK_TYPE* loop_entry;
+    BASIC_BLOCK_TYPE* loop_before;
     int loop_block_num;
     struct LinearList* out_blocks;
     int out_blocks_num;
@@ -127,7 +128,7 @@ int __is_op_can_extraction(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* basic_block, stru
     if (op->type != REGISTER) {
         return 1;
     }
-    struct Definition* def = getOperandDefinition(op);
+    struct Definition* def = get_op_definition(op);
     for (int i = 0; i < loop->loop_block_num; i++) {
         BASIC_BLOCK_TYPE* b = getLinearList(loop->list, i);
         if (b == def->def_address->block) {
@@ -191,13 +192,13 @@ int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct Lo
         OPERAND_TYPE tmp_op;
         tmp_op.type = REGISTER;
 
-        struct Definition* def = getOperandDefinition(ir->op3);
+        struct Definition* def = get_op_definition(ir->op3);
         list_entry_t* head = &def->chain->DU_chain;
         list_entry_t* next = list_next(head);
         while (head != next) {
             def_use_chain* use = le2struct(next, def_use_chain, DU_chain);
             tmp_op.operand.reg_idx = use->user;
-            struct Definition* u_def = getOperandDefinition(&tmp_op);
+            struct Definition* u_def = get_op_definition(&tmp_op);
             if (!__is_block_in_BasicBlockNode(basic_block, u_def->def_address->block->dominator)) {
                 is_can_extract = 0;
                 break;
@@ -216,13 +217,13 @@ int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct Lo
 }
 
 void __loop_invariant_extraction(struct LoopBlocks* loop) {
-    BASIC_BLOCK_TYPE* before_entry = NULL;
+    BASIC_BLOCK_TYPE* before_entry = loop->loop_before;
     // index: basic block address value: LinearList< index: ir address value: is_invariant >
 
     struct LinearList* invariant_block_ir = newLinearList();
     for (int i = 0; i < loop->loop_block_num; i++) {
         BASIC_BLOCK_TYPE* block = getLinearList(loop->list, i);
-        struct LinearList* ir_list = newLinearList();
+
         list_entry_t* head = &block->ir_list->ir_link;
         list_entry_t* next = list_next(head);
         while (head != next) {
@@ -231,19 +232,22 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
             if (__is_ir_can_extraction(ir, block, loop)) {
                 while (!isEmptyDequeList(loop->ir_rely)) {
                     IR_TYPE* move_ir = popBackDequeList(loop->ir_rely);
-                    struct Definition* def = getOperandDefinition(move_ir->op3);
+                    struct Definition* def = get_op_definition(move_ir->op3);
                     change_def_address(move_ir, def->def_address->block, before_entry, NULL);
                 }
             }
-
             while (!isEmptyDequeList(loop->ir_rely)) {
                 popBackDequeList(loop->ir_rely);
             }
-            setLinearList(ir_list, ir, is_const);
             next = list_next(next);
         }
-        setLinearList(invariant_block_ir, block, ir_list);
     }
+
+    MALLOC(j_op, OPERAND_TYPE, 1);
+    j_op->type = BASIC_BLOCK;
+    j_op->operand.v.b = loop->loop_entry;
+    IR_TYPE* ir = create_new_ir(JUMP, NULL, NULL, j_op);
+    list_add_before(&(before_entry->ir_list->ir_link), &(ir->ir_link));
 }
 
 void __add_loop_outblock(struct LoopBlocks* lb) {
@@ -274,11 +278,17 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
         if (!__is_block_in_liner_list(block, lb->list, lb->loop_block_num)) {
             disconnect_block(block, lb->loop_entry);
             connect_block(block, new_b);
+            IR_TYPE* ir = block->ir_list->ir_link.prev;
+            if (ir->type == BRANCH && ir->op2->operand.v.b == lb->loop_entry) {
+                ir->op2->operand.v.b = new_b;
+            } else {
+                ir->op3->operand.v.b = new_b;
+            }
         }
         next = list_next(next);
     }
     connect_block(new_b, lb->loop_entry);
-    lb->loop_entry = new_b;
+    lb->loop_before = new_b;
 }
 
 void loopInvariantExtraction(struct FuncTabElem* elem) {
@@ -328,4 +338,22 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
         struct LoopBlocks* lb = getLinearList(loops_list, i);
         __loop_invariant_extraction(lb);
     }
+
+    struct LoopBlocks* lb;
+    while ((lb = popLinearList(loops_list)) != NULL) {
+        while (popLinearList(lb->list) != NULL)
+            ;
+        freeLinearList(&lb->list);
+        while (popLinearList(lb->out_blocks) != NULL)
+            ;
+        freeLinearList(&lb->out_blocks);
+        while (popBackDequeList(lb->ir_rely) != NULL)
+            ;
+        freeDequeList(&lb->ir_rely);
+        while (popBackDequeList(lb->func_param) != NULL)
+            ;
+        freeDequeList(&lb->func_param);
+        free(lb);
+    }
+    freeLinearList(&loops_list);
 }

@@ -208,8 +208,8 @@ void delete_user(Operand* def, Ir* user) {
             }
             du_elem = list_next(du_elem);
         }
+        PrintErrExit("uesr do not find");
     }
-    PrintErrExit("uesr do not find");
 }
 
 void __DU_process_ir(Ir* ir, BasicBlock* block) {
@@ -220,7 +220,7 @@ void __DU_process_ir(Ir* ir, BasicBlock* block) {
 #undef WRITE_OP
 }
 
-void construct_DU_chain_local(BasicBlock* block) {
+void construct_DU_chain_local(BasicBlock* block, void* args) {
     list_entry_t* ir_head = &(block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
 

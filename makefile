@@ -23,6 +23,8 @@ SYSY_TARGET_DIR = src/SysY.target
 SYSY_TARGET_SRC = $(SYSY_TARGET_DIR)/SysY.target.offset.c \
 					$(SYSY_TARGET_DIR)/SysY.target.generator.c
 
+OPTIMIZER_DIR = src/optimizer
+OPTIMIZER_SRC = $(OPTIMIZER_DIR)/localExprEliminate.c
 
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
@@ -31,7 +33,7 @@ IR = src/ssa/*.c
 
 MAIN = src/main.c src/init.c
 
-compiler: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(SYSY_SYMTAB_SRC) $(IR) $(SYSY_TARGET_SRC) $(MAIN)
+compiler: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC) $(SYSY_SYMTAB_SRC) $(IR) $(SYSY_TARGET_SRC) $(OPTIMIZER_SRC) $(MAIN)
 	$(CC) $(CFLAGS) $^ 
 	mv ./a.out $@
 	objdump -d -S $@ > tmp_parser.asm
