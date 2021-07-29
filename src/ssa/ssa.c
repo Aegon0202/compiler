@@ -244,20 +244,38 @@ void construct_DU_chain_global(BasicBlock* start) {
     deepTraverseSuccessorsBasicBlock(start, construct_DU_chain_local, NULL);
 }
 
+void change_def(Operand* op, BasicBlock* block, Ir* ir) {
+    EnsureNotNull(op);
+    if (op->type != REGISTER)
+        PrintErrExit("const do not has a definition");
+    struct Definition* def = get_op_definition(op);
+    if (block)
+        def->def_address->block = block;
+    if (ir)
+        def->def_address->ir = ir;
+}
+
 void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir) {
     list_del(&(old_ir->ir_link));
     list_entry_t* ir_head = new_block->ir_list;
     list_entry_t* ir_elem = list_next(ir_head);
-    while (ir_head != ir_elem) {
-        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
-        if (ir_value == new_before_ir) {
-            list_add_after(ir_elem, &(old_ir->ir_link));
-            return;
+    if (!new_before_ir)
+        while (ir_head != ir_elem) {
+            Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+            if (ir_value == new_before_ir) {
+                list_add_after(ir_elem, &(old_ir->ir_link));
+                break;
+            }
+            ir_elem = list_next(ir_elem);
         }
-        ir_elem = list_next(ir_elem);
-    }
-    list_add_before(ir_head, &(old_ir->ir_link));
-    return;
+    else
+        list_add_before(ir_head, &(old_ir->ir_link));
+
+#define READ_OP(num)
+#define WRITE_OP(num) change_def(old_ir->op##num, new_block, NULL)
+    IR_OP_READ_WRITE(old_ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
+#undef READ_OP
+#undef WRITE_OP
 }
 
 BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
@@ -540,6 +558,7 @@ list_entry_t* __search_BlockNode_elem(list_entry_t* list, BasicBlock* value) {
         BasicBlock* b = le2struct(elem, BasicBlockNode, block_link)->value;
         if (b == value) {
             res = elem;
+            break;
         }
         elem = list_next(elem);
     }
