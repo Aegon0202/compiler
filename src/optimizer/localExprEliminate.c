@@ -17,7 +17,7 @@ int __is_op_equal(OPERAND_TYPE* op1, OPERAND_TYPE* op2) {
         case INT:
         case FRAMEPOINT:
         case GLOBALDATA:
-            return op1->operand.v.intValue == op1->operand.v.intValue;
+            return op1->operand.v.intValue == op2->operand.v.intValue;
         case REGISTER:
             return op1->operand.reg_idx == op2->operand.reg_idx;
         default:
@@ -86,27 +86,30 @@ void __local_expr_eliminate(BASIC_BLOCK_TYPE* basic_block, void* args) {
     list_entry_t* head = &basic_block->ir_list->ir_link;
     list_entry_t* next = list_next(head);
     while (next != head) {
-        if (__is_can_expr_eliminate) {
-            IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
+        IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
+        if (__is_can_expr_eliminate(ir)) {
             struct AEB* aeb = getLinkedTable(table, ir);
             if (aeb == NULL) {
                 aeb = newAEB(ir, NULL);
                 setLinkedTable(table, ir, aeb);
             } else {
-                IfNotNull(ir->op1, {delete_user(ir->op1, ir->op3);delete_operand(ir->op1); });
-                IfNotNull(ir->op2, {delete_user(ir->op2, ir->op3);delete_operand(ir->op2); });
+                IfNotNull(ir->op1, {delete_user(ir->op1, ir);delete_operand(ir->op1); });
+                IfNotNull(ir->op2, {delete_user(ir->op2, ir);delete_operand(ir->op2); });
 
                 ir->type = ASSIGN;
                 ir->op1 = aeb->ir->op3;
                 ir->op2 = NULL;
-                add_user(aeb->ir->op3, ir->op3);
+                add_user(aeb->ir->op3, ir);
             }
         }
         next = list_next(next);
     }
-    struct AEB* aeb = NULL;
-    while ((aeb = popLinkedTable(table) != NULL)) free(aeb);
-    freeLinkedTable(aeb);
+    struct Item* item = NULL;
+    while ((item = popLinkedTable(table)) != NULL) {
+        free(item->value);
+        free(item);
+    }
+    freeLinkedTable(&table);
 }
 
 void localExprEliminate(struct FuncTabElem* elem) {
