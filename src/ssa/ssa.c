@@ -93,7 +93,7 @@ struct Definition* create_new_definition(int reg, Ir* ir, BasicBlock* block) {
     MALLOC(def, struct Definition, 1);
     MALLOC_WITHOUT_DECLARE(def->chain, def_use_chain, 1);
     MALLOC_WITHOUT_DECLARE(def->def_address, Address, 1);
-    def->chain->user = -1;
+    def->chain->user = NULL;
     def->variable = reg;
     def->def_address->block = block;
     def->def_address->ir = ir;
@@ -183,11 +183,62 @@ int read_variable(ID id, BasicBlock* block) {
     }
 }
 
+//user = def
+void add_user(Operand* def, Ir* user) {
+    if (user && def && user->type == REGISTER && def->type == REGISTER) {
+        list_entry_t* du_head = &(get_op_definition(def)->chain->DU_chain);
+        MALLOC(du_node, def_use_chain, 1);
+        du_node->user = user;
+
+        list_add(du_head, &(du_node->DU_chain));
+    }
+}
+
+void delete_user(Operand* def, Ir* user) {
+    if (user && def && user->type == REGISTER && def->type == REGISTER) {
+        list_entry_t* du_head = &(get_op_definition(def)->chain->DU_chain);
+        list_entry_t* du_elem = list_next(du_head);
+
+        while (du_head != du_elem) {
+            def_use_chain* tmp = le2struct(du_elem, def_use_chain, DU_chain);
+            if (tmp->user == user) {
+                list_del(du_elem);
+                free(tmp);
+                return;
+            }
+            du_elem = list_next(du_elem);
+        }
+    }
+    PrintErrExit("uesr do not find");
+}
+
+void __DU_process_ir(Ir* ir, BasicBlock* block) {
+#define READ_OP(num) add_user(ir->op##num, ir)
+#define WRITE_OP(num)
+    IR_OP_READ_WRITE(ir->type, READ_OP, WRITE_OP, PrintErrExit(" "););
+#undef READ_OP
+#undef WRITE_OP
+}
+
+void construct_DU_chain_local(BasicBlock* block) {
+    list_entry_t* ir_head = &(block->ir_list->ir_link);
+    list_entry_t* ir_elem = list_next(ir_head);
+
+    while (ir_head != ir_elem) {
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        __DU_process_ir(ir_value, block);
+        ir_elem = list_next(ir_elem);
+    }
+}
+
+void construct_DU_chain_global(BasicBlock* start) {
+    deepTraverseSuccessorsBasicBlock(start, construct_DU_chain_local, NULL);
+}
+
 BASIC_BLOCK_TYPE* newBasicBlock(BASIC_BLOCK_TYPE* predecessor) {
     BasicBlock* b = create_new_block();
     if (predecessor)
         connect_block(predecessor, b);
-
     return b;
 }
 
@@ -863,7 +914,7 @@ void __placement_phi(BasicBlock* start) {
     }
 }
 
-void renaming_variable(BasicBlock* start) {
+void renaming_init(BasicBlock* start) {
     int cur_var = 0;
 
     for (cur_var = 0; cur_var < current_size; cur_var++) {
@@ -1134,7 +1185,7 @@ void convertAlltoSSAform() {
     }
     __placement_phi(NULL);
 
-    renaming_variable(NULL);
+    renaming_init(NULL);
 
     for (int i = 0; i < func_table->next_func_index; i++) {
         elem = getLinearList(func_table->all_funcs, i);
@@ -1149,6 +1200,7 @@ void convertAlltoSSAform() {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
             modify_op_global(elem->blocks);
+            construct_DU_chain_global(elem->blocks);
         }
     }
 }
