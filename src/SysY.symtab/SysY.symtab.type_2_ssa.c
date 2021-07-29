@@ -769,6 +769,7 @@ int toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p
     BASIC_BLOCK_TYPE* loop_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* basic_block = *basic_block_p;
+    BASIC_BLOCK_TYPE* loop_head = loop_block;
 
     toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);
 
@@ -779,7 +780,7 @@ int toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p
     if (toSSAStmt(whilestmt->stmt, &loop_block) == 0) {
         newIR(JUMP, NULL, NULL, toSSABasicBlock(cond_block, loop_block), loop_block);
         addBasicBlockEdge(loop_block, cond_block);
-        toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);
+        toSSACond(whilestmt->cond, loop_head, merge_block, cond_block);
     } else {
         // need free cond block
     }
