@@ -20,6 +20,9 @@ void __placement_phi(BasicBlock* start);
 void convertAlltoSSAform();
 
 int main(int argc, char** argv) {
+    for (int i = 0; i < argc; i++) {
+        printf("%s/n", argv[i]);
+    }
     init();
     int index;
     const char* input_file_name = argv[4];
