@@ -108,11 +108,11 @@ extern struct LinearList* variable_bottom_index;
 extern struct LinearList* bottom_index2New_reg;
 extern struct LinearList* reg2def;
 
-Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*);
+Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*, BasicBlock*);
 BasicBlock* create_new_block();
 Operand* create_new_operand(int type, int reg, long long value);
 void disconnect_block(BasicBlock* pre, BasicBlock* suc);
-Ir* create_new_phi(Phi* op1, Operand* op3, Operand*);
+Ir* create_new_phi(Phi* op1, Operand* op3, Operand*, BasicBlock*);
 void update_CFG(BasicBlock* start);
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
@@ -123,6 +123,7 @@ int alloc_register();
 int get_init_register();
 const char* _op_to_str(Operand* op);
 
+void delete_BasicBlock(BasicBlock*);
 void delete_ir(Ir* ir, BasicBlock*);
 void delete_operand(Operand*);
 void delete_user(Operand* def, Ir* user);

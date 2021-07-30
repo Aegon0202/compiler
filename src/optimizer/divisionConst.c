@@ -72,7 +72,7 @@ void __division_const(BASIC_BLOCK_TYPE* basic_block, void* args) {
                     z_op->type = INTCONST;
                     z_op->operand.v.intValue = 0;
 
-                    create_new_ir(K_SUB, z_op, tmp_op, ir->op3);
+                    create_new_ir(K_SUB, z_op, tmp_op, ir->op3, basic_block);
                 }
             }
         }

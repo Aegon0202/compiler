@@ -48,12 +48,13 @@ void set_init_register(int index) {
     begin_index = index;
 }
 
-Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
+Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3, BasicBlock* block) {
     Ir* ir = (Ir*)malloc(sizeof(Ir));
     ir->op1 = op1;
     ir->op2 = op2;
     ir->op3 = op3;
     ir->type = op_type;
+    ir->block = block;
     return ir;
 }
 
@@ -94,11 +95,11 @@ void delete_ir(Ir* ir, BasicBlock* block) {
     free(ir);
 }
 
-Ir* create_new_phi(Phi* op1, Operand* op3, Operand* op2) {
+Ir* create_new_phi(Phi* op1, Operand* op3, Operand* op2, BasicBlock* block) {
     MALLOC(op, Operand, 1);
     op->type = PHI_OP;
     op->operand.v.phi_op_list = &(op1->op_link);
-    return create_new_ir(PHI, op, op2, op3);
+    return create_new_ir(PHI, op, op2, op3, block);
 }
 
 struct Definition* create_new_definition(int reg, Ir* ir, BasicBlock* block) {
@@ -151,6 +152,10 @@ BasicBlock* create_new_block() {
     list_init(&(block->Children->block_link));
     list_init(&(block->dominant_frontier->block_link));
     return block;
+}
+
+void delete_BasicBlock(BasicBlock* block) {
+    return;
 }
 
 Operand* create_new_operand(int type, int reg, long long value) {
@@ -273,6 +278,7 @@ void change_def(Operand* op, BasicBlock* block, Ir* ir) {
 
 void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir) {
     list_del(&(old_ir->ir_link));
+    old_ir->block = new_block;
     list_entry_t* ir_head = &(new_block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
     if (new_before_ir)
@@ -418,7 +424,7 @@ OPERAND_TYPE* toSSATempVariable(BASIC_BLOCK_TYPE* basic_block) {
 
 IR_TYPE* newIR(int op, OPERAND_TYPE* op1, OPERAND_TYPE* op2, OPERAND_TYPE* op3, BASIC_BLOCK_TYPE* basic_block) {
     EnsureNotNull(basic_block);
-    Ir* ir = create_new_ir(op, op1, op2, op3);
+    Ir* ir = create_new_ir(op, op1, op2, op3, basic_block);
     Ir* head = basic_block->ir_list;
     list_add_before(&(head->ir_link), &(ir->ir_link));
     return ir;
@@ -956,7 +962,7 @@ void __placement_phi(BasicBlock* start) {
                     tmp_op->type = INT;
                     tmp_op->operand.v.intValue = Y_value->predecessor_num;
 
-                    Ir* ir = create_new_phi(phi_func, op_3, tmp_op);
+                    Ir* ir = create_new_phi(phi_func, op_3, tmp_op, Y_value);
                     list_add(&(Y_value->ir_list->ir_link), &(ir->ir_link));
                     Y_value->has_already = iter_count;
                     if (Y_value->work < iter_count) {
@@ -1212,7 +1218,7 @@ void convertOutssa_local(BasicBlock* block, void* args) {
                 Operand* op2 = create_new_operand(INT, -1, 0);
                 Operand* op1 = create_new_operand(op_value->type, read_reg, op_value->operand.v.intValue);
                 Operand* op3 = create_new_operand(REGISTER, write_reg, 0);
-                Ir* new_ir = create_new_ir(K_ADD, op1, op2, op3);
+                Ir* new_ir = create_new_ir(K_ADD, op1, op2, op3, block);
 
                 list_add_before(list_prev(target_ir_list), &(new_ir->ir_link));
                 op_elem = list_next(op_elem);

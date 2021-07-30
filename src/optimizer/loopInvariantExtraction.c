@@ -248,7 +248,7 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
     MALLOC(j_op, OPERAND_TYPE, 1);
     j_op->type = BASIC_BLOCK;
     j_op->operand.v.b = loop->loop_entry;
-    IR_TYPE* ir = create_new_ir(JUMP, NULL, NULL, j_op);
+    IR_TYPE* ir = create_new_ir(JUMP, NULL, NULL, j_op, before_entry);
     list_add_before(&(before_entry->ir_list->ir_link), &(ir->ir_link));
 }
 
