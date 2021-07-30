@@ -37,21 +37,28 @@ int __is_op3_writable(Ir* ir) {
 }
 
 int __is_const_op(Operand* op, const int n) {
-    if (op->type == INT)
+    if (op->type == INT || op->type == FRAMEPOINT || op->type == STACKPOINT) {
         if (op->operand.v.intValue == n)
             return 2;
         else
             return 1;
-    else if (op->type == FRAMEPOINT || op->type == STACKPOINT)
-        return 1;
+    }
     return 0;
 }
 
 int caculate_const_value(Ir* ir) {
     int value;
     int num1, num2;
-    num1 = *(int*)getLinearList(constValue, ir->op1->operand.reg_idx);
-    num2 = *(int*)getLinearList(constValue, ir->op2->operand.reg_idx);
+    if (ir->op1->type == REGISTER)
+        num1 = *(int*)getLinearList(constValue, ir->op1->operand.reg_idx);
+    else
+        num1 = ir->op1->operand.v.intValue;
+    if (ir->op2) {
+        if (ir->op2->type == REGISTER)
+            num2 = *(int*)getLinearList(constValue, ir->op2->operand.reg_idx);
+        else
+            num2 = ir->op2->operand.v.intValue;
+    }
     switch (ir->type) {
         case K_NOT:
             value = !num1;
@@ -100,6 +107,7 @@ int __is_op_value_const(OPERAND_TYPE* op) {
     int is_op_const = 0;
     if (op->type != REGISTER) {
         is_op_const = 1;
+        return 1;
     }
 
     int* mark = getLinearList(constMark, op->operand.reg_idx);
@@ -110,16 +118,15 @@ int __is_op_value_const(OPERAND_TYPE* op) {
         MALLOC(i, int, 1);
         *i = is_op_const;
         setLinearList(constMark, op->operand.reg_idx, i);
-        if (is_op_const)
+        if (is_op_const) {
             pushFrontDequeList(prop_worklist, op);
+            MALLOC(j, int, 1);
+            *j = value;
+            setLinearList(constValue, op->operand.reg_idx, j);
+        }
         return is_op_const;
-    } else if (*mark == 1) {
-        return 1;
-    } else if (*mark == 0) {
-        return 0;
-    }
-    PrintErrExit("error");
-    return -1;
+    } else
+        return *mark;
 }
 
 int __is_ir_value_const(IR_TYPE* ir, int* value) {
@@ -147,9 +154,7 @@ int __is_ir_value_const(IR_TYPE* ir, int* value) {
             break;
     }
     if (is_const) {
-        MALLOC(value, int, 1);
         *value = caculate_const_value(ir);
-        setLinearList(constValue, ir->op3->operand.reg_idx, value);
         return 1;
     }
     return 0;
@@ -157,76 +162,86 @@ int __is_ir_value_const(IR_TYPE* ir, int* value) {
 
 void constFolding(BasicBlock* block, void* not_use) {
     list_entry_t* head = &(block->ir_list->ir_link);
-    list_entry_t* t = head;
-    while ((t = list_next(t)) != head) {
+    list_entry_t* t = list_next(head);
+    int default_exit;
+    while (t != head) {
         Ir* ir = le2struct(t, Ir, ir_link);
-        if (__is_const_op(ir->op1, 0) && __is_const_op(ir->op2, 0))
+        default_exit = 0;
+        t = list_next(t);
+        if ((!ir->op1 || __is_const_op(ir->op1, 0)) && (!ir->op2 || __is_const_op(ir->op2, 0))) {
             switch (ir->type) {
                 case K_ADD:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = ir->op1->operand.v.intValue + ir->op2->operand.v.intValue;
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_SUB:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = ir->op1->operand.v.intValue - ir->op2->operand.v.intValue;
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_MUL:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = ir->op1->operand.v.intValue * ir->op2->operand.v.intValue;
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_DIV:
                     if (ir->op2->operand.v.intValue == 0)
                         break;
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = ir->op1->operand.v.intValue / ir->op2->operand.v.intValue;
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_MOD:
                     if (ir->op2->operand.v.intValue == 0)
                         break;
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = ir->op1->operand.v.intValue % ir->op2->operand.v.intValue;
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_NOT:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = !ir->op1->operand.v.intValue;
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_EQ:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = (ir->op1->operand.v.intValue == ir->op2->operand.v.intValue);
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_NEQ:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = (ir->op1->operand.v.intValue != ir->op2->operand.v.intValue);
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_LT:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = (ir->op1->operand.v.intValue < ir->op2->operand.v.intValue);
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_LTE:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = (ir->op1->operand.v.intValue <= ir->op2->operand.v.intValue);
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_GT:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = (ir->op1->operand.v.intValue > ir->op2->operand.v.intValue);
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
                 case K_GTE:
                     ir->type = ASSIGN;
                     ir->op1->operand.v.intValue = (ir->op1->operand.v.intValue >= ir->op2->operand.v.intValue);
-                    ir->op2->operand.v.intValue = 0;
+
                     break;
+                default:
+                    default_exit = 1;
             }
+            if (!default_exit) {
+                delete_operand(ir->op2);
+                ir->op2 = NULL;
+            }
+        }
     }
 }
 
@@ -237,9 +252,9 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
     while (elem != head) {
         Ir* ir = le2struct(elem, Ir, ir_link);
         elem = list_next(elem);
-        if (!ir->op1 && !ir->op2)
+        if (!ir->op1 || !ir->op2)
             continue;
-        if (__is_const_op(ir->op1, 0) != 0 || __is_const_op(ir->op2, 0) != 0)
+        if (ir->op1 && ir->op2 && (__is_const_op(ir->op1, 0) != 0 || __is_const_op(ir->op2, 0) != 0))
             switch (ir->type) {
                 case K_MUL:
                     if (__is_const_op(ir->op1, 0) == 2 || __is_const_op(ir->op2, 0) == 2) {
@@ -249,19 +264,17 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                         delete_operand(ir->op1);
                         delete_operand(ir->op2);
                         ir->op1 = create_new_operand(INT, -1, 0);
-                        ir->op2 = create_new_operand(INT, -1, 0);
+                        ir->op2 = NULL;
                     }
                     if (__is_const_op(ir->op1, 1) == 2) {
                         ir->type = ASSIGN;
-                        delete_user(ir->op1, ir);
                         delete_operand(ir->op1);
                         ir->op1 = ir->op2;
-                        ir->op2 = create_new_operand(INT, -1, 0);
+                        ir->op2 = NULL;
                     } else if (__is_const_op(ir->op2, 1) == 2) {
                         ir->type = ASSIGN;
-                        delete_user(ir->op1, ir);
                         delete_operand(ir->op2);
-                        ir->op2 = create_new_operand(INT, -1, 0);
+                        ir->op2 = NULL;
                     }
                     break;
                 case K_DIV:
@@ -270,20 +283,21 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                         ir->type = ASSIGN;
                         delete_user(ir->op2, ir);
                         delete_operand(ir->op2);
+                        ir->op2 = NULL;
                     }
                     if (__is_const_op(ir->op2, 1) == 2) {
                         ir->type = ASSIGN;
+                        delete_operand(ir->op2);
+                        ir->op2 = NULL;
                     }
                     break;
                 case K_MOD:
                     if (__is_const_op(ir->op2, 0) == 2) break;
-                    if (__is_const_op(ir->op1, 0) == 2 || __is_const_op(ir->op1, 1) == 2) {
+                    if (__is_const_op(ir->op1, 0) == 2) {
                         ir->type = ASSIGN;
                         delete_user(ir->op2, ir);
                         delete_operand(ir->op2);
-                    }
-                    if (__is_const_op(ir->op2, 1) == 2) {
-                        ir->type = ASSIGN;
+                        ir->op2 = NULL;
                     }
                     break;
             }
@@ -399,13 +413,17 @@ void alSimplifyAndConstProp(BasicBlock* start) {
     prop_worklist = newDequeList();
     constMark = newLinearList();
     constValue = newLinearList();
+
+    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
     deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+
     deepTraverseSuccessorsBasicBlock(start, __mark_const, NULL);
 
     while (!isEmptyDequeList(prop_worklist)) {
         Operand* op = popBackDequeList(prop_worklist);
         const_propgation(op);
     }
+    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
     deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
     copy_propgation(start);
 }

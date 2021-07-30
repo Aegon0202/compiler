@@ -59,6 +59,7 @@ Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3, BasicBl
 }
 
 void delete_operand(Operand* op) {
+    if (!op) return;
     if (op->type != PHI_OP)
         free(op);
     else {
