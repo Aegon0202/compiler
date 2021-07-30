@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
             //localExprEliminate(elem);
-            //alSimplifyAndConstProp(elem->blocks);
+            alSimplifyAndConstProp(elem->blocks);
             //loopInvariantExtraction(elem);
         }
     }

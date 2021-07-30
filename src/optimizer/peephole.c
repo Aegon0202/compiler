@@ -233,9 +233,12 @@ void constFolding(BasicBlock* block, void* not_use) {
 //代数化简
 void algebraic_simplification(BasicBlock* block, void* notuse) {
     list_entry_t* head = &(block->ir_list->ir_link);
-    list_entry_t* t = head;
-    while ((t = list_next(t)) != head) {
-        Ir* ir = le2struct(t, Ir, ir_link);
+    list_entry_t* elem = list_next(head);
+    while (elem != head) {
+        Ir* ir = le2struct(elem, Ir, ir_link);
+        elem = list_next(elem);
+        if (!ir->op1 && !ir->op2)
+            continue;
         if (__is_const_op(ir->op1, 0) != 0 || __is_const_op(ir->op2, 0) != 0)
             switch (ir->type) {
                 case K_MUL:
@@ -387,6 +390,7 @@ void __mark_const(BasicBlock* block, void* args) {
         Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
         if (__is_op3_writable(ir_value))
             __is_op_value_const(ir_value->op3);
+        ir_elem = list_next(ir_elem);
     }
 }
 
