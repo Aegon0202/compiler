@@ -48,8 +48,6 @@ void set_init_register(int index) {
     begin_index = index;
 }
 
-
-
 Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3) {
     Ir* ir = (Ir*)malloc(sizeof(Ir));
     ir->op1 = op1;
@@ -225,6 +223,21 @@ void delete_user(Operand* def, Ir* user) {
         }
         PrintErrExit("uesr do not find");
     }
+}
+
+Operand* search_op_in_phi_list(Ir* Phi_ir, int reg) {
+    if (Phi_ir && Phi_ir->type == PHI) {
+        list_entry_t* op_head = Phi_ir->op1->operand.v.phi_op_list;
+        list_entry_t* op_elem = list_next(op_head);
+        while (op_head != op_elem) {
+            Operand* op_value = le2struct(op_elem, Phi, op_link)->value;
+            if (op_value->type == REGISTER && op_value->operand.reg_idx == reg) {
+                return op_value;
+            }
+            op_elem = list_next(op_elem);
+        }
+    }
+    return NULL;
 }
 
 void __DU_process_ir(Ir* ir, BasicBlock* block) {

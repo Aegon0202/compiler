@@ -127,6 +127,7 @@ void delete_operand(Operand*);
 void delete_user(Operand* def, Ir* user);
 void add_user(Operand* def, Ir* user);
 void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir);
+Operand* search_op_in_phi_list(Ir* Phi_ir, int reg);
 
 void __dominance_frontier(BasicBlock* start);
 void __caculate_dominance(BasicBlock* start);
