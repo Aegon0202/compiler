@@ -1,0 +1,8 @@
+**/tmp/*
+tmp*
+a.out
+*.gch
+core
+*.o
+compiler
+a.out.dSYM

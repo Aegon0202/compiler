@@ -1,0 +1,44 @@
+#ifdef __STDC_ALLOC_LIB__
+#define __STDC_WANT_LIB_EXT2__ 1
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "../utils/DequeList.h"
+#include "../utils/LinkedTable.h"
+#include "./ssa.h"
+#include "traverse.h"
+void __debug_pause_there();
+
+int df_plus_test(BasicBlock* start) {
+    MALLOC(node_set, BasicBlockNode, 1);
+    node_set->value = NULL;
+    list_init(&(node_set->block_link));
+    deepTraverseSuccessorsBasicBlock(start, __get_all_nodes, node_set);
+    list_entry_t* head = &(node_set->block_link);
+    list_entry_t* elem = list_next(head);
+
+    MALLOC(test_node_set, BasicBlockNode, 1);
+    test_node_set->value = NULL;
+    list_init(&(test_node_set->block_link));
+    list_entry_t* list = &(test_node_set->block_link);
+    BasicBlock* value;
+    while (elem != head) {
+        value = le2BasicBlock(elem)->value;
+        if (value == 0x4fa48 || value == 0x56bb8 || value == 0x59778 || value == 0x596d8) {
+            MALLOC(node, BasicBlockNode, 1);
+            node->value = value;
+
+            list_add(list, &(node->block_link));
+        }
+
+        elem = list_next(elem);
+    }
+    list_entry_t* t = DF_plus(list);
+    __debug_pause_there();
+
+    return (int)t;
+}
