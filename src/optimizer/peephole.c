@@ -238,6 +238,8 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                 case K_MUL:
                     if (__is_const_op(ir->op1, 0) == 2 || __is_const_op(ir->op2, 0) == 2) {
                         ir->type = ASSIGN;
+                        delete_user(ir->op1, ir);
+                        delete_user(ir->op2, ir);
                         delete_operand(ir->op1);
                         delete_operand(ir->op2);
                         ir->op1 = create_new_operand(INT, -1, 0);
@@ -245,11 +247,13 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                     }
                     if (__is_const_op(ir->op1, 1) == 2) {
                         ir->type = ASSIGN;
+                        delete_user(ir->op1, ir);
                         delete_operand(ir->op1);
                         ir->op1 = ir->op2;
                         ir->op2 = create_new_operand(INT, -1, 0);
                     } else if (__is_const_op(ir->op2, 1) == 2) {
                         ir->type = ASSIGN;
+                        delete_user(ir->op1, ir);
                         delete_operand(ir->op2);
                         ir->op2 = create_new_operand(INT, -1, 0);
                     }
@@ -258,6 +262,7 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                     if (__is_const_op(ir->op2, 0) == 2) break;
                     if (__is_const_op(ir->op1, 0) == 2) {
                         ir->type = ASSIGN;
+                        delete_user(ir->op2, ir);
                         delete_operand(ir->op2);
                     }
                     if (__is_const_op(ir->op2, 1) == 2) {
@@ -268,6 +273,7 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                     if (__is_const_op(ir->op2, 0) == 2) break;
                     if (__is_const_op(ir->op1, 0) == 2 || __is_const_op(ir->op1, 1) == 2) {
                         ir->type = ASSIGN;
+                        delete_user(ir->op2, ir);
                         delete_operand(ir->op2);
                     }
                     if (__is_const_op(ir->op2, 1) == 2) {
@@ -315,21 +321,27 @@ void copy_propgation(BasicBlock* start) {
 
             if (ir_value->type != PHI) {
                 if (__is_operand_equal(ir_value->op1, reg)) {
+                    delete_user(ir_value->op1, ir_value);
                     delete_operand(ir_value->op1);
                     ir_value->op1 = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
+                    add_user(ir_value->op1, ir_value);
                 }
                 if (__is_operand_equal(ir_value->op2, reg)) {
+                    delete_user(ir_value->op2, ir_value);
                     delete_operand(ir_value->op2);
                     ir_value->op2 = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
+                    add_user(ir_value->op2, ir_value);
                 }
             } else {
                 Operand* op = search_op_in_phi_list(ir_value, reg);
                 int op_reg = op->operand.reg_idx;
+                delete_user(op, ir_value);
                 delete_operand(op);
                 if (subor->type == INT) {
                     op = create_new_operand(subor->type, op_reg, subor->operand.v.intValue);
                 } else {
                     op = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
+                    add_user(op, ir_value);
                 }
             }
         }

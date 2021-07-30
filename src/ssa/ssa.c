@@ -1185,7 +1185,6 @@ void reallocate_register(BasicBlock* start) {
             reg = alloc_register();
             MALLOC(r, int, 1);
             *r = reg;
-
             setLinearList(reg_id_vartabelem, reg, id);
             setLinearList(reg2def, reg, def);
             setLinearList(bottom2New_reg_list, b_index, r);

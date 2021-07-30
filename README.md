@@ -10,7 +10,9 @@ operating system: Ubuntu 18.04, hardware architecture: ARMv7-32bit.
 - [ ] 增加释放一个基本块的函数
 - [ ] 寄存器分配算法
 - [ ] 完成 update_CFG 函数
-- [ ] 在 delete_operand 函数中维护 def_use 链
+
+- [x] 在 delete_operand 函数中维护 def_use 链
+    - 采用手动维护
 - [x] 在 delete_ir 中维护 def_use 链
 - [x] 在SSA IR中增加指向定义所在块的指针，并维护指针 
     - 修改了create_new_ir和create_new_phi的定义，并在引用这两个函数的位置修改引用。

@@ -104,7 +104,8 @@ void __local_expr_eliminate(BASIC_BLOCK_TYPE* basic_block, void* args) {
                     create_new_definition(tmp->operand.reg_idx, n_ir, basic_block);
                     add_user(n_op1, n_ir);
                     add_user(n_op2, n_ir);
-
+                    delete_user(aeb->ir->op1, aeb->ir);
+                    delete_user(aeb->ir->op2, aeb->ir);
                     IfNotNull(aeb->ir->op1, { delete_operand(aeb->ir->op1); });
                     IfNotNull(aeb->ir->op2, { delete_operand(aeb->ir->op2); });
 
@@ -114,6 +115,9 @@ void __local_expr_eliminate(BASIC_BLOCK_TYPE* basic_block, void* args) {
                     aeb->ir->op2 = NULL;
                     add_user(tmp, aeb->ir);
                 }
+
+                delete_user(ir->op2, ir);
+                delete_user(ir->op1, ir);
                 IfNotNull(ir->op2, { delete_operand(ir->op2); });
                 IfNotNull(ir->op1, { delete_operand(ir->op1); });
 
