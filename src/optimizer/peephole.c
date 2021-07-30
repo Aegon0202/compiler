@@ -5,6 +5,36 @@
 struct LinearList* constMark;
 struct LinearList* constValue;
 
+struct DequeList* prop_worklist;
+struct DequeList* simp_worklist;
+
+extern int reg_begin;
+extern int current_size;
+
+int __is_op3_writable(Ir* ir) {
+    switch (ir->type) {
+        case K_NOT:
+        case ASSIGN:
+        case K_ADD:
+        case K_MUL:
+        case K_EQ:
+        case K_NEQ:
+        case K_SUB:
+        case K_DIV:
+        case K_MOD:
+        case K_LT:
+        case K_LTE:
+        case K_GT:
+        case K_GTE:
+        case PHI:
+        case CALL:
+        case LOAD:
+            return 1;
+            break;
+    }
+    return 0;
+}
+
 int __is_const_op(Operand* op, const int n) {
     if (op->type == INT)
         if (op->operand.v.intValue == n)
@@ -16,7 +46,56 @@ int __is_const_op(Operand* op, const int n) {
     return 0;
 }
 
-int __is_op_const(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* basic_block) {
+int caculate_const_value(Ir* ir) {
+    int value;
+    int num1, num2;
+    num1 = *(int*)getLinearList(constValue, ir->op1->operand.reg_idx);
+    num2 = *(int*)getLinearList(constValue, ir->op2->operand.reg_idx);
+    switch (ir->type) {
+        case K_NOT:
+            value = !num1;
+            break;
+        case ASSIGN:
+            value = num1;
+            break;
+        case K_ADD:
+            value = num1 + num2;
+            break;
+        case K_MUL:
+            value = num1 * num2;
+            break;
+        case K_EQ:
+            value = (num1 == num2);
+            break;
+        case K_NEQ:
+            value = (num1 != num2);
+            break;
+        case K_SUB:
+            value = (num1 - num2);
+            break;
+        case K_DIV:
+            value = (num1 / num2);
+            break;
+        case K_MOD:
+            value = (num1 % num2);
+            break;
+        case K_LT:
+            value = (num1 < num2);
+            break;
+        case K_LTE:
+            value = (num1 <= num2);
+            break;
+        case K_GT:
+            value = (num1 > num2);
+            break;
+        case K_GTE:
+            value = (num1 >= num2);
+            break;
+    }
+    return value;
+}
+
+int __is_op_value_const(OPERAND_TYPE* op) {
     int is_op_const = 0;
     if (op->type != REGISTER) {
         is_op_const = 1;
@@ -25,10 +104,13 @@ int __is_op_const(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* basic_block) {
     int* mark = getLinearList(constMark, op->operand.reg_idx);
     if (!mark) {
         struct Definition* def = get_op_definition(op);
-        is_op_const = __is_ir_const(def->def_address->ir, basic_block);
+        int value;
+        is_op_const = __is_ir_value_const(def->def_address->ir, value);
         MALLOC(i, int, 1);
         *i = is_op_const;
         setLinearList(constMark, op->operand.reg_idx, i);
+        if (is_op_const)
+            pushFrontDequeList(prop_worklist, op);
         return is_op_const;
     } else if (*mark == 1) {
         return 1;
@@ -37,13 +119,12 @@ int __is_op_const(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* basic_block) {
     }
 }
 
-int __is_ir_const(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block) {
+int __is_ir_value_const(IR_TYPE* ir, int* value) {
     int is_const = 0;
-
     switch (ir->type) {
         case K_NOT:
         case ASSIGN:
-            is_const = __is_op_const(ir->op1, basic_block);
+            is_const = __is_op_value_const(ir->op1);
             break;
         case K_ADD:
         case K_MUL:
@@ -56,16 +137,18 @@ int __is_ir_const(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block) {
         case K_LTE:
         case K_GT:
         case K_GTE:
-            is_const = __is_op_can_extraction(ir->op1, basic_block) && __is_op_can_extraction(ir->op2, basic_block);
+            is_const = __is_op_value_const(ir->op1) && __is_op_value_const(ir->op2);
             break;
         default:
             is_const = 0;
             break;
     }
     if (is_const) {
+        MALLOC(value, int, 1);
+        *value = caculate_const_value(ir);
+        setLinearList(constValue, ir->op3->operand.reg_idx, value);
         return 1;
     }
-
     return 0;
 }
 
@@ -214,7 +297,8 @@ void getAssignStm_local(BasicBlock* block, struct DequeList* workList) {
 void getAssignStm_global(BasicBlock* start, void* args) {
     deepTraverseSuccessorsBasicBlock(start, getAssignStm_local, args);
 }
-void copy_propgation(BasicBlock* block, BasicBlock* start) {
+
+void copy_propgation(BasicBlock* start) {
     struct DequeList* workList = newDequeList();
     getAssignStm_global(start, workList);
 
@@ -227,7 +311,8 @@ void copy_propgation(BasicBlock* block, BasicBlock* start) {
             Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
             Operand* subor = process_elem->op1;
             int reg = process_elem->op3->operand.reg_idx;
-            list_entry_t* tmp = list_next(ir_elem);
+            ir_elem = list_next(ir_elem);
+
             if (ir_value->type != PHI) {
                 if (__is_operand_equal(ir_value->op1, reg)) {
                     delete_operand(ir_value->op1);
@@ -239,21 +324,68 @@ void copy_propgation(BasicBlock* block, BasicBlock* start) {
                 }
             } else {
                 Operand* op = search_op_in_phi_list(ir_value, reg);
+                int op_reg = op->operand.reg_idx;
                 delete_operand(op);
-                op = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
+                if (subor->type == INT) {
+                    op = create_new_operand(subor->type, op_reg, subor->operand.v.intValue);
+                } else {
+                    op = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
+                }
             }
-            ir_elem = tmp;
         }
     }
 }
 
-void __mark_const_def() {
-    __is_def_const();
+void const_propgation(Operand* op) {
+    Ir* ir = get_op_definition(op)->def_address->ir;
+    list_entry_t* du_head = &(get_op_definition(op)->chain->DU_chain);
+    list_entry_t* du_elem = list_next(du_head);
+    while (du_head != du_elem) {
+        Ir* ir_value = le2struct(du_elem, def_use_chain, DU_chain)->user;
+        int const_value = getLinearList(constValue, op->operand.reg_idx);
+        du_elem = list_next(du_elem);
+        if (ir_value->type != PHI) {
+            if (__is_operand_equal(ir_value->op1, op->operand.reg_idx)) {
+                delete_operand(ir_value->op1);
+                ir_value->op1 = create_new_operand(INT, -1, const_value);
+            }
+            if (__is_operand_equal(ir_value->op2, op->operand.reg_idx)) {
+                delete_operand(ir_value->op2);
+                ir_value->op2 = create_new_operand(INT, -1, const_value);
+            }
+        } else {
+            Operand* phi_op = search_op_in_phi_list(ir_value, op->operand.reg_idx);
+            int op_reg = phi_op->operand.reg_idx;
+            delete_operand(phi_op);
+            phi_op = create_new_operand(INT, op_reg, const_value);
+        }
+    }
+    delete_ir(ir, ir->block);
+}
+
+void __mark_const(BasicBlock* block) {
+    list_entry_t* ir_head = block->ir_list;
+    list_entry_t* ir_elem = list_next(ir_head);
+
+    while (ir_head != ir_elem) {
+        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        if (__is_op3_writable(ir_value))
+            __is_op_value_const(ir_value->op3);
+    }
 }
 
 void alSimplifyAndConstProp(BasicBlock* start) {
-    const_mark = newLinearList();
+    simp_worklist = newDequeList();
+    prop_worklist = newDequeList();
+    constMark = newLinearList();
+    constValue = newLinearList();
     deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    deepTraverseSuccessorsBasicBlock(start, __mark_const, NULL);
 
-    __mark_const();
+    while (!isEmptyDequeList(prop_worklist)) {
+        Operand* op = popBackDequeList(prop_worklist);
+        const_propgation(op);
+    }
+    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    copy_propgation(start);
 }

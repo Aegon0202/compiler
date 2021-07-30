@@ -115,9 +115,6 @@ struct Definition* create_new_definition(int reg, Ir* ir, BasicBlock* block) {
 }
 
 struct Definition* get_op_definition(Operand* op) {
-    if (op->type != REGISTER) {
-        PrintErrExit("constant do not have a definition");
-    }
     return getLinearList(reg2def, op->operand.reg_idx);
 }
 //创建一个新的block
@@ -1213,11 +1210,11 @@ void convertOutssa_local(BasicBlock* block, void* args) {
                 int read_reg = op_value->operand.reg_idx;
                 list_entry_t* target_ir_list = &(get_op_definition(op_value)->def_address->block->ir_list->ir_link);
                 Operand* op2 = create_new_operand(INT, -1, 0);
-                Operand* op1 = create_new_operand(REGISTER, read_reg, 0);
+                Operand* op1 = create_new_operand(op_value->type, read_reg, op_value->operand.v.intValue);
                 Operand* op3 = create_new_operand(REGISTER, write_reg, 0);
                 Ir* new_ir = create_new_ir(K_ADD, op1, op2, op3);
-                list_add_before(target_ir_list, &(new_ir->ir_link));
 
+                list_add_before(list_prev(target_ir_list), &(new_ir->ir_link));
                 op_elem = list_next(op_elem);
             }
         }
