@@ -10,5 +10,6 @@ int alloc_register();
 
 void localExprEliminate(struct FuncTabElem* elem);
 void loopInvariantExtraction(struct FuncTabElem* elem);
+void alSimplifyAndConstProp(BasicBlock* start);
 
 #endif

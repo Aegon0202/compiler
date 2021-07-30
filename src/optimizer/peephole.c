@@ -10,6 +10,7 @@ struct DequeList* simp_worklist;
 
 extern int reg_begin;
 extern int current_size;
+int __is_ir_value_const(IR_TYPE* ir, int* value);
 
 int __is_op3_writable(Ir* ir) {
     switch (ir->type) {
@@ -105,7 +106,7 @@ int __is_op_value_const(OPERAND_TYPE* op) {
     if (!mark) {
         struct Definition* def = get_op_definition(op);
         int value;
-        is_op_const = __is_ir_value_const(def->def_address->ir, value);
+        is_op_const = __is_ir_value_const(def->def_address->ir, &value);
         MALLOC(i, int, 1);
         *i = is_op_const;
         setLinearList(constMark, op->operand.reg_idx, i);
@@ -117,6 +118,8 @@ int __is_op_value_const(OPERAND_TYPE* op) {
     } else if (*mark == 0) {
         return 0;
     }
+    PrintErrExit("error");
+    return -1;
 }
 
 int __is_ir_value_const(IR_TYPE* ir, int* value) {
@@ -288,7 +291,8 @@ int __is_operand_equal(Operand* op, int reg) {
     return op && op->type == REGISTER && op->operand.reg_idx == reg;
 }
 
-void getAssignStm_local(BasicBlock* block, struct DequeList* workList) {
+void getAssignStm_local(BasicBlock* block, void* args) {
+    struct DequeList* workList = (struct DequeList*)args;
     list_entry_t* ir_head = &(block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
     while (ir_head != ir_elem) {
@@ -354,7 +358,7 @@ void const_propgation(Operand* op) {
     list_entry_t* du_elem = list_next(du_head);
     while (du_head != du_elem) {
         Ir* ir_value = le2struct(du_elem, def_use_chain, DU_chain)->user;
-        int const_value = getLinearList(constValue, op->operand.reg_idx);
+        int const_value = *(int*)(getLinearList(constValue, op->operand.reg_idx));
         du_elem = list_next(du_elem);
         if (ir_value->type != PHI) {
             if (__is_operand_equal(ir_value->op1, op->operand.reg_idx)) {
@@ -375,8 +379,8 @@ void const_propgation(Operand* op) {
     delete_ir(ir, ir->block);
 }
 
-void __mark_const(BasicBlock* block) {
-    list_entry_t* ir_head = block->ir_list;
+void __mark_const(BasicBlock* block, void* args) {
+    list_entry_t* ir_head = &(block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
 
     while (ir_head != ir_elem) {
