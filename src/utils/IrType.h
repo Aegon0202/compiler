@@ -70,8 +70,7 @@
         list_entry_t* phi_op_head = IR_instance->op1->operand.v.phi_op_list; \
         list_entry_t* elem = list_next(phi_op_head);                         \
         while (elem != phi_op_head) {                                        \
-            Operand* op = le2struct(elem, Phi, op_link)->value;              \
-            READ_OP(op);                                                     \
+            READ_OP((le2struct(elem, Phi, op_link)->value));                 \
             elem = list_next(elem);                                          \
         }                                                                    \
         WRITE_OP(IR_instance->op3);                                          \

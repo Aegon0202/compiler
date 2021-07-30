@@ -1,7 +1,8 @@
 #ifndef ENUM_H
 #define ENUM_H
-#include "./parser/SysY.tab.h"
+#include <stdint.h>
 
+#include "./parser/SysY.tab.h"
 #define INT_SIZE 4
 
 enum {

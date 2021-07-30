@@ -430,8 +430,12 @@ int toSSAVarDecl(struct VarDecl* vardecl, BASIC_BLOCK_TYPE* basic_block) {
         }
 
         if (level != 0) {
-            elem->offset = func_offset - elem->size;
-            func_offset -= elem->size;
+            if (elem->is_array) {
+                elem->offset = func_offset - elem->size;
+                func_offset -= elem->size;
+            } else {
+                elem->offset = INT32_MAX;
+            }
         } else {
             elem->offset = global_offset;
             global_offset += elem->size;
@@ -554,8 +558,12 @@ int toSSAConstDecl(struct ConstDecl* constdecl, BASIC_BLOCK_TYPE* basic_block) {
         }
 
         if (elem->level != 0) {
-            elem->offset = func_offset - elem->size;
-            func_offset -= elem->size;
+            if (elem->is_array) {
+                elem->offset = func_offset - elem->size;
+                func_offset -= elem->size;
+            } else {
+                elem->offset = INT32_MAX;
+            }
         } else {
             elem->offset = global_offset;
             global_offset += elem->size;
@@ -768,7 +776,6 @@ int toSSAWhileStmt(struct WhileStmt* whilestmt, BASIC_BLOCK_TYPE** basic_block_p
     BASIC_BLOCK_TYPE* cond_block = *basic_block_p;
     BASIC_BLOCK_TYPE* loop_block = newBasicBlock(NULL);
     BASIC_BLOCK_TYPE* merge_block = newBasicBlock(NULL);
-    BASIC_BLOCK_TYPE* basic_block = *basic_block_p;
     BASIC_BLOCK_TYPE* loop_head = loop_block;
 
     toSSACond(whilestmt->cond, loop_block, merge_block, cond_block);

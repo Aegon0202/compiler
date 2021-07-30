@@ -69,6 +69,7 @@ struct Operand {
 struct Ir {
     int type;
     Operand *op1, *op2, *op3;
+    BasicBlock* block;
     list_entry_t ir_link;
 };
 
@@ -128,6 +129,7 @@ void delete_user(Operand* def, Ir* user);
 void add_user(Operand* def, Ir* user);
 void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block, Ir* new_before_ir);
 Operand* search_op_in_phi_list(Ir* Phi_ir, int reg);
+struct Definition* get_op_definition(Operand* op);
 
 void __dominance_frontier(BasicBlock* start);
 void __caculate_dominance(BasicBlock* start);

@@ -1229,7 +1229,6 @@ void convertOutssa_local(BasicBlock* block, void* args) {
         Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
         if (ir_value->type != PHI)
             break;
-        list_entry_t* tmp_elem = ir_elem;
         ir_elem = list_next(ir_elem);
         delete_ir(ir_value, block);
     }

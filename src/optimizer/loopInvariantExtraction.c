@@ -230,6 +230,7 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
             MALLOC(is_const, int, 1);
             if (__is_ir_can_extraction(ir, block, loop)) {
                 list_entry_t* prev = list_prev(next);
+                printf("loop invirant extraction\n");
                 while (!isEmptyDequeList(loop->ir_rely)) {
                     IR_TYPE* move_ir = popBackDequeList(loop->ir_rely);
                     struct Definition* def = get_op_definition(move_ir->op3);
@@ -293,11 +294,10 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
 }
 
 void loopInvariantExtraction(struct FuncTabElem* elem) {
-    deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
     struct DequeList* back_edge = newDequeList();
     struct DequeList* loop_queue = newDequeList();
     struct LinearList* table = newLinearList();
-    deepTraverseSuccessorsBasicBlock(elem->blocks, __find_back_edge, back_edge);
+
     while (!isEmptyDequeList(back_edge)) {
         unsigned long long int num;
         struct Item* item = popFrontDequeList(back_edge);
@@ -359,5 +359,4 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
     }
     freeLinearList(&loops_list);
     printf("\n\n\n");
-    deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, 1);
 }

@@ -93,13 +93,33 @@ void __local_expr_eliminate(BASIC_BLOCK_TYPE* basic_block, void* args) {
                 aeb = newAEB(ir, NULL);
                 setLinkedTable(table, ir, aeb);
             } else {
-                IfNotNull(ir->op1, {delete_user(ir->op1, ir);delete_operand(ir->op1); });
-                IfNotNull(ir->op2, {delete_user(ir->op2, ir);delete_operand(ir->op2); });
+                if (aeb->tmp == NULL) {
+                    OPERAND_TYPE* tmp = toSSATempVariable(basic_block);
+                    OPERAND_TYPE* n_op1 = create_new_operand(ir->op1->type, ir->op1->operand.reg_idx, ir->op1->operand.v.intValue);
+                    OPERAND_TYPE* n_op2 = create_new_operand(ir->op2->type, ir->op2->operand.reg_idx, ir->op2->operand.v.intValue);
+
+                    IR_TYPE* n_ir = create_new_ir(ir->type, n_op1, n_op2, tmp);
+                    list_add_before(&(aeb->ir->ir_link), &(n_ir->ir_link));
+                    create_new_definition(tmp->operand.reg_idx, n_ir, basic_block);
+                    add_user(n_op1, n_ir);
+                    add_user(n_op2, n_ir);
+
+                    IfNotNull(aeb->ir->op1, { delete_operand(aeb->ir->op1); });
+                    IfNotNull(aeb->ir->op2, { delete_operand(aeb->ir->op2); });
+
+                    tmp = create_new_operand(tmp->type, tmp->operand.reg_idx, tmp->operand.v.intValue);
+                    aeb->ir->type = ASSIGN;
+                    aeb->ir->op1 = tmp;
+                    aeb->ir->op2 = NULL;
+                    add_user(tmp, aeb->ir);
+                }
+                IfNotNull(ir->op2, { delete_operand(ir->op2); });
+                IfNotNull(ir->op1, { delete_operand(ir->op1); });
 
                 ir->type = ASSIGN;
-                ir->op1 = aeb->ir->op3;
+                ir->op1 = create_new_operand(aeb->tmp->type, aeb->tmp->operand.reg_idx, aeb->tmp->operand.v.intValue);
                 ir->op2 = NULL;
-                add_user(aeb->ir->op3, ir);
+                add_user(aeb->tmp, ir);
             }
         }
         next = list_next(next);
