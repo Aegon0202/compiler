@@ -173,6 +173,10 @@ Operand* create_new_operand(int type, int reg, long long value) {
     return op;
 }
 
+Operand* operand_dup(Operand* op) {
+    return create_new_operand(op->type, op->operand.reg_idx, op->operand.v.intValue);
+}
+
 BasicBlock* get_idominator(BasicBlock* block) {
     return le2BasicBlock(list_next(&(block->i_dominator->block_link)))->value;
 }

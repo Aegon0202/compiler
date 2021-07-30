@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
             //loopInvariantExtraction(elem);
         }
     }
-    //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
     //printf("\n\n\n");
     convertAllOutSSAform();
+    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
     generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);

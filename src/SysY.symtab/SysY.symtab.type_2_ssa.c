@@ -88,6 +88,7 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
         case 1:
             array_address = toSSATempVariable(basic_block);
             newIR(LOAD, toSSAOffset(FRAMEPOINT, vte->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), array_address, basic_block);
+            array_address = operand_dup(array_address);
             break;
         default:
             array_address = toSSAOffset(FRAMEPOINT, vte->offset, basic_block);
@@ -103,13 +104,15 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
         if (vte->level == 1) {
             size = toSSATempVariable(basic_block);
             newIR(LOAD, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), size, basic_block);
+            size = operand_dup(size);
         } else {
             size = toSSAIntConst(getIntConstStatic(array->elem_size), basic_block);
         }
 
-        newIR(K_MUL, size, num, t_op, basic_block);            // t_op = size*num
+        newIR(K_MUL, size, num, t_op, basic_block);  // t_op = size*num
+        t_op = operand_dup(t_op);
         newIR(K_ADD, array_address, t_op, o_op, basic_block);  // o_op = offset+t_op
-        array_address = o_op;                                  // array_address = o_op
+        array_address = operand_dup(o_op);                     // array_address = o_op
 
         exparraydefs = exparraydefs->next;
         array = array->elem_ref;
@@ -141,6 +144,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                     case 1:
                         operand = toSSATempVariable(basic_block);
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
+                        operand = operand_dup(operand);
                         return operand;
                     default:
                         return toSSAOffset(FRAMEPOINT, elem->offset, basic_block);
@@ -150,6 +154,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                     has_side_effect = 1;
                     operand = toSSATempVariable(basic_block);
                     newIR(LOAD, toSSAOffset(GLOBALDATA, (long long)elem, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
+                    operand = operand_dup(operand);
                     return operand;
                 } else {
                     return toSSAVarTabElemRead(elem, basic_block);
@@ -171,6 +176,7 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                 }
                 t_op = toSSATempVariable(basic_block);
                 newIR(LOAD, operand, toSSAIntConst(getIntConstStatic(0), basic_block), t_op, basic_block);
+                t_op = operand_dup(t_op);
                 return t_op;
             }
             PrintErrExit("unknown error happen");
@@ -241,7 +247,7 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
         newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(i), basic_block), param_op, basic_block);
     }
     newIR(CALL, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
-
+    result_op = operand_dup(result_op);
     return result_op;
 }
 
@@ -255,10 +261,12 @@ OPERAND_TYPE* toSSAUnaryExps(struct UnaryExps* unaryexps, BASIC_BLOCK_TYPE* basi
         case K_SUB:
             r_op = toSSATempVariable(basic_block);
             newIR(K_SUB, toSSAIntConst(getIntConstStatic(0), basic_block), op, r_op, basic_block);
+            r_op = operand_dup(r_op);
             break;
         case K_NOT:
             r_op = toSSATempVariable(basic_block);
             newIR(K_NOT, op, NULL, r_op, basic_block);
+            r_op = operand_dup(r_op);
             break;
         default:
             PrintErrExit("UnaryExps not support valuetype %s", EnumTypeToString(unaryexps->unaryop->typevalue));
@@ -290,7 +298,7 @@ OPERAND_TYPE* toSSAUnaryExp(struct UnaryExp* unaryexp, BASIC_BLOCK_TYPE* basic_b
             if (exp->op_name) {                                                          \
                 OPERAND_TYPE* op3 = toSSATempVariable(basic_block);                      \
                 newIR(exp->op_name->typevalue, op1, op2, op3, basic_block);              \
-                op1 = op3;                                                               \
+                op1 = operand_dup(op3);                                                  \
             } else {                                                                     \
                 op1 = op2;                                                               \
             }                                                                            \
@@ -641,13 +649,14 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
         if (elem_size_op == NULL) {
             OPERAND_TYPE* num_op = popBackDequeList(array_size_op);
             newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
-            elem_size_op = num_op;
+            elem_size_op = operand_dup(num_op);
         } else {
             OPERAND_TYPE* num_op = popFrontDequeList(array_size_op);
             OPERAND_TYPE* new_size = toSSATempVariable(basic_block);
             newIR(K_MUL, elem_size_op, num_op, new_size, basic_block);
+            new_size = operand_dup(new_size);
             newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), new_size, basic_block);
-            elem_size_op = new_size;
+            elem_size_op = operand_dup(new_size);
         }
     }
     freeDequeList(&array_size_op);

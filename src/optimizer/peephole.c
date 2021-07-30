@@ -425,5 +425,5 @@ void alSimplifyAndConstProp(BasicBlock* start) {
     }
     deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
     deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
-    copy_propgation(start);
+    // copy_propgation(start);
 }
