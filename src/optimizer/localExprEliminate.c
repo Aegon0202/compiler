@@ -93,11 +93,12 @@ void __local_expr_eliminate(BASIC_BLOCK_TYPE* basic_block, void* args) {
                 aeb = newAEB(ir, NULL);
                 setLinkedTable(table, ir, aeb);
             } else {
+                printf("local expr eliminate\n");
                 if (aeb->tmp == NULL) {
                     OPERAND_TYPE* tmp = toSSATempVariable(basic_block);
                     OPERAND_TYPE* n_op1 = create_new_operand(ir->op1->type, ir->op1->operand.reg_idx, ir->op1->operand.v.intValue);
                     OPERAND_TYPE* n_op2 = create_new_operand(ir->op2->type, ir->op2->operand.reg_idx, ir->op2->operand.v.intValue);
-
+                    aeb->tmp = tmp;
                     IR_TYPE* n_ir = create_new_ir(ir->type, n_op1, n_op2, tmp);
                     list_add_before(&(aeb->ir->ir_link), &(n_ir->ir_link));
                     create_new_definition(tmp->operand.reg_idx, n_ir, basic_block);

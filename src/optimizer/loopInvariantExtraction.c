@@ -358,5 +358,4 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
         free(lb);
     }
     freeLinearList(&loops_list);
-    printf("\n\n\n");
 }
