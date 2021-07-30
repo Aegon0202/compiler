@@ -36,15 +36,17 @@ int main(int argc, char** argv) {
     toSSACompUnit(result.compunit);
 
     convertAlltoSSAform();
+    //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, 1);
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
-            localExprEliminate(elem);
-            loopInvariantExtraction(elem);
+            //localExprEliminate(elem);
+            //loopInvariantExtraction(elem);
         }
     }
+    //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
+    //printf("\n\n\n");
     convertAllOutSSAform();
-    //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, 1);
     generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);

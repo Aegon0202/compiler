@@ -144,7 +144,8 @@ void convert_operand_write(OPERAND_TYPE* op,
     FILE* out_file = args->out_file;
     switch (op->type) {
         case REGISTER:
-            offset_p = getLinearList(b_offset->reg_offset, op->operand.reg_idx);
+            offset_p = getLinearList(args->f_offset->reg_offset, op->operand.reg_idx);
+            IfNull(offset_p, offset_p = getLinearList(b_offset->reg_offset, op->operand.reg_idx););
             EnsureNotNull(offset_p);
             Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(temp_reg), (*offset_p) & 0xffff);
             Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(temp_reg), ((*offset_p) >> 16) & 0xffff);
@@ -170,7 +171,8 @@ void convert_operand_read(OPERAND_TYPE* op,
             Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(target_reg), (((int)op->operand.v.intValue) >> 16) & 0xffff);
             break;
         case REGISTER:
-            offset_p = getLinearList(b_offset->reg_offset, op->operand.reg_idx);
+            offset_p = getLinearList(args->f_offset->reg_offset, op->operand.reg_idx);
+            IfNull(offset_p, offset_p = getLinearList(b_offset->reg_offset, op->operand.reg_idx););
             EnsureNotNull(offset_p);
             Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(temp_reg), (*offset_p) & 0xffff);
             Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(temp_reg), ((*offset_p) >> 16) & 0xffff);

@@ -41,7 +41,8 @@ compiler: $(BISON_GEN_H) $(BISON_GEN_C) $(FLEX_GEN) $(SYSY_DEF_SRC) $(UTILS_SRC)
 
 test: compiler
 	./compiler -S -o  tmp.s tmp.c
-	scp tmp.s pi@192.168.4.1:/home/pi/Documents/git_repo/tmp/
+	gcc -g -march=armv7-a ./tmp.s -o tmp.o -L -lsysy ./libsysy.a -static
+	gdb --args ./tmp.o
 
 $(BISON_GEN_H) $(BISON_GEN_C): $(BISON_SRC)
 	bison -d $< -o $(BISON_GEN_H) -o $(BISON_GEN_C)

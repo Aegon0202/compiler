@@ -7,7 +7,10 @@ if __name__ == "__main__":
     test_folder_dict = {
         "2020": "../compiler2021/testcase/function_test2020",
         "2021": "../compiler2021/testcase/function_test2021",
-        "2021p": "../compiler2021/testcase/performance_test2021_pre"
+        "2021p": "../compiler2021/testcase/performance_test2021_pre",
+        "2020f": "../sysyruntimelibrary/section1/functional_test",
+        "2020p": "../sysyruntimelibrary/section1/performance_test",
+        "2020p2": "../sysyruntimelibrary/section2/performance_test"
     }
 
     test_folder = test_folder_dict[sys.argv[1]]
@@ -25,7 +28,7 @@ if __name__ == "__main__":
                 print(f"compile error {f}")
                 print(f"return code {cmd.returncode}")
                 print(cmd.stderr)
-                break
+                exit(-1)
             elif len(cmd.stdout):
                 print(f"compile output {f}")
                 print(cmd.stdout)

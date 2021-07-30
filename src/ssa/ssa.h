@@ -108,6 +108,8 @@ extern struct LinearList* variable_bottom_index;
 extern struct LinearList* bottom_index2New_reg;
 extern struct LinearList* reg2def;
 
+int getPredecessorNum(BasicBlock* basic_block);
+
 Ir* create_new_ir(int op_type, Operand* op1, Operand*, Operand*, BasicBlock*);
 BasicBlock* create_new_block();
 Operand* create_new_operand(int type, int reg, long long value);

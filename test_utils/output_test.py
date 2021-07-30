@@ -7,10 +7,13 @@ if __name__ == "__main__":
     test_folder_dict = {
         "2020": "../compiler2021/testcase/function_test2020",
         "2021": "../compiler2021/testcase/function_test2021",
-        "2021p": "../compiler2021/testcase/performance_test2021_pre"
+        "2021p": "../compiler2021/testcase/performance_test2021_pre",
+        "2020f": "../sysyruntimelibrary/section1/functional_test",
+        "2020p": "../sysyruntimelibrary/section1/performance_test",
+        "2020p2": "../sysyruntimelibrary/section2/performance_test"
     }
 
-    test_folder = test_folder_dict[sys.argv[1]]
+    in_out_fd = test_folder_dict[sys.argv[1]]
 
     for f in os.listdir("./tmp_result"):
         print(f"testing {f}")
@@ -25,7 +28,7 @@ if __name__ == "__main__":
             print(f"return code {cmd.returncode}")
             print(cmd.stderr)
             print(cmd.stdout)
-            break
+            exit(-1)
         cmd = None
         if os.path.exists(in_f):
             in_ff = open(in_f, "r")
@@ -38,7 +41,7 @@ if __name__ == "__main__":
         if len(cmd.stderr) and not cmd.stderr.startswith("TOTAL:") and not cmd.stderr.startswith("Timer"):
             print(f"run time error {f}")
             print(cmd.stderr)
-            break
+            exit(-1)
         if len(cmd.stderr):
             print(cmd.stderr)
         out_content = ""
@@ -59,4 +62,4 @@ if __name__ == "__main__":
             print(f"wrong answer {f}")
             print(out_t.encode())
             print(out_content.encode())
-            break
+            exit(-1)

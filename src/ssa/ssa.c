@@ -153,6 +153,9 @@ BasicBlock* create_new_block() {
     list_init(&(block->dominant_frontier->block_link));
     return block;
 }
+int getPredecessorNum(BasicBlock* basic_block) {
+    return basic_block->predecessor_num;
+}
 
 void delete_BasicBlock(BasicBlock* block) {
     return;
