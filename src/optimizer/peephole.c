@@ -1,16 +1,17 @@
 #include "peephole.h"
 
 #include "../ENUM.h"
+#include "../utils/IrType.h"
 #include "local_op.h"
 struct LinearList* constMark;
 struct LinearList* constValue;
-
+struct LinearList* constType;
 struct DequeList* prop_worklist;
 struct DequeList* simp_worklist;
 
 extern int reg_begin;
 extern int current_size;
-int __is_ir_value_const(IR_TYPE* ir, int* value);
+int __is_ir_value_const(IR_TYPE* ir, int* value, int* type);
 
 int __is_op3_writable(Ir* ir) {
     switch (ir->type) {
@@ -46,7 +47,7 @@ int __is_const_op(Operand* op, const int n) {
     return 0;
 }
 
-int caculate_const_value(Ir* ir) {
+int caculate_const_value(Ir* ir, int* type) {
     int value;
     int num1, num2;
     if (ir->op1->type == REGISTER)
@@ -114,7 +115,8 @@ int __is_op_value_const(OPERAND_TYPE* op) {
     if (!mark) {
         struct Definition* def = get_op_definition(op);
         int value;
-        is_op_const = __is_ir_value_const(def->def_address->ir, &value);
+        int type;
+        is_op_const = __is_ir_value_const(def->def_address->ir, &value, &type);
         MALLOC(i, int, 1);
         *i = is_op_const;
         setLinearList(constMark, op->operand.reg_idx, i);
@@ -123,13 +125,14 @@ int __is_op_value_const(OPERAND_TYPE* op) {
             MALLOC(j, int, 1);
             *j = value;
             setLinearList(constValue, op->operand.reg_idx, j);
+            setLinearList(constType, op->operand.reg_idx, );
         }
         return is_op_const;
     } else
         return *mark;
 }
 
-int __is_ir_value_const(IR_TYPE* ir, int* value) {
+int __is_ir_value_const(IR_TYPE* ir, int* value, int* type) {
     int is_const = 0;
     switch (ir->type) {
         case K_NOT:
@@ -252,6 +255,7 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
     while (elem != head) {
         Ir* ir = le2struct(elem, Ir, ir_link);
         elem = list_next(elem);
+
         if (!ir->op1 || !ir->op2)
             continue;
         if (ir->op1 && ir->op2 && (__is_const_op(ir->op1, 0) != 0 || __is_const_op(ir->op2, 0) != 0))
@@ -265,8 +269,7 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                         delete_operand(ir->op2);
                         ir->op1 = create_new_operand(INT, -1, 0);
                         ir->op2 = NULL;
-                    }
-                    if (__is_const_op(ir->op1, 1) == 2) {
+                    } else if (__is_const_op(ir->op1, 1) == 2) {
                         ir->type = ASSIGN;
                         delete_operand(ir->op1);
                         ir->op1 = ir->op2;
@@ -278,14 +281,14 @@ void algebraic_simplification(BasicBlock* block, void* notuse) {
                     }
                     break;
                 case K_DIV:
-                    if (__is_const_op(ir->op2, 0) == 2) break;
-                    if (__is_const_op(ir->op1, 0) == 2) {
+                    if (__is_const_op(ir->op2, 0) == 2)
+                        break;
+                    else if (__is_const_op(ir->op1, 0) == 2) {
                         ir->type = ASSIGN;
                         delete_user(ir->op2, ir);
                         delete_operand(ir->op2);
                         ir->op2 = NULL;
-                    }
-                    if (__is_const_op(ir->op2, 1) == 2) {
+                    } else if (__is_const_op(ir->op2, 1) == 2) {
                         ir->type = ASSIGN;
                         delete_operand(ir->op2);
                         ir->op2 = NULL;
@@ -369,6 +372,15 @@ void copy_propgation(BasicBlock* start) {
     }
 }
 
+//substituter 在ir_value中出现
+void const_prop_read_op(Ir* ir_value, Operand* substituter, Operand* substitutor, int const_value) {
+    if (__is_operand_equal(substituter, substitutor->operand.reg_idx)) {
+        delete_user(substituter, ir_value);
+        substituter->type = INT;
+        substituter->operand.v.intValue = const_value;
+    }
+}
+
 void const_propgation(Operand* op) {
     Ir* ir = get_op_definition(op)->def_address->ir;
     list_entry_t* du_head = &(get_op_definition(op)->chain->DU_chain);
@@ -377,21 +389,12 @@ void const_propgation(Operand* op) {
         Ir* ir_value = le2struct(du_elem, def_use_chain, DU_chain)->user;
         int const_value = *(int*)(getLinearList(constValue, op->operand.reg_idx));
         du_elem = list_next(du_elem);
-        if (ir_value->type != PHI) {
-            if (__is_operand_equal(ir_value->op1, op->operand.reg_idx)) {
-                delete_operand(ir_value->op1);
-                ir_value->op1 = create_new_operand(INT, -1, const_value);
-            }
-            if (__is_operand_equal(ir_value->op2, op->operand.reg_idx)) {
-                delete_operand(ir_value->op2);
-                ir_value->op2 = create_new_operand(INT, -1, const_value);
-            }
-        } else {
-            Operand* phi_op = search_op_in_phi_list(ir_value, op->operand.reg_idx);
-            int op_reg = phi_op->operand.reg_idx;
-            delete_operand(phi_op);
-            phi_op = create_new_operand(INT, op_reg, const_value);
-        }
+
+#define READ_OP(substituter) const_prop_read_op(ir_value, substituter, op, const_value);
+#define WRITE_OP(substituter)
+        IR_OP_READ_WRITE(ir_value, READ_OP, WRITE_OP, PrintErrExit(" "););
+#undef READ_OP
+#undef WRITE_O
     }
     delete_ir(ir, ir->block);
 }
@@ -409,13 +412,8 @@ void __mark_const(BasicBlock* block, void* args) {
 }
 
 void alSimplifyAndConstProp(BasicBlock* start) {
-    simp_worklist = newDequeList();
-    prop_worklist = newDequeList();
-    constMark = newLinearList();
-    constValue = newLinearList();
-
-    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
-    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    //    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
+    //    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
 
     deepTraverseSuccessorsBasicBlock(start, __mark_const, NULL);
 
@@ -423,7 +421,6 @@ void alSimplifyAndConstProp(BasicBlock* start) {
         Operand* op = popBackDequeList(prop_worklist);
         const_propgation(op);
     }
-    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
-    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    //deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
     // copy_propgation(start);
 }

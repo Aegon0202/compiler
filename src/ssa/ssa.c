@@ -208,7 +208,7 @@ int read_variable(ID id, BasicBlock* block) {
 
 //user = def
 void add_user(Operand* def, Ir* user) {
-    if (user && def && user->type == REGISTER && def->type == REGISTER) {
+    if (user && def && def->type == REGISTER) {
         list_entry_t* du_head = &(get_op_definition(def)->chain->DU_chain);
         MALLOC(du_node, def_use_chain, 1);
         du_node->user = user;

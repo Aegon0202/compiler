@@ -24,7 +24,7 @@ if __name__ == "__main__":
         cmd: subprocess.CompletedProcess = subprocess.run(
             ["gcc", "-g", "-march=armv7-a", p, "-o", "tmp.o", "-L", "-lsysy", "./libsysy.a"], capture_output=True, text=True)
         if cmd.returncode != 0 or len(cmd.stderr) or len(cmd.stdout):
-            print(f"compile error {f}")
+            print(f"compile error {p}")
             print(f"return code {cmd.returncode}")
             print(cmd.stderr)
             print(cmd.stdout)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
             cmd: subprocess.CompletedProcess = subprocess.run(
                 ["./tmp.o"], text=True, capture_output=True)
         if len(cmd.stderr) and not cmd.stderr.startswith("TOTAL:") and not cmd.stderr.startswith("Timer"):
-            print(f"run time error {f}")
+            print(f"run time error {p}")
             print(cmd.stderr)
             exit(-1)
         if len(cmd.stderr):
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         if out_t[-1] == "\n":
             out_t = out_t[:-1]
         if out_content != out_t:
-            print(f"wrong answer {f}")
+            print(f"wrong answer {p}")
             print(out_t.encode())
             print(out_content.encode())
             exit(-1)
