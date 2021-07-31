@@ -1129,7 +1129,7 @@ void __search_block(BasicBlock* block) {
 }
 
 void __modify_op(Operand* op) {
-    if (op && getLinearList(reg_id_vartabelem, op->operand.reg_idx) && op->type == REGISTER) {
+    if (op && op->type == REGISTER && getLinearList(reg_id_vartabelem, op->operand.reg_idx)) {
         int new_reg;
         int old_reg = op->operand.reg_idx;
         int old_bottom_index = op->bottom_index;

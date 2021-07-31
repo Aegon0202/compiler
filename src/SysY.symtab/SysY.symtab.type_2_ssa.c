@@ -393,13 +393,13 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
             int total_num = elem->size / INT_SIZE;
             MALLOC(operand_buffer, OPERAND_TYPE*, total_num);
             __var_def_array_init(vardef->initval->value.initvals, elem->array_ref, basic_block, operand_buffer);
-            OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
+
             int offset = elem->offset;
             for (int i = 0; i < total_num; i++) {
                 if (operand_buffer[i] == NULL) {
-                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+                    newIR(STORE, toSSAOffset(FRAMEPOINT, 0, basic_block), toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
                 } else {
-                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                    newIR(STORE, toSSAOffset(FRAMEPOINT, 0, basic_block), toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
                 }
                 offset += INT_SIZE;
             }
