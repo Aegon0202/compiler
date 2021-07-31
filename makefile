@@ -26,7 +26,8 @@ SYSY_TARGET_SRC = $(SYSY_TARGET_DIR)/SysY.target.offset.c \
 OPTIMIZER_DIR = src/optimizer
 OPTIMIZER_SRC = $(OPTIMIZER_DIR)/localExprEliminate.c \
 				$(OPTIMIZER_DIR)/loopInvariantExtraction.c \
-				$(OPTIMIZER_DIR)/peephole.c
+				$(OPTIMIZER_DIR)/peephole.c \
+				$(OPTIMIZER_DIR)/deadCodeEliminate.c
 
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c

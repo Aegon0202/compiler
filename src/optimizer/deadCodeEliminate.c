@@ -64,8 +64,9 @@ int __is_prelive(IR_TYPE* ir) {
         case RETURNSTMT:
             return 1;
         case PARAM:
+            return ((struct FuncTabElem*)(ir->op1->operand.v.funcID))->has_side_effect;
         case CALL:
-            return ((struct FuncTabElem*)(ir->op3->operand.v.funcID))->has_side_effect;
+            return ((struct FuncTabElem*)(ir->op1->operand.v.funcID))->has_side_effect;
         default:
             return 0;
     }
@@ -124,7 +125,7 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         list_entry_t* rdf_head = &(((BasicBlock*)getLinearList(block_2_rcfg_block, (size_t)address->address.block))->dominant_frontier->block_link);
         list_entry_t* rdf_next = list_next(rdf_head);
         while (rdf_head != rdf_next) {
-            BASIC_BLOCK_TYPE* b = le2BasicBlock(rdf_next);
+            BASIC_BLOCK_TYPE* b = le2BasicBlock(rdf_next)->value;
             IR_TYPE* last_ir = le2struct(b->ir_list->ir_link.prev, IR_TYPE, ir_link);
             if (last_ir->type == BRANCH) {
                 __read_op(last_ir->op1, address, work_list, live, ir_2_address);

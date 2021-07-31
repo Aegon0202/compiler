@@ -1,6 +1,6 @@
 #ifndef OPTIMIZER_LOCAL_OP_H
 #define OPTIMIZER_LOCAL_OP_H
-
+#include "../ssa/ssa.h"
 struct Definition* get_op_definition(OPERAND_TYPE* op);
 IR_TYPE* newIR_WITH_SSA(int type, OPERAND_TYPE* op1, OPERAND_TYPE* op2, OPERAND_TYPE* op3);
 void delete_operand(OPERAND_TYPE* op);
@@ -11,5 +11,9 @@ int alloc_register();
 void localExprEliminate(struct FuncTabElem* elem);
 void loopInvariantExtraction(struct FuncTabElem* elem);
 void alSimplifyAndConstProp(BasicBlock* start);
+void deadCodeEliminate(struct FuncTabElem* func);
+
+extern struct LinearList* block_2_rcfg_block;
+extern struct LinearList* rcfg_block_2_block;
 
 #endif

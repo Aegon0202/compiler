@@ -1,4 +1,5 @@
 #include "./SysY.symtab/SysY.symtab.def.h"
+#include "./optimizer/local_op.h"
 #include "./ssa/ssa.h"
 // 进行所有必要的初始化。
 void init() {
@@ -10,5 +11,9 @@ void init() {
     variable_bottom_index = newLinearList();
     bottom_index2New_reg = newLinearList();
     reg2def = newLinearList();
+
+    block_2_rcfg_block = newLinearList();
+    rcfg_block_2_block = newLinearList();
+
     init_all_table();
 }

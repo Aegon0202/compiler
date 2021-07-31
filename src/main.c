@@ -41,13 +41,14 @@ int main(int argc, char** argv) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
             //localExprEliminate(elem);
-            alSimplifyAndConstProp(elem->blocks);
+            //alSimplifyAndConstProp(elem->blocks);
             //loopInvariantExtraction(elem);
+            deadCodeEliminate(elem);
         }
     }
     //printf("\n\n\n");
     convertAllOutSSAform();
-    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
+    // deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
     generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
