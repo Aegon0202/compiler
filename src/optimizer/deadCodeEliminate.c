@@ -106,7 +106,7 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         MALLOC(status, int, 1);
         *status = __is_prelive(address->address.ir);
         setLinearList(live, (size_t)address->address.ir, status);
-        setLinearList(live, (size_t)address->address.ir, address);
+        setLinearList(ir_2_address, (size_t)address->address.ir, address);
         if (*status) {
             pushFrontDequeList(work_list, &address->address);
         }
@@ -140,6 +140,7 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         struct AddressSet* address = le2struct(next, struct AddressSet, link);
         int* status = getLinearList(live, (size_t)address->address.ir);
         if (!(*status)) {
+            printf("dead code eliminte\n");
             delete_ir(address->address.ir, address->address.block);
         }
         next = list_next(next);

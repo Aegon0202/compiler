@@ -50,22 +50,31 @@ int __is_const_op(Operand* op, const int n) {
 int caculate_const_value(Ir* ir, int* type) {
     int value;
     int num1, num2;
-    if (ir->op1->type == REGISTER)
+    int num1_type, num2_type;
+    if (ir->op1->type == REGISTER) {
         num1 = *(int*)getLinearList(constValue, ir->op1->operand.reg_idx);
-    else
+        num1_type = getLinearList(constType, ir->op1->type);
+    } else {
         num1 = ir->op1->operand.v.intValue;
+        num1_type = ir->op1->type;
+    }
     if (ir->op2) {
-        if (ir->op2->type == REGISTER)
+        if (ir->op2->type == REGISTER) {
             num2 = *(int*)getLinearList(constValue, ir->op2->operand.reg_idx);
-        else
+            num2_type = getLinearList(constType, ir->op2->operand.reg_idx);
+        } else {
             num2 = ir->op2->operand.v.intValue;
+            num2_type = ir->op2->type;
+        }
     }
     switch (ir->type) {
         case K_NOT:
             value = !num1;
+            *type = num1_type;
             break;
         case ASSIGN:
             value = num1;
+            *type = num1_type;
             break;
         case K_ADD:
             value = num1 + num2;
@@ -101,6 +110,16 @@ int caculate_const_value(Ir* ir, int* type) {
             value = (num1 >= num2);
             break;
     }
+    if (ir->type != ASSIGN && ir->type != K_NOT) {
+        if (num1_type == INT && num2_type == INT)
+            *type = INT;
+        else {
+            if (num1_type != INT)
+                *type = num1_type;
+            else
+                *type = num2_type;
+        }
+    }
     return value;
 }
 
@@ -124,8 +143,10 @@ int __is_op_value_const(OPERAND_TYPE* op) {
             pushFrontDequeList(prop_worklist, op);
             MALLOC(j, int, 1);
             *j = value;
+            MALLOC(k, int, 1);
+            *k = type;
             setLinearList(constValue, op->operand.reg_idx, j);
-            setLinearList(constType, op->operand.reg_idx, );
+            setLinearList(constType, op->operand.reg_idx, k);
         }
         return is_op_const;
     } else
@@ -157,7 +178,7 @@ int __is_ir_value_const(IR_TYPE* ir, int* value, int* type) {
             break;
     }
     if (is_const) {
-        *value = caculate_const_value(ir);
+        *value = caculate_const_value(ir, type);
         return 1;
     }
     return 0;
