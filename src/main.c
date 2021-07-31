@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
         }
     }
     //printf("\n\n\n");
-    convertAllOutSSAform();
     deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
+    convertAllOutSSAform();
     generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);

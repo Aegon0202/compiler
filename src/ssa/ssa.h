@@ -58,7 +58,7 @@ typedef union {
 //放在ir中的操作数，可以是Value也可以是寄存器，type表示的是操作数的类型,如果是value则只能是address或者int
 struct Operand {
     int type;
-    union {
+    struct {
         Value v;
         int reg_idx;
     } operand;
