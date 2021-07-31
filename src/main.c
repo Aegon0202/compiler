@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     output_file = fopen(output_file_name, "w");
     yyparse();
     toSSACompUnit(result.compunit);
-
+    avoidOperandDoubleFree();
     convertAlltoSSAform();
     //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, 1);
     // deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
         }
     }
     //printf("\n\n\n");
-    //convertAllOutSSAform();
-    //generateAllToOutFile(output_file);
+    convertAllOutSSAform();
+    generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);

@@ -35,5 +35,5 @@ int toSSAStmt(struct Stmt* stmt, BASIC_BLOCK_TYPE** basic_block_p);
 int toSSABlock(struct Block* block, BASIC_BLOCK_TYPE** basic_block_p);
 void toSSAFuncDef(struct FuncDef* funcdef);
 void toSSACompUnit(struct CompUnit* cp);
-
+void avoidOperandDoubleFree();
 #endif

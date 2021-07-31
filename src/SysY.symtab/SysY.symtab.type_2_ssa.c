@@ -1,4 +1,5 @@
 #include "../SysY.type/SysY.type.def.h"
+#include "../ssa/traverse.h"
 #include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
 #include "./SysY.symtab.calcConst.h"
@@ -88,7 +89,6 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
         case 1:
             array_address = toSSATempVariable(basic_block);
             newIR(LOAD, toSSAOffset(FRAMEPOINT, vte->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), array_address, basic_block);
-            array_address = operand_dup(array_address);
             break;
         default:
             array_address = toSSAOffset(FRAMEPOINT, vte->offset, basic_block);
@@ -104,15 +104,13 @@ OPERAND_TYPE* toSSAArrayImplAddress(struct ArrayImpl* arrayimpl, struct VarTabEl
         if (vte->level == 1) {
             size = toSSATempVariable(basic_block);
             newIR(LOAD, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), size, basic_block);
-            size = operand_dup(size);
         } else {
             size = toSSAIntConst(getIntConstStatic(array->elem_size), basic_block);
         }
 
-        newIR(K_MUL, size, num, t_op, basic_block);  // t_op = size*num
-        t_op = operand_dup(t_op);
+        newIR(K_MUL, size, num, t_op, basic_block);            // t_op = size*num
         newIR(K_ADD, array_address, t_op, o_op, basic_block);  // o_op = offset+t_op
-        array_address = operand_dup(o_op);                     // array_address = o_op
+        array_address = o_op;                                  // array_address = o_op
 
         exparraydefs = exparraydefs->next;
         array = array->elem_ref;
@@ -144,7 +142,6 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                     case 1:
                         operand = toSSATempVariable(basic_block);
                         newIR(LOAD, toSSAOffset(FRAMEPOINT, elem->offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
-                        operand = operand_dup(operand);
                         return operand;
                     default:
                         return toSSAOffset(FRAMEPOINT, elem->offset, basic_block);
@@ -154,7 +151,6 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                     has_side_effect = 1;
                     operand = toSSATempVariable(basic_block);
                     newIR(LOAD, toSSAOffset(GLOBALDATA, (long long)elem, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), operand, basic_block);
-                    operand = operand_dup(operand);
                     return operand;
                 } else {
                     return toSSAVarTabElemRead(elem, basic_block);
@@ -176,7 +172,6 @@ OPERAND_TYPE* toSSALValRead(struct LVal* lval, BASIC_BLOCK_TYPE* basic_block) {
                 }
                 t_op = toSSATempVariable(basic_block);
                 newIR(LOAD, operand, toSSAIntConst(getIntConstStatic(0), basic_block), t_op, basic_block);
-                t_op = operand_dup(t_op);
                 return t_op;
             }
             PrintErrExit("unknown error happen");
@@ -247,7 +242,6 @@ OPERAND_TYPE* toSSAFuncImpl(struct FuncImpl* funcimpl, BASIC_BLOCK_TYPE* basic_b
         newIR(PARAM, func_op, toSSAIntConst(getIntConstStatic(i), basic_block), param_op, basic_block);
     }
     newIR(CALL, func_op, toSSAIntConst(getIntConstStatic(param_next), basic_block), result_op, basic_block);
-    result_op = operand_dup(result_op);
     return result_op;
 }
 
@@ -261,12 +255,10 @@ OPERAND_TYPE* toSSAUnaryExps(struct UnaryExps* unaryexps, BASIC_BLOCK_TYPE* basi
         case K_SUB:
             r_op = toSSATempVariable(basic_block);
             newIR(K_SUB, toSSAIntConst(getIntConstStatic(0), basic_block), op, r_op, basic_block);
-            r_op = operand_dup(r_op);
             break;
         case K_NOT:
             r_op = toSSATempVariable(basic_block);
             newIR(K_NOT, op, NULL, r_op, basic_block);
-            r_op = operand_dup(r_op);
             break;
         default:
             PrintErrExit("UnaryExps not support valuetype %s", EnumTypeToString(unaryexps->unaryop->typevalue));
@@ -298,7 +290,7 @@ OPERAND_TYPE* toSSAUnaryExp(struct UnaryExp* unaryexp, BASIC_BLOCK_TYPE* basic_b
             if (exp->op_name) {                                                          \
                 OPERAND_TYPE* op3 = toSSATempVariable(basic_block);                      \
                 newIR(exp->op_name->typevalue, op1, op2, op3, basic_block);              \
-                op1 = operand_dup(op3);                                                  \
+                op1 = op3;                                                               \
             } else {                                                                     \
                 op1 = op2;                                                               \
             }                                                                            \
@@ -393,13 +385,13 @@ void __var_def_init(struct VarDef* vardef, struct VarTabElem* elem, BASIC_BLOCK_
             int total_num = elem->size / INT_SIZE;
             MALLOC(operand_buffer, OPERAND_TYPE*, total_num);
             __var_def_array_init(vardef->initval->value.initvals, elem->array_ref, basic_block, operand_buffer);
-
+            OPERAND_TYPE* base = toSSAOffset(FRAMEPOINT, 0, basic_block);
             int offset = elem->offset;
             for (int i = 0; i < total_num; i++) {
                 if (operand_buffer[i] == NULL) {
-                    newIR(STORE, toSSAOffset(FRAMEPOINT, 0, basic_block), toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
+                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), basic_block);
                 } else {
-                    newIR(STORE, toSSAOffset(FRAMEPOINT, 0, basic_block), toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
+                    newIR(STORE, base, toSSAIntConst(getIntConstStatic(offset), basic_block), operand_buffer[i], basic_block);
                 }
                 offset += INT_SIZE;
             }
@@ -649,14 +641,13 @@ struct ArrayTabElem* toSSAExpArrayDefs(struct ExpArrayDefs* exparraydefs, BASIC_
         if (elem_size_op == NULL) {
             OPERAND_TYPE* num_op = popBackDequeList(array_size_op);
             newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), num_op, basic_block);
-            elem_size_op = operand_dup(num_op);
+            elem_size_op = num_op;
         } else {
             OPERAND_TYPE* num_op = popFrontDequeList(array_size_op);
             OPERAND_TYPE* new_size = toSSATempVariable(basic_block);
             newIR(K_MUL, elem_size_op, num_op, new_size, basic_block);
-            new_size = operand_dup(new_size);
             newIR(STORE, toSSAOffset(FRAMEPOINT, array->elem_size_offset, basic_block), toSSAIntConst(getIntConstStatic(0), basic_block), new_size, basic_block);
-            elem_size_op = operand_dup(new_size);
+            elem_size_op = new_size;
         }
     }
     freeDequeList(&array_size_op);
@@ -991,4 +982,42 @@ void toSSACompUnit(struct CompUnit* cp) {
         cp = cp->next;
     } while (cp != head);
     return;
+}
+
+void __avoid_operand_double_free(BASIC_BLOCK_TYPE* basic_block, void* args) {
+    struct LinearList* operand_used = (struct LinearList*)args;
+    list_entry_t* head = &(basic_block->ir_list->ir_link);
+    list_entry_t* next = list_next(head);
+    while (head != next) {
+        IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
+#define __avoid(num)                                                       \
+    if (ir->op##num != NULL) {                                             \
+        OPERAND_TYPE* used_op = getLinearList(operand_used, ir->op##num);  \
+        if (used_op == NULL) {                                             \
+            setLinearList(operand_used, (size_t)ir->op##num, ir->op##num); \
+        } else {                                                           \
+            OPERAND_TYPE* new_op = operand_dup(ir->op##num);               \
+            ir->op##num = new_op;                                          \
+            setLinearList(operand_used, (size_t)new_op, new_op);           \
+        }                                                                  \
+    }
+        __avoid(1);
+        __avoid(2);
+        __avoid(3);
+#undef __avoid
+        next = list_next(next);
+    }
+}
+
+void avoidOperandDoubleFree() {
+    struct LinearList* operand_used = newLinearList();
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks) {
+            deepTraverseSuccessorsBasicBlock(elem->blocks, __avoid_operand_double_free, operand_used);
+        }
+    }
+    while (popLinearList(operand_used) != NULL)
+        ;
+    freeLinearList(&operand_used);
 }

@@ -157,7 +157,7 @@ void __add_op_to_user(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* block, struct LinearLi
     struct Item* item = getLinearList(reg_2_user, reg_idx);
     if (item == NULL) {
         MALLOC_WITHOUT_DECLARE(item, struct Item, 1);
-        MALLOC_WITHOUT_DECLARE(item->key, int, 1);
+        MALLOC_WITHOUT_DECLARE(item->key, unsigned long long int, 1);
         *(int*)(item->key) = -1;
         item->value = newDequeList();
         setLinearList(reg_2_user, reg_idx, item);
@@ -174,7 +174,7 @@ void __add_op_to_def(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* block, struct LinearLis
     struct Item* item = getLinearList(reg_2_def, reg_idx);
     if (item == NULL) {
         MALLOC_WITHOUT_DECLARE(item, struct Item, 1);
-        MALLOC_WITHOUT_DECLARE(item->key, int, 1);
+        MALLOC_WITHOUT_DECLARE(item->key, unsigned long long int, 1);
         *(int*)(item->key) = -1;
         item->value = newDequeList();
         setLinearList(reg_2_def, reg_idx, item);
