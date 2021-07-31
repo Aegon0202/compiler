@@ -990,16 +990,16 @@ void __avoid_operand_double_free(BASIC_BLOCK_TYPE* basic_block, void* args) {
     list_entry_t* next = list_next(head);
     while (head != next) {
         IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
-#define __avoid(num)                                                       \
-    if (ir->op##num != NULL) {                                             \
-        OPERAND_TYPE* used_op = getLinearList(operand_used, ir->op##num);  \
-        if (used_op == NULL) {                                             \
-            setLinearList(operand_used, (size_t)ir->op##num, ir->op##num); \
-        } else {                                                           \
-            OPERAND_TYPE* new_op = operand_dup(ir->op##num);               \
-            ir->op##num = new_op;                                          \
-            setLinearList(operand_used, (size_t)new_op, new_op);           \
-        }                                                                  \
+#define __avoid(num)                                                              \
+    if (ir->op##num != NULL) {                                                    \
+        OPERAND_TYPE* used_op = getLinearList(operand_used, (size_t)ir->op##num); \
+        if (used_op == NULL) {                                                    \
+            setLinearList(operand_used, (size_t)ir->op##num, ir->op##num);        \
+        } else {                                                                  \
+            OPERAND_TYPE* new_op = operand_dup(ir->op##num);                      \
+            ir->op##num = new_op;                                                 \
+            setLinearList(operand_used, (size_t)new_op, new_op);                  \
+        }                                                                         \
     }
         __avoid(1);
         __avoid(2);

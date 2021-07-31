@@ -53,7 +53,7 @@ int caculate_const_value(Ir* ir, int* type) {
     int num1_type, num2_type;
     if (ir->op1->type == REGISTER) {
         num1 = *(int*)getLinearList(constValue, ir->op1->operand.reg_idx);
-        num1_type = getLinearList(constType, ir->op1->type);
+        num1_type = *(int*)getLinearList(constType, ir->op1->type);
     } else {
         num1 = ir->op1->operand.v.intValue;
         num1_type = ir->op1->type;
@@ -61,7 +61,7 @@ int caculate_const_value(Ir* ir, int* type) {
     if (ir->op2) {
         if (ir->op2->type == REGISTER) {
             num2 = *(int*)getLinearList(constValue, ir->op2->operand.reg_idx);
-            num2_type = getLinearList(constType, ir->op2->operand.reg_idx);
+            num2_type = *(int*)getLinearList(constType, ir->op2->operand.reg_idx);
         } else {
             num2 = ir->op2->operand.v.intValue;
             num2_type = ir->op2->type;
@@ -379,13 +379,11 @@ void copy_propgation(BasicBlock* start) {
                 }
             } else {
                 Operand* op = search_op_in_phi_list(ir_value, reg);
-                int op_reg = op->operand.reg_idx;
                 delete_user(op, ir_value);
-                delete_operand(op);
-                if (subor->type == INT) {
-                    op = create_new_operand(subor->type, op_reg, subor->operand.v.intValue);
-                } else {
-                    op = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
+                op->type = subor->type;
+                op->operand.v.intValue = subor->operand.v.intValue;
+                if (subor->type == REGISTER) {
+                    op->operand.reg_idx = subor->operand.reg_idx;
                     add_user(op, ir_value);
                 }
             }
