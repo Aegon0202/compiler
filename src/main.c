@@ -37,19 +37,19 @@ int main(int argc, char** argv) {
 
     convertAlltoSSAform();
     //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, 1);
-    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
+    // deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
             //localExprEliminate(elem);
             //alSimplifyAndConstProp(elem->blocks);
             //loopInvariantExtraction(elem);
-            deadCodeEliminate(elem);
+            //deadCodeEliminate(elem);
         }
     }
     //printf("\n\n\n");
-    convertAllOutSSAform();
-    generateAllToOutFile(output_file);
+    //convertAllOutSSAform();
+    //generateAllToOutFile(output_file);
     //printToken(result.compunit, &printToken_ins);
     //toASTCompUnit(result.compunit);
     //printASTAll(funcsymtable_p->head);

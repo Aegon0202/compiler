@@ -58,5 +58,10 @@ clean:
 debug: compiler
 	gdb --args ./compiler -S -o tmp.s tmp.c
 
+leak: compiler
+	valgrind 2>tmp.out --leak-check=full --show-leak-kinds=all --tool=memcheck -v --track-origins=yes  ./compiler -S -o  tmp.s tmp.c 
+	code ./tmp.out
+
 valgrind: compiler
-	valgrind 2>tmp.out  --tool=memcheck -v --track-origins=yes  ./compiler -S -o  tmp.s tmp.c 
+	valgrind 2>tmp.out --tool=memcheck -v --track-origins=yes  ./compiler -S -o  tmp.s tmp.c 
+	code ./tmp.out

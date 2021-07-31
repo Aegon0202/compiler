@@ -18,7 +18,7 @@ struct FuncTable* func_table;
 // need free
 const char* getUniquieName() {
     static long long int index = 0;
-    char* r = (char*)malloc(64);
+    MALLOC(r, char, 64);
     EnsureNotNull(r);
     memset(r, 0, 64);
     snprintf(r, 63, "uniquie#%lld", index);

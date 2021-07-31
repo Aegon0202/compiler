@@ -6,3 +6,4 @@ core
 *.o
 compiler
 a.out.dSYM
+vgcore.*
