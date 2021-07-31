@@ -53,7 +53,7 @@ int caculate_const_value(Ir* ir, int* type) {
     int num1_type, num2_type;
     if (ir->op1->type == REGISTER) {
         num1 = *(int*)getLinearList(constValue, ir->op1->operand.reg_idx);
-        num1_type = *(int*)getLinearList(constType, ir->op1->type);
+        num1_type = *(int*)getLinearList(constType, ir->op1->operand.reg_idx);
     } else {
         num1 = ir->op1->operand.v.intValue;
         num1_type = ir->op1->type;
@@ -125,8 +125,9 @@ int caculate_const_value(Ir* ir, int* type) {
 
 int __is_op_value_const(OPERAND_TYPE* op) {
     int is_op_const = 0;
+    if (op->type == GLOBALDATA)
+        return 0;
     if (op->type != REGISTER) {
-        is_op_const = 1;
         return 1;
     }
 
@@ -349,6 +350,16 @@ void getAssignStm_global(BasicBlock* start, void* args) {
     deepTraverseSuccessorsBasicBlock(start, getAssignStm_local, args);
 }
 
+void copy_prop_read_op(Ir* ir_value, int reg, Operand* suber, Operand* subor) {
+    if (__is_operand_equal(suber, reg)) {
+        delete_user(suber, ir_value);
+        suber->type = subor->type;
+        suber->operand.reg_idx = subor->operand.reg_idx;
+        suber->operand.v.intValue = suber->operand.v.intValue;
+        add_user(subor, ir_value);
+    }
+}
+
 void copy_propgation(BasicBlock* start) {
     struct DequeList* workList = newDequeList();
     getAssignStm_global(start, workList);
@@ -359,43 +370,27 @@ void copy_propgation(BasicBlock* start) {
         list_entry_t* ir_elem = list_next(ir_head);
 
         while (ir_elem != ir_head) {
-            Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+            Ir* ir_value = le2struct(ir_elem, def_use_chain, DU_chain)->user;
             Operand* subor = process_elem->op1;
             int reg = process_elem->op3->operand.reg_idx;
             ir_elem = list_next(ir_elem);
 
-            if (ir_value->type != PHI) {
-                if (__is_operand_equal(ir_value->op1, reg)) {
-                    delete_user(ir_value->op1, ir_value);
-                    delete_operand(ir_value->op1);
-                    ir_value->op1 = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
-                    add_user(ir_value->op1, ir_value);
-                }
-                if (__is_operand_equal(ir_value->op2, reg)) {
-                    delete_user(ir_value->op2, ir_value);
-                    delete_operand(ir_value->op2);
-                    ir_value->op2 = create_new_operand(subor->type, subor->operand.reg_idx, subor->operand.v.intValue);
-                    add_user(ir_value->op2, ir_value);
-                }
-            } else {
-                Operand* op = search_op_in_phi_list(ir_value, reg);
-                delete_user(op, ir_value);
-                op->type = subor->type;
-                op->operand.v.intValue = subor->operand.v.intValue;
-                if (subor->type == REGISTER) {
-                    op->operand.reg_idx = subor->operand.reg_idx;
-                    add_user(op, ir_value);
-                }
-            }
+#define READ_OP(substituter) copy_prop_read_op(ir_value, reg, substituter, subor);
+#define WRITE_OP(substituter)
+            IR_OP_READ_WRITE(ir_value, READ_OP, WRITE_OP, PrintErrExit(" "););
+#undef READ_OP
+#undef WRITE_O
         }
+        printf("copy prop\n");
+        delete_ir(process_elem, process_elem->block);
     }
 }
 
 //substituter 在ir_value中出现
-void const_prop_read_op(Ir* ir_value, Operand* substituter, Operand* substitutor, int const_value) {
+void const_prop_read_op(Ir* ir_value, Operand* substituter, Operand* substitutor, int const_value, int const_type) {
     if (__is_operand_equal(substituter, substitutor->operand.reg_idx)) {
         delete_user(substituter, ir_value);
-        substituter->type = INT;
+        substituter->type = const_type;
         substituter->operand.v.intValue = const_value;
     }
 }
@@ -407,14 +402,16 @@ void const_propgation(Operand* op) {
     while (du_head != du_elem) {
         Ir* ir_value = le2struct(du_elem, def_use_chain, DU_chain)->user;
         int const_value = *(int*)(getLinearList(constValue, op->operand.reg_idx));
+        int const_type = *(int*)(getLinearList(constType, op->operand.reg_idx));
         du_elem = list_next(du_elem);
 
-#define READ_OP(substituter) const_prop_read_op(ir_value, substituter, op, const_value);
+#define READ_OP(substituter) const_prop_read_op(ir_value, substituter, op, const_value, const_type);
 #define WRITE_OP(substituter)
         IR_OP_READ_WRITE(ir_value, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_O
     }
+    printf("const prop\n");
     delete_ir(ir, ir->block);
 }
 
@@ -431,15 +428,14 @@ void __mark_const(BasicBlock* block, void* args) {
 }
 
 void alSimplifyAndConstProp(BasicBlock* start) {
-    //    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
-    //    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
+    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
 
     deepTraverseSuccessorsBasicBlock(start, __mark_const, NULL);
-
     while (!isEmptyDequeList(prop_worklist)) {
         Operand* op = popBackDequeList(prop_worklist);
         const_propgation(op);
     }
-    //deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
-    // copy_propgation(start);
+    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    copy_propgation(start);
 }

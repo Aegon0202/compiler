@@ -141,6 +141,8 @@ list_entry_t* DF_plus(list_entry_t* list);
 void __get_all_nodes(BasicBlock* block, void* node);
 
 Operand* operand_dup(Operand* op);
+void __print_ssa_ir(Ir* ir);
+
 #define BASIC_BLOCK_TYPE BasicBlock
 #define IR_LIST_TYPE Ir
 #define OPERAND_TYPE Operand

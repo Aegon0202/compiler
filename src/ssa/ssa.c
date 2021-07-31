@@ -514,6 +514,14 @@ const char* _op_to_str(Operand* op) {
     return buffer;
 }
 
+void __print_ssa_ir(IR_TYPE* ir) {
+    printf("op: %12s\t", EnumTypeToString(ir->type));
+    printf("op1: %-20s\t", _op_to_str(ir->op1));
+    printf("op2: %-20s\t", _op_to_str(ir->op2));
+    printf("op3: %-20s\t", _op_to_str(ir->op3));
+    printf("\n");
+}
+
 void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
     list_entry_t* head = &(basic_block->ir_list->ir_link);
     list_entry_t* next;
@@ -522,12 +530,7 @@ void __print_basic_block(BASIC_BLOCK_TYPE* basic_block, void* args) {
     next = list_next(head);
     while (next != head) {
         Ir* ir = le2struct(next, Ir, ir_link);
-        printf("op: %12s\t", EnumTypeToString(ir->type));
-        printf("op1: %-20s\t", _op_to_str(ir->op1));
-        printf("op2: %-20s\t", _op_to_str(ir->op2));
-        printf("op3: %-20s\t", _op_to_str(ir->op3));
-        printf("\n");
-
+        __print_ssa_ir(ir);
         if (ir->type == PHI && args == NULL) {
             list_entry_t* phi_op_list = ir->op1->operand.v.phi_op_list;
             list_entry_t* phi_op_elem = list_next(phi_op_list);
@@ -1226,8 +1229,12 @@ void convertOutssa_local(BasicBlock* block, void* args) {
                 Operand* op1 = create_new_operand(op_value->type, read_reg, op_value->operand.v.intValue);
                 Operand* op3 = create_new_operand(REGISTER, write_reg, 0);
                 Ir* new_ir = create_new_ir(K_ADD, op1, op2, op3, block);
-
-                list_add_before(list_prev(target_ir_list), &(new_ir->ir_link));
+                Ir* last_ir = le2struct(list_prev(target_ir_list), Ir, ir_link);
+                if (last_ir->type != JUMP && last_ir->type != BRANCH && last_ir->type != RETURNSTMT) {
+                    list_add_before(target_ir_list, &(new_ir->ir_link));
+                } else {
+                    list_add_before(list_prev(target_ir_list), &(new_ir->ir_link));
+                }
                 op_elem = list_next(op_elem);
             }
         }

@@ -62,6 +62,9 @@ void __prepare_ir_list(BASIC_BLOCK_TYPE* block, void* args) {
 int __is_prelive(IR_TYPE* ir) {
     switch (ir->type) {
         case RETURNSTMT:
+        case JUMP:
+        case STORE:
+        case BRANCH:
             return 1;
         case PARAM:
             return ((struct FuncTabElem*)(ir->op1->operand.v.funcID))->has_side_effect;
@@ -83,6 +86,21 @@ static void __read_op(OPERAND_TYPE* op, struct AddressSet* address, struct Deque
     if (!(*status)) {
         *status = 1;
         pushFrontDequeList(work_list, getLinearList(ir_2_address, (size_t)def->def_address->ir));
+        IR_TYPE* def_ir = def->def_address->ir;
+        if (def_ir->type == CALL) {
+            list_entry_t* ir_list = def_ir->ir_link.prev;
+            int param_num = def_ir->op2->operand.v.intValue;
+            for (int i = 0; i < param_num; i++) {
+                IR_TYPE* param = le2struct(ir_list, IR_TYPE, ir_link);
+                int* status = getLinearList(live, (size_t)param);
+                EnsureNotNull(status);
+                if (!(*status)) {
+                    *status = 1;
+                    pushFrontDequeList(work_list, getLinearList(ir_2_address, (size_t)param));
+                }
+                ir_list = list_prev(ir_list);
+            }
+        }
     }
 }
 
@@ -108,7 +126,7 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         setLinearList(live, (size_t)address->address.ir, status);
         setLinearList(ir_2_address, (size_t)address->address.ir, address);
         if (*status) {
-            pushFrontDequeList(work_list, &address->address);
+            pushFrontDequeList(work_list, address);
         }
         next = list_next(next);
     }
@@ -125,10 +143,16 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         list_entry_t* rdf_head = &(((BasicBlock*)getLinearList(block_2_rcfg_block, (size_t)address->address.block))->dominant_frontier->block_link);
         list_entry_t* rdf_next = list_next(rdf_head);
         while (rdf_head != rdf_next) {
-            BASIC_BLOCK_TYPE* b = le2BasicBlock(rdf_next)->value;
-            IR_TYPE* last_ir = le2struct(b->ir_list->ir_link.prev, IR_TYPE, ir_link);
-            if (last_ir->type == BRANCH) {
-                __read_op(last_ir->op1, address, work_list, live, ir_2_address);
+            BASIC_BLOCK_TYPE* r_b = le2BasicBlock(rdf_next)->value;
+            BASIC_BLOCK_TYPE* b = getLinearList(rcfg_block_2_block, (size_t)r_b);
+            if (b != NULL) {
+                IR_TYPE* last_ir = le2struct(b->ir_list->ir_link.prev, IR_TYPE, ir_link);
+                int* status = getLinearList(live, (size_t)last_ir);
+                EnsureNotNull(status);
+                if (!(*status)) {
+                    *status = 1;
+                    pushFrontDequeList(work_list, getLinearList(ir_2_address, (size_t)last_ir));
+                }
             }
             rdf_next = list_next(rdf_next);
         }
@@ -141,6 +165,7 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         int* status = getLinearList(live, (size_t)address->address.ir);
         if (!(*status)) {
             printf("dead code eliminte\n");
+            // __print_ssa_ir(address->address.ir);
             delete_ir(address->address.ir, address->address.block);
         }
         next = list_next(next);
