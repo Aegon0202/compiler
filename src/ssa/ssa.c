@@ -390,7 +390,7 @@ OPERAND_TYPE* toSSAOffset(int base, long long offset, BASIC_BLOCK_TYPE* basic_bl
 }
 
 OPERAND_TYPE* toSSABasicBlock(BASIC_BLOCK_TYPE* target_block, BASIC_BLOCK_TYPE* basic_block) {
-    OPERAND_TYPE* opr = (OPERAND_TYPE*)malloc(sizeof(OPERAND_TYPE));
+    MALLOC(opr, Operand, 1);
     opr->type = BASIC_BLOCK;
     opr->operand.v.b = target_block;
     return opr;
