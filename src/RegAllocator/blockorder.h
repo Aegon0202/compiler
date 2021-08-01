@@ -3,6 +3,8 @@
 
 #include "../ssa/ssa.h"
 #include "../utils/DequeList.h"
+#include "../utils/link.h"
+typedef struct BasicBlock BasicBlock;
 
 typedef struct BlockBegin {
     BasicBlock* block;

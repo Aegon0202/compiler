@@ -137,6 +137,7 @@ int __is_ir_can_extraction(IR_TYPE* ir, BASIC_BLOCK_TYPE* basic_block, struct Lo
 
 void __loop_invariant_extraction(struct LoopBlocks* loop) {
     BASIC_BLOCK_TYPE* before_entry = loop->loop_before;
+    IR_TYPE* before_entry_last_ir = le2struct(list_prev(&before_entry->ir_list->ir_link), IR_TYPE, ir_link);
     // index: basic block address value: LinearList< index: ir address value: is_invariant >
     struct __loop_invariant li;
     li.ir_rely = newDequeList();
@@ -156,7 +157,9 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
                 while (!isEmptyDequeList(li.ir_rely)) {
                     IR_TYPE* move_ir = popBackDequeList(li.ir_rely);
                     struct Definition* def = get_op_definition(move_ir->op3);
-                    change_def_address(move_ir, def->def_address->block, before_entry, NULL);
+                    IR_TYPE* before_ir = le2struct(list_prev(&before_entry_last_ir->ir_link), IR_TYPE, ir_link);
+                    change_def_address(move_ir, def->def_address->block, before_entry, before_ir);
+                    __print_ssa_ir(move_ir);
                 }
             }
             while (!isEmptyDequeList(li.ir_rely)) {

@@ -7,8 +7,7 @@
 #define SingleBitMapUnion(a, b) ((a) | (b))
 #define SingleBitMapIntersect(a, b) ((a) & (b))
 #define SingleBitMapSub(a, b) ((a) & (~(b)))
-
-extern id_inc;
+#define id_inc 2
 
 list_entry_t* getIrListFromBlock(BlockBegin*);
 struct DequeList* getBlock_kill(BlockBegin*);

@@ -60,18 +60,18 @@ void widthTraverseSuccessorsBasicBlock(BASIC_BLOCK_TYPE* basic_block_head, void 
     freeLinkedTable(&visited);
 }
 
-void gothrough_BlockBeginNode_list_reverse(BlockBegin* block_list_head, void (*func)(BlockBegin*, void*), void* args) {
-    list_entry_t* head = block_list_head;
-    list_entry_t* elem = list_prev(block_list_head);
+void gothrough_BlockBeginNode_list_reverse(BlockBeginNode* block_list_head, void (*func)(BlockBegin*, void*), void* args) {
+    list_entry_t* head = &block_list_head->link;
+    list_entry_t* elem = list_prev(head);
     while (head != elem) {
         BlockBegin* block = le2BlockBeginNode(elem)->value;
         func(block, args);
         elem = list_prev(elem);
     }
 }
-void gothrough_BlockBeginNode_list(BlockBegin* block_list_head, void (*func)(BlockBegin*, void*), void* args) {
-    list_entry_t* head = block_list_head;
-    list_entry_t* elem = list_next(block_list_head);
+void gothrough_BlockBeginNode_list(BlockBeginNode* block_list_head, void (*func)(BlockBegin*, void*), void* args) {
+    list_entry_t* head = &block_list_head->link;
+    list_entry_t* elem = list_next(head);
     while (head != elem) {
         BlockBegin* block = le2BlockBeginNode(elem)->value;
         func(block, args);

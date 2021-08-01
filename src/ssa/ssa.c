@@ -14,7 +14,6 @@
 #include "../utils/IrType.h"
 #include "../utils/LinkedTable.h"
 #include "traverse.h"
-
 int current_size;
 int begin_index;
 int max_capacity;
@@ -301,16 +300,8 @@ void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block
     list_del(&(old_ir->ir_link));
     old_ir->block = new_block;
     list_entry_t* ir_head = &(new_block->ir_list->ir_link);
-    list_entry_t* ir_elem = list_next(ir_head);
     if (new_before_ir)
-        while (ir_head != ir_elem) {
-            Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
-            if (ir_value == new_before_ir) {
-                list_add_after(ir_elem, &(old_ir->ir_link));
-                break;
-            }
-            ir_elem = list_next(ir_elem);
-        }
+        list_add_after(&new_before_ir->ir_link, &old_ir->ir_link);
     else
         list_add_before(ir_head, &(old_ir->ir_link));
 
@@ -1315,7 +1306,8 @@ void convertAllOutSSAform() {
     for (int i = 0; i < func_table->next_func_index; i++) {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
-            deepTraverseSuccessorsBasicBlock(elem->blocks, __init_bit_map, NULL);
+            //deepTraverseSuccessorsBasicBlock(elem->blocks, __init_bit_map, NULL);
+            ;
         }
     }
 }
