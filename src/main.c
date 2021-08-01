@@ -39,9 +39,11 @@ int main(int argc, char** argv) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
             __dominance_frontier(elem->blocks);
+            update_CFG(elem->blocks);
         }
     }
     calcAllLoopBlocks();
+
     convertAlltoSSAform();
 
     //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("uniquePaths", func_table)->blocks, __print_basic_block, NULL);

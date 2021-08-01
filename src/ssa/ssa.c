@@ -205,6 +205,7 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
     tmp->value = pre;
     list_add(&(suc->predecessors->block_link), &(tmp->block_link));
 }
+
 void disconnect_block(BasicBlock* pre, BasicBlock* suc) {
     pre->successor_num--;
     suc->predecessor_num--;
