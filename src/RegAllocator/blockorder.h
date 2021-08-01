@@ -21,6 +21,7 @@ void computeLoopInfo(BlockBegin* func_entry_block);
 struct DequeList* getSuccessors(BlockBegin* block);
 
 //wo
-void computeBlockOrder(BlockBegin* func_entry_block);
+struct LinearList* computeBlockOrder(BlockBegin* func_entry_block);
 void insertBlock(BlockBegin* block, list_entry_t* work_list_head);
+void numberLirOp(struct LinearList* blocks);
 #endif

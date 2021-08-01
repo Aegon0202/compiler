@@ -2,7 +2,7 @@
 
 #include "../utils/Malloc.h"
 //to be finished
-void computeBlockOrder(BlockBegin* func_entry_block) {
+struct LinearList* computeBlockOrder(BlockBegin* func_entry_block) {
     int count = 0;
     MALLOC(work_list, BlockBeginNode, 1);
     work_list->value = 0;
@@ -29,9 +29,10 @@ void computeBlockOrder(BlockBegin* func_entry_block) {
         }
         freeDequeList(&successors);
     }
+    return blocks;
 }
 
-//bug
+//bug:worklisthead为空
 void insertBlock(BlockBegin* block, list_entry_t* work_list_head) {
     MALLOC(node, BlockBeginNode, 1);
     node->value = block;
@@ -44,4 +45,8 @@ void insertBlock(BlockBegin* block, list_entry_t* work_list_head) {
         next = list_next(next);
     }
     return;
+}
+
+void numberLirOp(struct LinearList* blocks) {
+    int next_id = 0;
 }
