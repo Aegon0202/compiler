@@ -100,11 +100,6 @@ struct Definition {
     def_use_chain* chain;
 };
 
-#define le2struct(le, type, member) \
-    to_struct((le), type, member)
-
-#define le2BasicBlock(elem) le2struct(elem, BasicBlockNode, block_link)
-
 extern int current_size;
 extern int max_capacity;
 extern Value* reg_list[MAX_CAPACITY];  //寄存器堆，在这个阶段，寄存器的数量为无限大
