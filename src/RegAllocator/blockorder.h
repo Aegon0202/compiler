@@ -20,13 +20,13 @@ typedef struct BlockBeginNode {
 } BlockBeginNode;
 
 //nimen
-void computeLoopInfo(BlockBegin* func_entry_block);
+// 在所有函数分配之前只调用一次，遍历符号表，将所有的函数涉及到的循环信息计算出来
+void computeLoopInfo();
 //successor 是一个blockbegin*
 struct DequeList* getSuccessors(BlockBegin* block);
-void setOpOrder(struct DequeList* op_order, BlockBegin* b);
+void numberLirOp(struct LinearList* blocks);
 
 //wo
-struct LinearList* computeBlockOrder(BlockBegin* func_entry_block);
+struct DequeList* computeBlockOrder(BlockBegin* func_entry_block);
 void insertBlock(BlockBegin* block, list_entry_t* work_list_head);
-void numberLirOp(struct LinearList* blocks, struct DequeList* op_order);
 #endif

@@ -107,9 +107,7 @@ void __CLS_write_op(Operand* op, struct DequeList* b_kill) {
     set_One(*ll, index2);
 }
 
-void compute_local_live_set_block(BasicBlock* bb, void* args) {
-    BlockBegin* block = getBlockBegin(bb);
-
+void compute_local_live_set_block(BlockBegin* block, void* args) {
     list_entry_t* ir_list = getIrListFromBlock(block);
     list_entry_t* ir_elem = list_next(ir_list);
 
