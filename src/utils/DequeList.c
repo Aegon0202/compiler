@@ -94,6 +94,16 @@ int isEmptyDequeList(struct DequeList* deque) {
     return deque->head - 1 == deque->tail;
 }
 
+void* getDequeList(struct DequeList* deque, unsigned long long int index) {
+    EnsureNotNull(deque);
+    EnsureNotNull(deque->content);
+    unsigned long long int size = deque->head - deque->tail + UINT64_MAX;
+    if (index >= size) {
+        return NULL;
+    }
+    return getLinearList(deque->content, deque->tail + index + 1);
+}
+
 int freeDequeList(struct DequeList** deque_p) {
     IfNull(deque_p, return 0;);
     struct DequeList* deque = *deque_p;

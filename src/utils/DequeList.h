@@ -20,6 +20,14 @@ int isEmptyDequeList(struct DequeList* deque);
 int freeDequeList(struct DequeList** deque_p);
 
 /**
+ * 从DequeList中获取 deque->tail + index + 1 位置的元素
+ * 即index的取值范围是 [0, size)
+ * DequeList中 head 和 tail 指向的都是空块
+ * 返回对应元素位置的指针
+ */
+void* getDequeList(struct DequeList* deque, unsigned long long int index);
+
+/**
  * 将DequeList转成LinearList，并且释放掉原有的DequeList。
  * 元素存放在[0,num-1]中
  * 
