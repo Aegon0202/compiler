@@ -77,7 +77,7 @@ int __is_prelive(IR_TYPE* ir) {
 
 static void __read_op(OPERAND_TYPE* op, struct AddressSet* address, struct DequeList* work_list, struct LinearList* live, struct LinearList* ir_2_address) {
     IfNull(op, return;);
-    if (op->type != REGISTER) {
+    if (op->type != REGISTER || op->bottom_index == -1) {
         return;
     }
     struct Definition* def = get_op_definition(op);
