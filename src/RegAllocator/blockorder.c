@@ -1,5 +1,6 @@
 #include "./blockorder.h"
 
+#include "../ssa/traverse.h"
 #include "../utils/Malloc.h"
 #include "../utils/link.h"
 //to be finished
@@ -56,4 +57,48 @@ void insertBlock(BlockBegin* block, list_entry_t* work_list_head) {
 }
 
 void numberLirOp(struct LinearList* blocks) {
+}
+
+void __compute_loop_info_func(struct FuncTabElem* func) {
+    int num = sizeDequeList(func->loop_blocks);
+    for (int i = 0; i < num; i++) {
+        struct LoopBlocks* lb = getDequeList(func, i);
+        int b_num = sizeDequeList(lb->blocks);
+        for (int j = 0; j < b_num; j++) {
+            BASIC_BLOCK_TYPE* block = getDequeList(lb->blocks, j);
+            block->block_LRA->loop_depth++;
+        }
+    }
+
+    for (int i = 0; i < num; i++) {
+        struct LoopBlocks* lb = getDequeList(func, i);
+        int b_num = sizeDequeList(lb->blocks);
+        BASIC_BLOCK_TYPE* entry = lb->loop_entry;
+        for (int j = 0; j < b_num; j++) {
+            BASIC_BLOCK_TYPE* block = getDequeList(lb->blocks, j);
+            if (block->block_LRA->loop_depth == entry->block_LRA->loop_depth) {
+                block->block_LRA->loop_index = entry;
+            }
+        }
+    }
+}
+
+void computeLoopInfo() {
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        struct FuncTabElem* func = getLinearList(func_table, i);
+        if (func->blocks != NULL) {
+            __compute_loop_info_func(func);
+        }
+    }
+}
+
+struct DequeList* getSuccessors(BlockBegin* block) {
+    list_entry_t* head = &(block->block->successors->block_link);
+    list_entry_t* next = list_next(head);
+    struct DequeList* succ = newDequeList();
+    while (head != next) {
+        pushFrontDequeList(succ, le2BasicBlock(next)->value);
+        next = list_next(next);
+    }
+    return succ;
 }

@@ -28,7 +28,7 @@ if __name__ == "__main__":
             print(f"return code {cmd.returncode}")
             print(cmd.stderr)
             print(cmd.stdout)
-            exit(-1)
+            continue
         cmd = None
         if os.path.exists(in_f):
             in_ff = open(in_f, "r")
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         if len(cmd.stderr) and not cmd.stderr.startswith("TOTAL:") and not cmd.stderr.startswith("Timer"):
             print(f"run time error {p}")
             print(cmd.stderr)
-            exit(-1)
+            continue
         if len(cmd.stderr):
             print(cmd.stderr)
         out_content = ""
@@ -62,4 +62,4 @@ if __name__ == "__main__":
             print(f"wrong answer {p}")
             print(out_t.encode())
             print(out_content.encode())
-            exit(-1)
+            continue

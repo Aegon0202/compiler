@@ -205,7 +205,25 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
     tmp->value = pre;
     list_add(&(suc->predecessors->block_link), &(tmp->block_link));
 }
+
 void disconnect_block(BasicBlock* pre, BasicBlock* suc) {
+    pre->successor_num--;
+    suc->predecessor_num--;
+
+    list_entry_t* pre_list_head = &pre->successors->block_link;
+    list_entry_t* suc_list_head = &suc->predecessors->block_link;
+
+    list_entry_t* del1 = __search_BlockNode_elem(pre_list_head, suc);
+    list_entry_t* del2 = __search_BlockNode_elem(suc_list_head, pre);
+
+    EnsureNotNull(del1);
+    EnsureNotNull(del2);
+
+    list_del(del1);
+    list_del(del2);
+
+    free(le2BasicBlock(del1));
+    free(le2BasicBlock(del2));
 }
 
 int read_variable(ID id, BasicBlock* block) {
@@ -874,6 +892,27 @@ void __dominance_frontier(BasicBlock* start) {
     __delet_list(&(node_set->block_link));
 }
 
+void delete_control_flow_ans(BasicBlock* block, void* args) {
+    __delet_list(&block->dominator->block_link);
+    __delet_list(&block->i_dominator->block_link);
+    __delet_list(&block->Children->block_link);
+    __delet_list(&block->dominant_frontier->block_link);
+    MALLOC_WITHOUT_DECLARE(block->dominator, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->i_dominator, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->Children, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->dominant_frontier, BasicBlockNode, 1);
+    list_init(&block->dominator->block_link);
+    list_init(&block->i_dominator->block_link);
+    list_init(&block->Children->block_link);
+    list_init(&block->dominant_frontier->block_link);
+}
+
+void update_CFG(BasicBlock* start) {
+    deepTraverseSuccessorsBasicBlock(start, delete_control_flow_ans, NULL);
+
+    __dominance_frontier(start);
+}
+
 list_entry_t* caculate_DF_set(list_entry_t* list) {
     BasicBlockNode* node;
     MALLOC_WITHOUT_DECLARE(node, BasicBlockNode, 1);
@@ -1212,6 +1251,23 @@ void reallocate_register(BasicBlock* start) {
     }
 }
 
+//取suc的第j个predecessor
+BasicBlock* getPredecessor(BasicBlock* suc, int j) {
+    if (suc->predecessor_num < j)
+        PrintErrExit("this block do not have so many predecessors");
+
+    list_entry_t* pre_head = &suc->predecessors->block_link;
+    list_entry_t* pre_elem = list_next(pre_head);
+    int count = 1;
+    while (pre_head != pre_elem) {
+        if (count == j)
+            return le2BasicBlock(pre_elem)->value;
+        count++;
+        pre_elem = list_next(pre_elem);
+    }
+    return NULL;
+}
+
 void convertOutssa_local(BasicBlock* block, void* args) {
     list_entry_t* ir_head = &(block->ir_list->ir_link);
     list_entry_t* ir_elem = list_next(ir_head);
@@ -1224,6 +1280,7 @@ void convertOutssa_local(BasicBlock* block, void* args) {
             list_entry_t* op_elem = list_next(op_head);
             Operand* write_op = ir_value->op3;
             int write_reg = write_op->operand.reg_idx;
+            int j = 1;
             while (op_head != op_elem) {
                 Operand* op_value = le2struct(op_elem, Phi, op_link)->value;
                 if (op_value->bottom_index == -1) {
@@ -1231,7 +1288,12 @@ void convertOutssa_local(BasicBlock* block, void* args) {
                     continue;
                 }
                 int read_reg = op_value->operand.reg_idx;
-                list_entry_t* target_ir_list = &(get_op_definition(op_value)->def_address->block->ir_list->ir_link);
+
+                list_entry_t* target_ir_list = &(getPredecessor(block, j)->ir_list->ir_link);
+
+                if (which_pre(getPredecessor(block, j), block) != j)
+                    PrintErrExit("wrong pre");
+
                 Operand* op2 = create_new_operand(INT, -1, 0);
                 Operand* op1 = create_new_operand(op_value->type, read_reg, op_value->operand.v.intValue);
                 Operand* op3 = create_new_operand(REGISTER, write_reg, 0);
@@ -1242,6 +1304,7 @@ void convertOutssa_local(BasicBlock* block, void* args) {
                 } else {
                     list_add_before(list_prev(target_ir_list), &(new_ir->ir_link));
                 }
+                j++;
                 op_elem = list_next(op_elem);
             }
         }
@@ -1265,12 +1328,7 @@ void convertOutssa(BasicBlock* start) {
 
 void convertAlltoSSAform() {
     struct FuncTabElem* elem;
-    for (int i = 0; i < func_table->next_func_index; i++) {
-        elem = getLinearList(func_table->all_funcs, i);
-        if (elem->blocks != NULL) {
-            __dominance_frontier(elem->blocks);
-        }
-    }
+
     __placement_phi(NULL);
 
     renaming_init(NULL);

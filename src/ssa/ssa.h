@@ -22,14 +22,15 @@ struct Phi {
 };
 
 typedef struct BasicBlock {
-    int is_sealed;                      //前驱节点是否已经确定
-    int is_full;                        //
-    Ir* ir_list;                        // 基本块内包含的ir
-    Ir* phi_list;                       //基本块内包含的phi函数
-    int predecessor_num;                //前驱节点个数
-    BasicBlockNode* predecessors;       //前驱节点
-    int successor_num;                  //后代个数
-    BasicBlockNode* successors;         //后代节点
+    int is_sealed;                 //前驱节点是否已经确定
+    int is_full;                   //
+    Ir* ir_list;                   // 基本块内包含的ir
+    Ir* phi_list;                  //基本块内包含的phi函数
+    int predecessor_num;           //前驱节点个数
+    BasicBlockNode* predecessors;  //前驱节点
+    int successor_num;             //后代个数
+    BasicBlockNode* successors;    //后代节点
+
     BasicBlockNode* dominator;          //必经节点集
     BasicBlockNode* i_dominator;        //直接必经结点，长度为1的链表
     BasicBlockNode* Children;           //该结点直接统治的结点集
