@@ -369,11 +369,11 @@ void copy_propgation(BasicBlock* start) {
         list_entry_t* ir_head = &(get_op_definition(process_elem->op3)->chain->DU_chain);
         list_entry_t* ir_elem = list_next(ir_head);
 
-        while (ir_elem != ir_head) {
+        Operand* subor = process_elem->op1;
+        int reg = process_elem->op3->operand.reg_idx;
+        while (!list_empty(ir_head)) {
+            ir_elem = list_next(ir_head);
             Ir* ir_value = le2struct(ir_elem, def_use_chain, DU_chain)->user;
-            Operand* subor = process_elem->op1;
-            int reg = process_elem->op3->operand.reg_idx;
-            ir_elem = list_next(ir_elem);
 
 #define READ_OP(substituter) copy_prop_read_op(ir_value, reg, substituter, subor);
 #define WRITE_OP(substituter)
@@ -399,17 +399,17 @@ void const_propgation(Operand* op) {
     Ir* ir = get_op_definition(op)->def_address->ir;
     list_entry_t* du_head = &(get_op_definition(op)->chain->DU_chain);
     list_entry_t* du_elem = list_next(du_head);
-    while (du_head != du_elem) {
+    int const_value = *(int*)(getLinearList(constValue, op->operand.reg_idx));
+    int const_type = *(int*)(getLinearList(constType, op->operand.reg_idx));
+    while (!list_empty(du_head)) {
+        du_elem = list_next(du_head);
         Ir* ir_value = le2struct(du_elem, def_use_chain, DU_chain)->user;
-        int const_value = *(int*)(getLinearList(constValue, op->operand.reg_idx));
-        int const_type = *(int*)(getLinearList(constType, op->operand.reg_idx));
-        du_elem = list_next(du_elem);
 
 #define READ_OP(substituter) const_prop_read_op(ir_value, substituter, op, const_value, const_type);
 #define WRITE_OP(substituter)
         IR_OP_READ_WRITE(ir_value, READ_OP, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
-#undef WRITE_O
+#undef WRITE_OP
     }
     printf("const prop\n");
     delete_ir(ir, ir->block);
@@ -428,8 +428,8 @@ void __mark_const(BasicBlock* block, void* args) {
 }
 
 void alSimplifyAndConstProp(BasicBlock* start) {
-    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
-    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    // deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
+    // deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
 
     deepTraverseSuccessorsBasicBlock(start, __mark_const, NULL);
     while (!isEmptyDequeList(prop_worklist)) {

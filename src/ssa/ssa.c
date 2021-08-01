@@ -231,7 +231,7 @@ void add_user(Operand* def, Ir* user) {
 }
 
 void delete_user(Operand* def, Ir* user) {
-    if (user && def && user->type == REGISTER && def->type == REGISTER) {
+    if (user && def && def->type == REGISTER) {
         list_entry_t* du_head = &(get_op_definition(def)->chain->DU_chain);
         list_entry_t* du_elem = list_next(du_head);
 
@@ -1115,7 +1115,10 @@ void __search_block(BasicBlock* block) {
                         le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = *i;
                         break;
                     } else {
+                        le2struct(phi_op_elem, struct Phi, op_link)->value->type = INT;
                         le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = -1;
+                        le2struct(phi_op_elem, struct Phi, op_link)->value->operand.reg_idx = -1;
+                        le2struct(phi_op_elem, struct Phi, op_link)->value->operand.v.intValue = -1;
                         break;
                     }
                 }
@@ -1160,7 +1163,7 @@ void __modify_op(Operand* op) {
 
         while (phi_head != phi_elem) {
             Operand* op_sub = le2struct(phi_elem, Phi, op_link)->value;
-            if (op_sub->bottom_index == -1) {
+            if (op_sub->type != REGISTER) {
                 phi_elem = list_next(phi_elem);
                 continue;
             }

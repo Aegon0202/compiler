@@ -27,6 +27,18 @@ struct ArrayTabElem {
     int size;                       // 数组总大小
 };
 
+struct LoopBlocks {
+    struct DequeList* blocks;
+#ifdef BASIC_BLOCK_TYPE
+    BASIC_BLOCK_TYPE* loop_entry;
+    BASIC_BLOCK_TYPE* loop_before;
+#else
+    void* loop_entry;
+    void* loop_before;
+#endif
+    struct DequeList* out_blocks;
+};
+
 struct FuncTabElem {
     char* name;
     int return_type;                    // K_INT K_VOID
@@ -42,6 +54,7 @@ struct FuncTabElem {
     void* blocks;
     void* rcfg_blocks;
 #endif
+    struct DequeList* loop_blocks;  // value: struct LoopBlocks
 };
 
 struct BlockTabElem {
@@ -101,5 +114,5 @@ struct VarTabElem* newVarTabElem(const char* name, struct VarTable* table);
 struct BlockTabElem* newBlockTabElem(struct BlockTabElem* link, struct BlockTable* table);
 struct ArrayTabElem* newArrayTabElem(struct ArrayTable* table);
 void add_library_funcs(struct FuncTable* func_table);
-
+void calcAllLoopBlocks();
 #endif

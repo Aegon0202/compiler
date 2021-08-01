@@ -137,6 +137,7 @@ struct FuncTabElem* newFuncTabElem(const char* name, struct FuncTable* table) {
     elem->return_type = K_VOID;
     elem->has_side_effect = 1;
     elem->rcfg_blocks = NULL;
+    elem->loop_blocks = NULL;
     IfNotNull(table, {
         addFuncTable(elem, table);
         setLinearList(table->all_funcs, table->next_func_index, elem);
