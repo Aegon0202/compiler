@@ -47,6 +47,11 @@ void insertBlock(BlockBegin* block, list_entry_t* work_list_head) {
     return;
 }
 
-void numberLirOp(struct LinearList* blocks) {
+void numberLirOp(struct LinearList* blocks, struct DequeList* op_order) {
+    int count = 0;
     int next_id = 0;
+    while (getLinearList(blocks, count) != NULL) {
+        BlockBegin* b = (BlockBegin*)getLinearList(blocks, count);
+        setOpOrder(op_order, b);
+    }
 }
