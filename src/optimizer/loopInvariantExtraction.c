@@ -298,6 +298,8 @@ void loopInvariantExtraction(struct FuncTabElem* elem) {
     struct DequeList* loop_queue = newDequeList();
     struct LinearList* table = newLinearList();
 
+    deepTraverseSuccessorsBasicBlock(elem->blocks, __find_back_edge, back_edge);
+
     while (!isEmptyDequeList(back_edge)) {
         unsigned long long int num;
         struct Item* item = popFrontDequeList(back_edge);
