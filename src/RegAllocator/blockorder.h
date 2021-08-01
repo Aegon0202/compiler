@@ -8,6 +8,8 @@ typedef struct BlockBegin {
     BasicBlock* block;
     int loop_index;
     int loop_depth;
+    int first_op_id;
+    int last_op_id;
 } BlockBegin;
 
 typedef struct BlockBeginNode {

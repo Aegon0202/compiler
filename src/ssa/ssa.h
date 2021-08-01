@@ -1,6 +1,7 @@
 #ifndef SSA_SSA_H
 #define SSA_SSA_H
 #include "../ENUM.h"
+#include "../RegAllocator/blockorder.h"
 #include "../SysY.symtab/SysY.symtab.def.h"
 #include "../SysY.type/SysY.type.def.h"
 #include "../utils/DequeList.h"
@@ -8,7 +9,6 @@
 #include "../utils/link.h"
 #define MAX_CAPACITY 1000000
 #define DEF_TABLE_SIZE 1000
-
 typedef void* ID;
 
 typedef struct BasicBlockNode BasicBlockNode;
@@ -38,6 +38,17 @@ typedef struct BasicBlock {
     //-----------------以下为生成ssa的辅助标号
     int has_already;
     int work;
+
+    //data flow
+    int cur_val_num;
+    struct DequeList* block_live_in;
+    struct DequeList* block_live_out;
+    struct DequeList* block_live_gen;
+    struct DequeList* block_live_kill;
+
+    //----------------------------
+    BlockBegin* block_LRA;
+
 } BasicBlock;
 
 //基本块链表

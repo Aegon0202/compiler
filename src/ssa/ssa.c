@@ -19,6 +19,7 @@ int current_size;
 int begin_index;
 int max_capacity;
 Ir* currentIr;
+int deq_list_length;
 
 struct LinearList* id_list;  // index: VarTabElem* value: int* 这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量
 
@@ -46,6 +47,17 @@ int get_init_register() {
 
 void set_init_register(int index) {
     begin_index = index;
+}
+
+void __init_bit_map(BasicBlock* block, void* args) {
+    for (int i = 0; i < deq_list_length; i++) {
+        MALLOC(j, long long int, 1);
+        *j = 0;
+        pushFrontDequeList(block->block_live_gen, j);
+        pushFrontDequeList(block->block_live_in, j);
+        pushFrontDequeList(block->block_live_out, j);
+        pushFrontDequeList(block->block_live_kill, j);
+    }
 }
 
 Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3, BasicBlock* block) {
@@ -144,6 +156,7 @@ BasicBlock* create_new_block() {
     block->dominant_frontier->value = NULL;
     block->has_already = 0;
     block->work = 0;
+    block->cur_val_num = 0;
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
@@ -1292,6 +1305,14 @@ void convertAllOutSSAform() {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
             convertOutssa(elem->blocks);
+        }
+    }
+    deq_list_length = alloc_register() / 64 + 1;
+
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks != NULL) {
+            deepTraverseSuccessorsBasicBlock(elem->blocks, __init_bit_map, NULL);
         }
     }
 }
