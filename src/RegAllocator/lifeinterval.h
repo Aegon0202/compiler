@@ -6,21 +6,27 @@
 
 typedef struct Interval {
     int reg_num;
-    list_entry_t* range_begin;  //range链表[4,8]->[12,16]->[20,24] 节点类型；Range
-    list_entry_t* usepostion;   //useposition链表4->12->16 节点类型:int
+    RangeList* range_begin;       //range链表[4,8]->[12,16]->[20,24] 节点类型；Range
+    usepositionList* usepostion;  //useposition链表4->12->16 节点类型:int
     Interval* split_parent;
-    list_entry_t* split_childer;  //分割子区间链表[child1]->[child2] 节点类型:Interva;
+    IntervalList* split_childer;  //分割子区间链表[child1]->[child2] 节点类型:Interval
     int childrenNum;
 } Interval;
 
 typedef struct IntervalList {
     Interval* value;
-    IntervalList* next;
+    list_entry_t* next;
 } IntervalList;
 
-typedef struct Range {
+typedef struct RangeList {
     int begin;
     int end;
-} Range;
+    list_entry_t* next;
+} RangeList;
+
+typedef struct usepositionList {
+    int position;
+    list_entry_t* next;
+} usepositionList;
 
 #endif

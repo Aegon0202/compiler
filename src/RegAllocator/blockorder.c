@@ -2,7 +2,7 @@
 
 #include "../utils/Malloc.h"
 //to be finished
-struct LinearList* computeBlockOrder(BlockBegin* func_entry_block) {
+struct DequeList* computeBlockOrder(BlockBegin* func_entry_block) {
     int count = 0;
     MALLOC(work_list, BlockBeginNode, 1);
     work_list->value = 0;
@@ -12,23 +12,29 @@ struct LinearList* computeBlockOrder(BlockBegin* func_entry_block) {
     node->value = func_entry_block;
     list_add(work_list_head, &node->link);
 
-    struct LinearList* blocks = newLinearList();
+    struct DequeList* blocks = newDequeList();
     struct DequeList* successors = NULL;
 
+    struct LinearList* isUse = newLinearList();
     while (!list_empty(work_list_head)) {
         list_entry_t* tail = list_prev(work_list_head);
         list_del(tail);
         BlockBeginNode* bNode = le2struct(tail, BlockBeginNode, link);
         BlockBegin* b = bNode->value;
         successors = getSuccessors(b);
-        setLinearList(blocks, count, b);
+        pushBackDequeList(blocks, b);
         count++;
         for (; !isEmptyDequeList(successors);) {
             BlockBegin* bb = (BlockBegin*)popBackDequeList(successors);
-            insertBlock(bb, work_list_head);
+            if (setLinearList(isUse, (size_t)bb, bb) == NULL) {
+                insertBlock(bb, work_list_head);
+            };
         }
         freeDequeList(&successors);
     }
+    while (popLinearList(isUse) != NULL) {
+    }
+    freeLinearList(&isUse);
     return blocks;
 }
 
@@ -40,18 +46,13 @@ void insertBlock(BlockBegin* block, list_entry_t* work_list_head) {
     while (next != work_list_head) {
         BlockBegin* b = le2struct(next, BlockBeginNode, link)->value;
         if (b->loop_depth > block->loop_depth) {
-            list_add_before(next, &node->link);
+            break;
         }
         next = list_next(next);
     }
+    list_add_before(next, &node->link);
     return;
 }
 
-void numberLirOp(struct LinearList* blocks, struct DequeList* op_order) {
-    int count = 0;
-    int next_id = 0;
-    while (getLinearList(blocks, count) != NULL) {
-        BlockBegin* b = (BlockBegin*)getLinearList(blocks, count);
-        setOpOrder(op_order, b);
-    }
+void numberLirOp(struct LinearList* blocks) {
 }
