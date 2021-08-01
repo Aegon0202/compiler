@@ -20,8 +20,5 @@ void walkIntervals(IntervalList* unhandled_list) {
         list_entry_t* first = list_next(unhandled_list_head);
         IntervalList* currrent = le2struct(first, IntervalList, link);
         int position = le2struct(list_next(currrent->value->range_list), RangeList, link)->begin;
-
-        while () {
-        }
     }
 }
