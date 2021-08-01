@@ -112,6 +112,7 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
     list_entry_t* next = list_next(head);
     while (head != next) {
         BASIC_BLOCK_TYPE* block = (le2BasicBlock(next)->value);
+        next = list_next(next);
         if (!__is_block_in_deque(block, lb->blocks)) {
             disconnect_block(block, lb->loop_entry);
             connect_block(block, new_b);
@@ -122,7 +123,6 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
                 ir->op3->operand.v.b = new_b;
             }
         }
-        next = list_next(next);
     }
     connect_block(new_b, lb->loop_entry);
     lb->loop_before = new_b;
@@ -130,7 +130,7 @@ void __add_loop_entry_before(struct LoopBlocks* lb) {
     MALLOC(j_op, OPERAND_TYPE, 1);
     j_op->type = BASIC_BLOCK;
     j_op->operand.v.b = lb->loop_entry;
-    IR_TYPE* ir = create_new_ir(JUMP, NULL, NULL, j_op, lb->loop_entry);
+    IR_TYPE* ir = create_new_ir(JUMP, NULL, NULL, j_op, new_b);
     list_add_before(&(new_b->ir_list->ir_link), &(ir->ir_link));
 }
 
@@ -185,6 +185,7 @@ void calcAllLoopBlocks() {
         struct FuncTabElem* func = getLinearList(func_table->all_funcs, i);
         if (func->blocks != NULL) {
             __calc_func_loop_blocks(func);
+            update_CFG(func->blocks);
         }
     }
 }
