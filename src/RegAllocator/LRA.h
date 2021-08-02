@@ -19,4 +19,6 @@ struct DequeList* getBlock_gen(BlockBegin*);
 struct DequeList* getBlock_in(BlockBegin*);
 struct DequeList* getBlock_out(BlockBegin*);
 
+void gothrough_BlockBeginNode_list(struct DequeList* block_list_head, void (*func)(BlockBegin*, void*), void* args);
+void gothrough_BlockBeginNode_list_reverse(struct DequeList* block_list_head, void (*func)(BlockBegin*, void*), void* args);
 #define le2BlockBeginNode(elem) le2struct(elem, BlockBeginNode, link)

@@ -32,5 +32,5 @@ typedef struct usepositionList {
 
 Interval* getIntervalByVal(int reg_num);
 Interval* getFixIntervalByReg(int reg_num);
-
+int isIntervalFix(Interval*);
 #endif

@@ -59,3 +59,6 @@ int isCoverd(Interval* it, int position) {
     }
     return flag;
 }
+
+void allocate_blocked_reg() {
+}
