@@ -22,52 +22,6 @@ void __placement_phi(BasicBlock* start);
 void convertAlltoSSAform();
 void convertAllOutSSAform();
 
-void b(BASIC_BLOCK_TYPE* block, void* args) {
-    printf("block address %p\n", block);
-    printf("predecessors: ");
-    list_entry_t* head = &block->predecessors->block_link;
-    list_entry_t* elem = list_next(head);
-    while (head != elem) {
-        BasicBlock* bb = le2BasicBlock(elem)->value;
-        elem = list_next(elem);
-        printf("%p ", bb);
-        IR_TYPE* last_ir = le2struct(bb->ir_list->ir_link.prev, IR_TYPE, ir_link);
-        if (last_ir->type == BRANCH && last_ir->op2->operand.v.b == block) {
-        } else if (last_ir->type == BRANCH && last_ir->op3->operand.v.b == block) {
-        } else if (last_ir->type == JUMP && last_ir->op3->operand.v.b == block) {
-        } else {
-            PrintErrExit("error");
-        }
-    }
-
-    printf("\nsuccessors: ");
-    head = &block->successors->block_link;
-    elem = list_next(head);
-    IR_TYPE* last_ir = le2struct(block->ir_list->ir_link.prev, IR_TYPE, ir_link);
-    if (head->next == head) {
-        if (last_ir->type != RETURNSTMT) {
-            PrintErrExit("error");
-        }
-    }
-    while (head != elem) {
-        BasicBlock* bb = le2BasicBlock(elem)->value;
-        elem = list_next(elem);
-        printf("%p ", bb);
-        if (head->next->next == head && last_ir->type == JUMP) {
-        } else if (head->next->next->next == head && last_ir->type == BRANCH) {
-        } else {
-            PrintErrExit("error");
-        }
-        if (last_ir->type == BRANCH && last_ir->op2->operand.v.b == bb) {
-        } else if (last_ir->type == BRANCH && last_ir->op3->operand.v.b == bb) {
-        } else if (last_ir->type == JUMP && last_ir->op3->operand.v.b == bb) {
-        } else {
-            PrintErrExit("error");
-        }
-    }
-    printf("\n\n");
-}
-
 int main(int argc, char** argv) {
     init();
     int index;
@@ -86,41 +40,11 @@ int main(int argc, char** argv) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
             __dominance_frontier(elem->blocks);
-            update_CFG(elem->blocks);
         }
     }
-    // for (int i = 0; i < func_table->next_func_index; i++) {
-    //     struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
-    //     if (elem->blocks) {
-    //         printf("func name:%s\n", elem->name);
-    //         deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, NULL);
-    //     }
-    // }
     calcAllLoopBlocks();
-    printf("\n\n\n");
     convertAlltoSSAform();
 
-    // for (int i = 0; i < func_table->next_func_index; i++) {
-    //     struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
-    //     if (elem->blocks) {
-    //         printf("func name:%s\n", elem->name);
-    //         deepTraverseSuccessorsBasicBlock(elem->blocks, b, NULL);
-    //     }
-    // }
-    for (int i = 0; i < func_table->next_func_index; i++) {
-        struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
-        if (elem->blocks) {
-            printf("func name:%s\n", elem->name);
-            deepTraverseSuccessorsBasicBlock(elem->blocks, __print_basic_block, NULL);
-        }
-    }
-    convertAllOutSSAform();
-    generateAllToOutFile(output_file);
-    return 0;
-    //printf("\n\n\n\n");
-
-    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
-    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("avgPooling", func_table)->blocks, __print_basic_block, NULL);
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
