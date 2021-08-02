@@ -150,6 +150,7 @@ enum {
     ARM_STR_R_POST,
     ARM_PUSH,
     ARM_POP,
+    ARM_LABEL,
 
     LSL,
     LSR,
