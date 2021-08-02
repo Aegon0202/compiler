@@ -41,12 +41,6 @@ typedef struct BasicBlock {
     int has_already;
     int work;
 
-    //data flow
-    int cur_val_num;
-    struct DequeList* block_live_in;
-    struct DequeList* block_live_out;
-    struct DequeList* block_live_gen;
-    struct DequeList* block_live_kill;
 
     //----------------------------
     BlockBegin* block_LRA;

@@ -11,7 +11,14 @@ typedef struct BlockBegin {
     int loop_index;
     int loop_depth;
     int first_op_id;
-    int last_op_id;
+    int last_op_id;  //data flow
+    int cur_val_num;
+
+    struct DequeList* block_live_in;
+    struct DequeList* block_live_out;
+    struct DequeList* block_live_gen;
+    struct DequeList* block_live_kill;
+
 } BlockBegin;
 
 typedef struct BlockBeginNode {
