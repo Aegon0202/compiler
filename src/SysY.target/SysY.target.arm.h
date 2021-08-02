@@ -24,6 +24,7 @@
 #define A3 R2
 #define A2 R1
 #define A1 R0
+#define BEGIN_REG_NUM 128
 
 struct Immi_8 {
     int8_t num;
@@ -38,6 +39,7 @@ struct Immi_16 {
 };
 
 struct Register {
+    int type;
     int reg;
 };
 
@@ -71,9 +73,6 @@ struct ArmIr {
     void* op3;
     void* op4;
     list_entry_t ir_link;
-};
-struct ArmBlock {
-    list_entry_t* ir_link;
 };
 
 void generateAllToOutFile(FILE* out_file);
