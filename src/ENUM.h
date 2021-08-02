@@ -87,6 +87,7 @@ enum {
     INT,
     ConstSTRING,
     FUNCID,
+    PHISICAL,
     REGISTER,
     FRAMEPOINT,
     STACKPOINT,

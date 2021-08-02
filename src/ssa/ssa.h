@@ -75,6 +75,7 @@ struct Operand {
 //IR
 struct Ir {
     int type;
+    int operation_id;
     Operand *op1, *op2, *op3;
     BasicBlock* block;
     list_entry_t ir_link;

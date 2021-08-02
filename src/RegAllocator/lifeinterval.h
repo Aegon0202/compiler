@@ -30,4 +30,7 @@ typedef struct usepositionList {
     list_entry_t link;
 } usepositionList;
 
+Interval* getIntervalByVal(int reg_num);
+Interval* getFixIntervalByReg(int reg_num);
+
 #endif
