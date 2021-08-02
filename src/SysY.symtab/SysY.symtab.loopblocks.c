@@ -192,15 +192,40 @@ void a(BasicBlock* block, void* args) {
     }
 }
 
+void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args) {
+    struct DequeList* deque = (struct DequeList*)args;
+    pushFrontDequeList(deque, basic_block);
+}
+
+void free_CFG(BASIC_BLOCK_TYPE* block) {
+    struct DequeList* deque = newDequeList();
+    deepTraverseSuccessorsBasicBlock(block, __get_all_blocks, deque);
+    while (!isEmptyDequeList(deque)) {
+        /* code */
+    }
+}
+
 void calcAllLoopBlocks() {
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* func = getLinearList(func_table->all_funcs, i);
+        struct DequeList* deque = newDequeList();
         if (func->blocks != NULL) {
-            update_CFG(func->blocks);
-            __calc_func_loop_blocks(func);
-            //deepTraverseSuccessorsBasicBlock(func->blocks, a, NULL);
-            //deepTraverseSuccessorsBasicBlock(func->blocks, a, NULL);
-            update_CFG(func->blocks);
+            printf("add loop before entry: %s\n", func->name);
+            //update_CFG(func->blocks);
+            //__calc_func_loop_blocks(func);
+            deepTraverseSuccessorsBasicBlock(func->blocks, __get_all_blocks, deque);
+            while (!isEmptyDequeList(deque)) {
+                BASIC_BLOCK_TYPE* block = popBackDequeList(deque);
+                list_entry_t* head = &block->predecessors->block_link;
+                list_entry_t* elem = list_next(head);
+                while (head != elem) {
+                    BasicBlock* bb = le2BasicBlock(elem)->value;
+                    elem = list_next(elem);
+                    disconnect_block(bb, block);
+                    connect_block(bb, block);
+                }
+            }
+            //update_CFG(func->blocks);
         }
     }
 }

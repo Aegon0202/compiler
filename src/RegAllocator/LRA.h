@@ -2,6 +2,7 @@
 #include "../utils/IrType.h"
 #include "blockorder.h"
 
+#define lowBit(n) ((n)&(-n))
 #define is_One(n, index) ((n) & (0x1 << (index)))
 #define set_One(n, index) ((n) |= (0x1 << (index)))
 #define SingleBitMapUnion(a, b) ((a) | (b))

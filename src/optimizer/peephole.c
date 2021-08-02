@@ -428,8 +428,8 @@ void __mark_const(BasicBlock* block, void* args) {
 }
 
 void alSimplifyAndConstProp(BasicBlock* start) {
-    // deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
-    // deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
+    deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
 
     deepTraverseSuccessorsBasicBlock(start, __mark_const, NULL);
     while (!isEmptyDequeList(prop_worklist)) {
@@ -437,5 +437,6 @@ void alSimplifyAndConstProp(BasicBlock* start) {
         const_propgation(op);
     }
     deepTraverseSuccessorsBasicBlock(start, algebraic_simplification, NULL);
+    deepTraverseSuccessorsBasicBlock(start, constFolding, NULL);
     copy_propgation(start);
 }

@@ -10,6 +10,7 @@ typedef struct Interval {
     usepositionList* usepostion;  //useposition链表4->12->16 节点类型:int
     Interval* split_parent;
     IntervalList* split_childer;  //分割子区间链表[child1]->[child2] 节点类型:Interval
+    int phisical_reg;
     int childrenNum;
 } Interval;
 

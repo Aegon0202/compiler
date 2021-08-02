@@ -18,6 +18,7 @@ typedef struct Operand Operand;
 
 struct Phi {
     Operand* value;
+    BasicBlock* which_pre;
     list_entry_t op_link;
 };
 

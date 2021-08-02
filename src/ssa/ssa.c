@@ -133,6 +133,7 @@ struct Definition* get_op_definition(Operand* op) {
 //创建一个新的block
 BasicBlock* create_new_block() {
     MALLOC(block, BasicBlock, 1);
+    printf("create block address %p\n", block);
     MALLOC_WITHOUT_DECLARE(block->predecessors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);
@@ -1141,6 +1142,8 @@ void __search_block(BasicBlock* block) {
             while (phi_op_list != phi_op_elem) {
                 if (j == which) {
                     int* i = getFrontDequeList(getLinearList(construct_Stack, phi_ir->op3->operand.reg_idx));
+
+                    le2struct(phi_op_elem, struct Phi, op_link)->which_pre = block;
                     if (i) {
                         le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = *i;
                         break;
@@ -1283,16 +1286,15 @@ void convertOutssa_local(BasicBlock* block, void* args) {
             int j = 1;
             while (op_head != op_elem) {
                 Operand* op_value = le2struct(op_elem, Phi, op_link)->value;
+                BasicBlock* target_pre = le2struct(op_elem, Phi, op_link)->which_pre;
                 if (op_value->bottom_index == -1) {
                     op_elem = list_next(op_elem);
                     continue;
                 }
                 int read_reg = op_value->operand.reg_idx;
 
-                list_entry_t* target_ir_list = &(getPredecessor(block, j)->ir_list->ir_link);
-
-                if (which_pre(getPredecessor(block, j), block) != j)
-                    PrintErrExit("wrong pre");
+                //list_entry_t* target_ir_list = &(getPredecessor(block, j)->ir_list->ir_link);
+                list_entry_t* target_ir_list = &target_pre->ir_list->ir_link;
 
                 Operand* op2 = create_new_operand(INT, -1, 0);
                 Operand* op1 = create_new_operand(op_value->type, read_reg, op_value->operand.v.intValue);

@@ -168,13 +168,3 @@ void compute_global_live_set(BlockBegin* start) {
         gothrough_BlockBeginNode_list_reverse(start, compute_global_live_set_block, NULL);
     }
 }
-
-void build_interval_block(BlockBegin* block, void* args) {
-    int block_from = getFirstOpId(block);
-    int block_to = getLastOpId(block) + id_inc;
-    //    long long int* b_live_out = getBlock_out()
-}
-
-void build_interval(BlockBegin* start) {
-    gothrough_BlockBeginNode_list_reverse(start, build_interval_block, NULL);
-}
