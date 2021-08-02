@@ -1,7 +1,8 @@
+#include "allocation.h"
+
 #include "../utils/Malloc.h"
 #include "../utils/link.h"
 #include "./lifeinterval.h"
-#include "alloca.h"
 
 void walkIntervals(IntervalList* unhandled_list) {
     list_entry_t* unhandled_list_head = &unhandled_list->link;
@@ -32,8 +33,10 @@ void walkIntervals(IntervalList* unhandled_list) {
             //获取当前Interval的最后一个range的后部区间
             int itposition = le2struct(list_next(it->range_list), RangeList, link)->begin;
             if (itposition < position) {
-                MoveitFromAtoB(unhandled_list_head, active_list_head, itList);
-            } else if (1) {
+                MoveitFromAtoB(active_list_head, handled_list_head, itList);
+            } else if (isCoverd(it, position)) {
+                MoveitFromAtoB(active_list_head, inactive_list_head, itList);
+            } else {
             }
         }
     }
@@ -42,4 +45,17 @@ void walkIntervals(IntervalList* unhandled_list) {
 void MoveitFromAtoB(list_entry_t* A, list_entry_t* B, IntervalList* itList) {
     list_del(&itList->link);
     list_add_after(B, &itList->link);
+}
+int isCoverd(Interval* it, int position) {
+    int flag = 0;
+    list_entry_t* range_list_head = &it->range_list->link;
+    list_entry_t* range_list_tmp = list_next(range_list_head);
+    while (range_list_tmp != range_list_head) {
+        int tmp_begin = le2struct(range_list_tmp, RangeList, link)->begin;
+        int tmp_end = le2struct(range_list_tmp, RangeList, link);
+        if (tmp_begin <= position && tmp_end > position) {
+            flag = 1;
+        }
+    }
+    return flag;
 }
