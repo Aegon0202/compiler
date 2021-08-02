@@ -18,6 +18,10 @@
  * the next/prev entries and we can generate better code by using them
  * directly rather than using the generic single-entry routines.
  * */
+#define le2struct(le, type, member) \
+    to_struct((le), type, member)
+
+#define le2BasicBlock(elem) le2struct(elem, BasicBlockNode, block_link)
 
 struct list_entry {
     struct list_entry *prev, *next;

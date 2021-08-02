@@ -2,6 +2,7 @@
 
 #include "../ssa/traverse.h"
 #include "../utils/Malloc.h"
+#include "../utils/link.h"
 //to be finished
 struct DequeList* computeBlockOrder(BlockBegin* func_entry_block) {
     int count = 0;

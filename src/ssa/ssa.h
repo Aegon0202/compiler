@@ -3,6 +3,7 @@
 #include "../ENUM.h"
 #include "../RegAllocator/blockorder.h"
 #include "../SysY.symtab/SysY.symtab.def.h"
+#include "../SysY.target/SysY.target.arm.h"
 #include "../SysY.type/SysY.type.def.h"
 #include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
@@ -18,6 +19,7 @@ typedef struct Operand Operand;
 
 struct Phi {
     Operand* value;
+    BasicBlock* which_pre;
     list_entry_t op_link;
 };
 
@@ -40,15 +42,10 @@ typedef struct BasicBlock {
     int has_already;
     int work;
 
-    //data flow
-    int cur_val_num;
-    struct DequeList* block_live_in;
-    struct DequeList* block_live_out;
-    struct DequeList* block_live_gen;
-    struct DequeList* block_live_kill;
 
     //----------------------------
     BlockBegin* block_LRA;
+    struct ArmIr* arm_ir_list;
 
 } BasicBlock;
 
@@ -80,6 +77,7 @@ struct Operand {
 //IR
 struct Ir {
     int type;
+    int operation_id;
     Operand *op1, *op2, *op3;
     BasicBlock* block;
     list_entry_t ir_link;
@@ -100,11 +98,6 @@ struct Definition {
     Address* def_address;  //这个变量被定义的位置
     def_use_chain* chain;
 };
-
-#define le2struct(le, type, member) \
-    to_struct((le), type, member)
-
-#define le2BasicBlock(elem) le2struct(elem, BasicBlockNode, block_link)
 
 extern int current_size;
 extern int max_capacity;

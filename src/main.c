@@ -35,6 +35,8 @@ int main(int argc, char** argv) {
     yyparse();
     toSSACompUnit(result.compunit);
     avoidOperandDoubleFree();
+    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
+    return 0;
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
@@ -44,19 +46,18 @@ int main(int argc, char** argv) {
     calcAllLoopBlocks();
     convertAlltoSSAform();
 
-    //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("uniquePaths", func_table)->blocks, __print_basic_block, NULL);
-    //printf("\n\n\n\n");
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
-            printf("func name:%s\n", elem->name);
-            //alSimplifyAndConstProp(elem->blocks);
-            //localExprEliminate(elem);
-            //alSimplifyAndConstProp(elem->blocks);
+            //printf("func name:%s\n", elem->name);
+            alSimplifyAndConstProp(elem->blocks);
+            deadCodeEliminate(elem);
+            alSimplifyAndConstProp(elem->blocks);
+            localExprEliminate(elem);
+            loopInvariantExtraction(elem);
+            deadCodeEliminate(elem);
+            alSimplifyAndConstProp(elem->blocks);
             //printf("\n\n\n");
-            //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
-            //deadCodeEliminate(elem);
-            //loopInvariantExtraction(elem);
         }
     }
     //printf("\n\n\n");

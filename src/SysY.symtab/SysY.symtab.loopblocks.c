@@ -183,6 +183,7 @@ void __calc_func_loop_blocks(struct FuncTabElem* func) {
 void calcAllLoopBlocks() {
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* func = getLinearList(func_table->all_funcs, i);
+        struct DequeList* deque = newDequeList();
         if (func->blocks != NULL) {
             __calc_func_loop_blocks(func);
             update_CFG(func->blocks);

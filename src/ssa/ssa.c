@@ -18,7 +18,6 @@ int current_size;
 int begin_index;
 int max_capacity;
 Ir* currentIr;
-int deq_list_length;
 
 struct LinearList* id_list;  // index: VarTabElem* value: int* 这个数组为ast和IR之间的桥梁，表示在每个寄存器中存的value在ast中是属于哪个变量
 
@@ -46,17 +45,6 @@ int get_init_register() {
 
 void set_init_register(int index) {
     begin_index = index;
-}
-
-void __init_bit_map(BasicBlock* block, void* args) {
-    for (int i = 0; i < deq_list_length; i++) {
-        MALLOC(j, long long int, 1);
-        *j = 0;
-        pushFrontDequeList(block->block_live_gen, j);
-        pushFrontDequeList(block->block_live_in, j);
-        pushFrontDequeList(block->block_live_out, j);
-        pushFrontDequeList(block->block_live_kill, j);
-    }
 }
 
 Ir* create_new_ir(int op_type, Operand* op1, Operand* op2, Operand* op3, BasicBlock* block) {
@@ -133,6 +121,7 @@ struct Definition* get_op_definition(Operand* op) {
 //创建一个新的block
 BasicBlock* create_new_block() {
     MALLOC(block, BasicBlock, 1);
+    printf("create block address %p\n", block);
     MALLOC_WITHOUT_DECLARE(block->predecessors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);
@@ -155,7 +144,6 @@ BasicBlock* create_new_block() {
     block->dominant_frontier->value = NULL;
     block->has_already = 0;
     block->work = 0;
-    block->cur_val_num = 0;
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
@@ -205,6 +193,7 @@ void connect_block(BasicBlock* pre, BasicBlock* suc) {
     tmp->value = pre;
     list_add(&(suc->predecessors->block_link), &(tmp->block_link));
 }
+
 void disconnect_block(BasicBlock* pre, BasicBlock* suc) {
     pre->successor_num--;
     suc->predecessor_num--;
@@ -1140,6 +1129,8 @@ void __search_block(BasicBlock* block) {
             while (phi_op_list != phi_op_elem) {
                 if (j == which) {
                     int* i = getFrontDequeList(getLinearList(construct_Stack, phi_ir->op3->operand.reg_idx));
+
+                    le2struct(phi_op_elem, struct Phi, op_link)->which_pre = block;
                     if (i) {
                         le2struct(phi_op_elem, struct Phi, op_link)->value->bottom_index = *i;
                         break;
@@ -1282,16 +1273,15 @@ void convertOutssa_local(BasicBlock* block, void* args) {
             int j = 1;
             while (op_head != op_elem) {
                 Operand* op_value = le2struct(op_elem, Phi, op_link)->value;
+                BasicBlock* target_pre = le2struct(op_elem, Phi, op_link)->which_pre;
                 if (op_value->bottom_index == -1) {
                     op_elem = list_next(op_elem);
                     continue;
                 }
                 int read_reg = op_value->operand.reg_idx;
 
-                list_entry_t* target_ir_list = &(getPredecessor(block, j)->ir_list->ir_link);
-
-                if (which_pre(getPredecessor(block, j), block) != j)
-                    PrintErrExit("wrong pre");
+                //list_entry_t* target_ir_list = &(getPredecessor(block, j)->ir_list->ir_link);
+                list_entry_t* target_ir_list = &target_pre->ir_list->ir_link;
 
                 Operand* op2 = create_new_operand(INT, -1, 0);
                 Operand* op1 = create_new_operand(op_value->type, read_reg, op_value->operand.v.intValue);
@@ -1356,15 +1346,6 @@ void convertAllOutSSAform() {
         elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
             convertOutssa(elem->blocks);
-        }
-    }
-    deq_list_length = alloc_register() / 64 + 1;
-
-    for (int i = 0; i < func_table->next_func_index; i++) {
-        elem = getLinearList(func_table->all_funcs, i);
-        if (elem->blocks != NULL) {
-            //deepTraverseSuccessorsBasicBlock(elem->blocks, __init_bit_map, NULL);
-            ;
         }
     }
 }
