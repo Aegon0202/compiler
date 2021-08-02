@@ -1,3 +1,6 @@
+#ifndef REG_ALLOCATOR_LRA
+#define REG_ALLOCATOR_LRA
+
 #include "../ssa/traverse.h"
 #include "../utils/IrType.h"
 #include "./lifeinterval.h"

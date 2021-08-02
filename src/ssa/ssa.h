@@ -3,6 +3,7 @@
 #include "../ENUM.h"
 #include "../RegAllocator/blockorder.h"
 #include "../SysY.symtab/SysY.symtab.def.h"
+#include "../SysY.target/SysY.target.arm.h"
 #include "../SysY.type/SysY.type.def.h"
 #include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
@@ -44,6 +45,7 @@ typedef struct BasicBlock {
 
     //----------------------------
     BlockBegin* block_LRA;
+    struct ArmIr* arm_ir_list;
 
 } BasicBlock;
 
