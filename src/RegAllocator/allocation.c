@@ -88,6 +88,34 @@ int isCoverd(Interval* it, int position) {
     return flag;
 }
 
-void allocate_blocked_reg() {}
+void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t* inactive) {
+    int current_from = getFirstRange(current)->begin;
+    list_entry_t* active_elem = list_next(active);
+    while (active_elem != active) {
+        Interval* active_elem_value = le2IntervalList(active_elem)->value;
+        active_elem = list_next(active_elem);
+        if (isIntervalFix(active_elem_value)) {
+            set_block_pos(active_elem_value, 0);
+            continue;
+        }
+        int n = getNextUsage(active_elem_value, current_from);
+        set_use_pos(active_elem_value, n);
+    }
+
+    list_entry_t* inactive_elem = list_next(inactive);
+    while (inactive_elem != inactive) {
+        Interval* inactive_elem_value = le2IntervalList(inactive_elem)->value;
+        inactive_elem = list_next(inactive_elem);
+        if (isIntervalFix(inactive_elem_value)) {
+            if (isIntersect(inactive_elem_value, current)) {
+                int inter_pos = getNextIntersect(inactive_elem_value, current);
+                set_block_pos(inactive_elem_value, inter_pos);
+            }
+            continue;
+        }
+        int n = getNextUsage(inactive_elem_value, current_from);
+        set_use_pos(inactive_elem_value, n);
+    }
+}
 int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head) {
 }
