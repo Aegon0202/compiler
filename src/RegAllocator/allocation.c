@@ -88,4 +88,25 @@ int isCoverd(Interval* it, int position) {
     return flag;
 }
 int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head) {
+    int free_pos[PHYSICAL_REGISTER_NUM];
+    memset(free_pos, MAX_NUM, PHYSICAL_REGISTER_NUM * sizeof(int));
+
+    list_entry_t* active_list_tmp = list_next(active_list_head);
+    while (active_list_tmp != active_list_head) {
+        IntervalList* itList = le2struct(active_list_tmp, IntervalList, link);
+        Interval* it = itList->value;
+        set_free_pos(free_pos, it, 0);
+    }
+
+    list_entry_t* inactive_list_tmp = list_next(inactive_list_head);
+    while (inactive_list_tmp != inactive_list_head) {
+        IntervalList* initList = le2struct(inactive_list_tmp, IntervalList, link);
+        Interval* init = initList->value;
+        int value;
+    }
+}
+
+void set_free_pos(int* free_pos, Interval* it, int value) {
+    int reg_num = it->reg_num;
+    free_pos[reg_num] = value;
 }
