@@ -25,20 +25,48 @@ void walkIntervals(IntervalList* unhandled_list) {
     while (!list_empty(unhandled_list_head)) {
         list_entry_t* first = list_next(unhandled_list_head);
         IntervalList* currrent = le2struct(first, IntervalList, link);
+        list_del(first);  //拿到并删除unhandleList的头结点
         int position = le2struct(list_next(currrent->value->range_list), RangeList, link)->begin;
-        while (!list_empty(active_list_head)) {
-            //获取当前active_list第一个iterval
-            IntervalList* itList = le2struct(list_next(active_list_head), IntervalList, link);
+
+        list_entry_t* active_list_tmp = list_next(active_list_head);
+
+        while (active_list_tmp != active_list_head) {
+            //遍历active_list
+            IntervalList* itList = le2struct(active_list_tmp, IntervalList, link);
             Interval* it = itList->value;
             //获取当前Interval的最后一个range的后部区间
             int itposition = le2struct(list_next(it->range_list), RangeList, link)->begin;
             if (itposition < position) {
+                active_list_tmp = list_next(active_list_tmp);
                 MoveitFromAtoB(active_list_head, handled_list_head, itList);
             } else if (isCoverd(it, position)) {
+                active_list_tmp = list_next(active_list_tmp);
                 MoveitFromAtoB(active_list_head, inactive_list_head, itList);
             } else {
+                active_list_tmp = list_next(active_list_tmp);
             }
         }
+
+        list_entry_t* inactive_list_tmp = list_next(inactive_list_head);
+        while (inactive_list_tmp != inactive_list_head) {
+            //遍历active_list
+            IntervalList* initList = le2struct(inactive_list_tmp, IntervalList, link);
+            Interval* init = initList->value;
+            //获取当前Interval的最后一个range的后部区间
+            int initposition = le2struct(list_next(init->range_list), RangeList, link)->begin;
+            if (initposition < position) {
+                inactive_list_tmp = list_next(active_list_tmp);
+                MoveitFromAtoB(active_list_head, handled_list_head, initList);
+            } else if (isCoverd(init, position)) {
+                inactive_list_tmp = list_next(active_list_tmp);
+                MoveitFromAtoB(active_list_head, inactive_list_head, initList);
+            } else {
+                inactive_list_tmp = list_next(active_list_tmp);
+            }
+        }
+
+        int isAllocatedFree = 0;
+        //Try to Allocate Free Register for Current
     }
 }
 
@@ -60,5 +88,6 @@ int isCoverd(Interval* it, int position) {
     return flag;
 }
 
-void allocate_blocked_reg() {
+void allocate_blocked_reg() {}
+int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head) {
 }
