@@ -84,35 +84,36 @@
 | `ARM_ADD`  `op1`  `<-`  `op2`  `+`  `op3` <br/> `ADD`  `op1`  `,`  `op2`  `,`  `op3` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
 | `ARM_SUB`  `op1`  `<-`  `op2`  `-`  `op3`                    | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
 | `ARM_MUL`  `op1`  `<-`  `op2`  `*`  `op3`                    | `struct Register *`   | `struct Register *` | `struct Register *` | `NULL`            |
+| `ARM_SDIV`  `op1`  `<-`  `op2`  `/`  `op3` | `struct Register *` | `struct Register *` | `struct Register *` | `NULL` |
 | `ARM_SMULL`  `op2`  `:` `op1`  `<-`  `op3`  `*`  `op4` <br/>将乘的结果的低32位放到 `op1` 高32位放到 `op2` | `struct Register *`   | `struct Register *` | `struct Register *` | `struct Register` |
 | `ARM_SMMUL`  `op1`  `<-`  `(`  `op2`  `*`  `op3`  `)`  `[`  `64`  `:`  `32`  `]` <br/>将高32位的结果放到op1 | `struct Register *`   | `struct Register *` | `struct Register *` | `NULL`            |
-| `ARM_MOV`  `op1`  `<-` `op2`                                 | `struct Register *`   | `struct Operand *`  | `NULL`              | `NULL`            |
-| `ARM_MVN`  `op1`  `<-`  `0xFFFFFFFF`  `EOR`  `op2`           | `struct Register *`   | `struct Operand *`  | `NULL`              | `NULL`            |
+| `ARM_MOV`  `op1`  `<-` `op2`                                 | `struct Register *`   | `struct Operand2 *`  | `NULL`              | `NULL`            |
+| `ARM_MVN`  `op1`  `<-`  `0xFFFFFFFF`  `EOR`  `op2`           | `struct Register *`   | `struct Operand2 *`  | `NULL`              | `NULL`            |
 | `ARM_MOVT`  `op1`  `[`  `31`  `:`  `16`  `]`  `<-`  `op2` <br/> `op1`  `[`  `15`  `:`  `0`  `]` 不受影响<br/> `op2` 的范围为 `0`  `~`  `65535` | `struct Register *`   | `struct Immi_16 *`  | `NULL`              | `NULL`            |
 | `ARM_MOVW`  `op1`  `[`  `15`  `:`  `0`  `]`  `<-`  `op2` <br/> `op1`  `[`  `31`  `:`  `16`  `]`  `<-`  `0` <br/> `op2` 的范围为 `0`  `~`  `65535` | `struct Register *`   | `struct Immi_16 *`  | `NULL`              | `NULL`            |
 | `ARM_MOVT_L`  `op1`  `[`  `31`  `:`  `16`  `]`  `<-`  `op2` <br/> `op1`  `[`  `15`  `:`  `0`  `]` 不受影响<br/> `op2` 为标签的高 `16` 位地址，由汇编器实现。<br/> `#:upper:label` | `struct Register *`   | `struct Label *`    | `NULL`              | `NULL`            |
 | `ARM_MOVW_L`  `op1`  `[`  `15`  `:`  `0`  `]`  `<-`  `op2` <br/> `op1`  `[`  `31`  `:`  `16`  `]`  `<-`  `0` <br/> `op2` 为标签的低 `16` 位地址，由汇编器实现。<br/> `#:lower:label` | `struct Register *`   | `struct Label *`    | `NULL`              | `NULL`            |
 | `ARM_CLZ`  `op1`  `<-`  `op2` 中前导0的数目                  | `struct Register *`   | `struct Register *` | `NULL`              | `NULL`            |
-| `ARM_CMP` 更新 `op1`  `-`  `op2` 的 `CPSR` 标记              | `struct Register *`   | `struct Operand *`  | `NULL`              | `NULL`            |
-| `ARM_CMN` 更新 `op1`  `+`  `op2` 的 `CPSR` 标记              | `struct Register *`   | `struct Operand *`  | `NULL`              | `NULL`            |
+| `ARM_CMP` 更新 `op1`  `-`  `op2` 的 `CPSR` 标记              | `struct Register *`   | `struct Operand2 *`  | `NULL`              | `NULL`            |
+| `ARM_CMN` 更新 `op1`  `+`  `op2` 的 `CPSR` 标记              | `struct Register *`   | `struct Operand2 *`  | `NULL`              | `NULL`            |
 | `ARM_B`  `PC`  `<-`  `op1` <br/> `label` 为此指令 $\pm$  `32`  `MB ` | `struct Label *`      | `NULL`              | `NULL`              | `NULL`            |
 | `ARM_BL`  `PC`  `<-`  `op1` <br/> `LR` `<-`  下一条指令的地址<br/> `label` 为此指令 $\pm$  `32`  `MB ` | `struct Label *`      | `NULL`              | `NULL`              | `NULL`            |
 | `ARM_BX`  `PC`  `<-`  `op1` <br/>如果 `op1`  `[`  `0`  `]` 为 `0` ，目标为 `ARM` <br/>如果 `op1`  `[`  `0`  `]` 为 `1` ，目标为 `Thumb` | `struct Register *`   | `NULL`              | `NULL`              | `NULL`            |
 | `ARM_BLX`  `PC`  `<-`  `op1` <br/> `LR` `<-`  下一条指令的地址<br/>如果 `op1`  `[`  `0`  `]` 为 `0` ，目标为 `ARM` <br/>如果 `op1`  `[`  `0`  `]` 为 `1` ，目标为 `Thumb` | `struct Register *`   | `NULL`              | `NULL`              | `NULL`            |
-| `ARM_LDR_I`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` `!` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
+| `ARM_LDR_I`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
 | `ARM_LDR_I_PRE`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` `!` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
 | `ARM_LDR_I_POST`  `op1`  `<-`  `mem`  `[`  `op2`  `]` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `LDR`  `op1`  `,`  `[`  `op2`  `]`  `,`  `#`  `op3` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
 | `ARM_LDR_R`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
-| `ARM_LDR_R_PRE`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
+| `ARM_LDR_R_PRE`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `op3`  `] ` `!` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
 | `ARM_LDR_R_POST`  `op1`  `<-`  `mem`  `[`  `op2`  `]` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `LDR`  `op1`  `,`  `[`  `op2`  `]`  `,`  `op3` | `struct Register *`   | `struct Register *` | `struct Operand2*`  | `NULL`            |
-| `ARM_STR_I`  `mem`  `[`  `op2`  `+`  `op3`  `]`  `<-`  `op1`  <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `STR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` `!` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
+| `ARM_STR_I`  `mem`  `[`  `op2`  `+`  `op3`  `]`  `<-`  `op1`  <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `STR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
 | `ARM_LDR_I_PRE`  `mem`  `[`  `op2`  `+`  `op3`  `]`  `<-`  `op1` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `STR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` `!` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
 | `ARM_STR_I_POST`  `mem`  `[`  `op2`  `]`  `<-`  `op1` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `STR`  `op1`  `,`  `[`  `op2`  `]`  `,`  `#`  `op3` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |
 | `ARM_STR_R`  `mem`  `[`  `op2`  `+`  `op3`  `]`  `<-`  `op1` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
-| `ARM_STR_R_PRE`  `mem`  `[`  `op2`  `+`  `op3`  `]`  `<-`  `op1` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `STR`  `op1`  `,`  `[`  `op2`  `,`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
+| `ARM_STR_R_PRE`  `mem`  `[`  `op2`  `+`  `op3`  `]`  `<-`  `op1` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `STR`  `op1`  `,`  `[`  `op2`  `,`  `op3`  `] ` `!` | `struct Register *`   | `struct Register *` | `struct Operand2 *` | `NULL`            |
 | `ARM_STR_R_POST`  `mem`  `[`  `op2`  `]`  `<-`  `op1` <br/> `op2`  `<-`  `op2`  `+`  `op3` <br/>`op3` 中的 `shift_op` 只能为立即数 <br/> `STR`  `op1`  `,`  `[`  `op2`  `]`  `,`  `op3` | `struct Register *`   | `struct Register *` | `struct Operand2*`  | `NULL`            |
-| `ARM_PUSH` 将列表 `op1`  中的寄存器（共有 `op2` 个）中的值 `PUSH` 到栈中 | `struct LinearList *` | `int *`             | `NULL`              | `NULL`            |
-| `ARM_POP` 将列表 `op1`  中的寄存器（共有 `op2` 个）中的值从栈中 `POP` 出来 | `struct LinearList *` | `int *`             | `NULL`              | `NULL`            |
+| `ARM_PUSH` 将列表 `op1`  中的寄存器（共有 `op2` 个）中的值 `PUSH` 到栈中 | `struct DequeList *` | `NULL`             | `NULL`              | `NULL`            |
+| `ARM_POP` 将列表 `op1`  中的寄存器（共有 `op2` 个）中的值从栈中 `POP` 出来 | `struct DequeList *` | `NULL`             | `NULL`              | `NULL`            |
 | `ARM_LABEL`  `op1` 就是当前的label                           | `struct Label *`      |                     |                     |                   |
 
   

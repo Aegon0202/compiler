@@ -32,6 +32,19 @@ void __connect_rcfg_block(BASIC_BLOCK_TYPE* block, void* args) {
     }
 }
 
+void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args) {
+    struct DequeList* deque = (struct DequeList*)args;
+    pushFrontDequeList(deque, basic_block);
+}
+
+void free_CFG(BASIC_BLOCK_TYPE* block) {
+    struct DequeList* deque = newDequeList();
+    deepTraverseSuccessorsBasicBlock(block, __get_all_blocks, deque);
+    while (!isEmptyDequeList(deque)) {
+        /* code */
+    }
+}
+
 void generateRCFG(struct FuncTabElem* elem) {
     if (elem->rcfg_blocks == NULL) {
         elem->rcfg_blocks = create_new_block();
