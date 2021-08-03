@@ -9,7 +9,20 @@ int __lowBitToNum(unsigned long long int n) {
     return j;
 }
 
-Interval* create_new_interval() {
+Interval* create_new_interval(int reg_num, Interval* parent) {
+    MALLOC(interval, Interval, 1);
+    interval->reg_num = reg_num;
+    interval->childrenNum = 0;
+    interval->phisical_reg = -1;
+    interval->is_fixed = 0;
+    interval->split_parent = parent;
+    MALLOC_WITHOUT_DECLARE(interval->range_list, RangeList, 1);
+    MALLOC_WITHOUT_DECLARE(interval->split_childer, IntervalList, 1);
+    MALLOC_WITHOUT_DECLARE(interval->usepostion, usepositionList, 1);
+    list_init(&interval->range_list->link);
+    list_init(&interval->split_childer->link);
+    list_init(&interval->usepostion->link);
+    return interval;
 }
 
 RangeList* create_new_range(int from, int to) {
@@ -127,6 +140,6 @@ void build_interval_block(BlockBegin* block, void* args) {
     }
 }
 
-void build_interval(BlockBegin* start) {
+void build_interval(struct DequeList* start) {
     gothrough_BlockBeginNode_list_reverse(start, build_interval_block, NULL);
 }

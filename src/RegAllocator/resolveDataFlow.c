@@ -26,5 +26,6 @@ void resolve_data_flow_block(BlockBegin* block) {
     }
 }
 
-void resolve_data_flow() {
+void resolve_data_flow(struct DequeList* block_list) {
+    gothrough_BlockBeginNode_list_reverse(block_list, resolve_data_flow_block, NULL);
 }

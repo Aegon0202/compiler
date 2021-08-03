@@ -31,7 +31,8 @@ typedef struct BlockBeginNode {
 void computeLoopInfo();
 //successor 是一个blockbegin*
 struct DequeList* getSuccessors(BlockBegin* block);
-void numberLirOp(struct LinearList* blocks);
+struct DequeList* getPredecessors(BlockBegin* block);
+void numberLirOp(struct DequeList* blocks);
 
 //wo
 struct DequeList* computeBlockOrder(BlockBegin* func_entry_block);

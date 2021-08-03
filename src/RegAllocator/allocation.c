@@ -87,6 +87,8 @@ int isCoverd(Interval* it, int position) {
     }
     return flag;
 }
+
+void allocate_blocked_reg() {}
 int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head) {
     int free_pos[PHYSICAL_REGISTER_NUM];
     memset(free_pos, MAX_NUM, PHYSICAL_REGISTER_NUM * sizeof(int));
