@@ -1,3 +1,4 @@
+#include "./RegAllocator/LRA.h"
 #include "./SysY.symtab/SysY.symtab.def.h"
 #include "./optimizer/local_op.h"
 #include "./optimizer/peephole.h"
@@ -21,5 +22,6 @@ void init() {
     constMark = newLinearList();
     constValue = newLinearList();
     constType = newLinearList();
+    reg2Intival = newLinearList();
     init_all_table();
 }

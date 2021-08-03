@@ -3,6 +3,7 @@
 int alloc_register();
 int MaxbitMapSize;        //当前dequelist中最多能够容纳多少元素个数（64的整数倍）
 int current_bitMap_size;  //当前位图元素个数
+struct LinearList* reg2Intival;
 extern struct DequeList* allBlock;
 
 int get_new_reg_num() {
@@ -56,4 +57,51 @@ void assign_phisical_reg_num_block(BlockBegin* block, void* args) {
     list_entry_t* ir_elem = list_next(ir_list);
     while (ir_elem != ir_list) {
     }
+}
+
+//对每个函数
+void LinearScanRegAllocation() {
+    struct DequeList* block_seq = computeBlockOrder(NULL);
+    numberLirOp(block_seq);
+    compute_local_live_set(block_seq);
+    compute_global_live_set(block_seq);
+
+    build_interval(block_seq);
+    IntervalList* unhandled_list = __init_unhandled_list();
+    walkIntervals(unhandled_list);
+    resolve_data_flow(block_seq);
+    assign_phisical_reg_num(block_seq);
+}
+
+//----------------------
+
+list_entry_t* getIrListFromBlock(BlockBegin* block) {
+    return &block->block->arm_ir_list->ir_link;
+}
+
+int getFirstOpId(BlockBegin* block) {
+    return le2struct(list_next(&block->block->arm_ir_list->ir_link), struct ArmIr, ir_link)->id;
+}
+int getLastOpId(BlockBegin* block) {
+    return le2struct(list_prev(&block->block->arm_ir_list->ir_link), struct ArmIr, ir_link)->id;
+}
+struct DequeList* getBlock_kill(BlockBegin* block) {
+    return block->block_live_kill;
+}
+struct DequeList* getBlock_gen(BlockBegin* block) {
+    return block->block_live_gen;
+}
+struct DequeList* getBlock_in(BlockBegin* block) {
+    return block->block_live_in;
+}
+struct DequeList* getBlock_out(BlockBegin* block) {
+    return block->block_live_out;
+}
+
+Interval* getIntervalByVal(int reg_num) {
+    return getLinearList(reg2Intival, reg_num);
+}
+
+Interval* getFixIntervalByReg(int reg_num) {
+    return NULL;
 }

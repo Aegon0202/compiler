@@ -126,12 +126,11 @@ void compute_local_live_set_block(BlockBegin* block, void* args) {
     }
 }
 
-void compute_local_live_set(BlockBegin* start) {
+void compute_local_live_set(struct DequeList* start) {
     gothrough_BlockBeginNode_list(start, compute_local_live_set_block, NULL);
 }
 
-void compute_global_live_set_block(BasicBlock* bb, void* args) {
-    BlockBegin* block = getBlock_gen(bb);
+void compute_global_live_set_block(BlockBegin* block, void* args) {
     struct DequeList* sux = getSuccessors(block);
     struct DequeList* b_live_out = getBlock_out(block);
     struct DequeList* b_live_in = getBlock_in(block);
@@ -161,10 +160,22 @@ void compute_global_live_set_block(BasicBlock* bb, void* args) {
     }
 }
 
-void compute_global_live_set(BlockBegin* start) {
+void compute_global_live_set(struct DequeList* block_list) {
     change = 1;
     while (change) {
         change = 0;
-        gothrough_BlockBeginNode_list_reverse(start, compute_global_live_set_block, NULL);
+        gothrough_BlockBeginNode_list_reverse(block_list, compute_global_live_set_block, NULL);
     }
+}
+
+RangeList* getFirstRange(Interval* interval) {
+    return le2RangeList(list_next(&(interval->range_list->link)));
+}
+
+RangeList* getLastRange(Interval* interval) {
+    return le2RangeList(list_prev(&(interval->range_list->link)));
+}
+
+int isIntervalFixed(Interval* interval) {
+    return interval->is_fixed;
 }

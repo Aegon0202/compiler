@@ -56,7 +56,20 @@ void insertBlock(BlockBegin* block, list_entry_t* work_list_head) {
     return;
 }
 
-void numberLirOp(struct LinearList* blocks) {
+void __numberLirOpBlock(BlockBegin* block, void* args) {
+    int* begin_op_seq = (int*)args;
+    list_entry_t* ir_list = getIrListFromBlock(block);
+    list_entry_t* ir_elem = list_next(ir_list);
+    while (ir_list != ir_elem) {
+        le2struct(ir_elem, struct ArmIr, ir_link)->id = (*begin_op_seq);
+        (*begin_op_seq) += 2;
+        ir_elem = list_next(ir_elem);
+    }
+}
+
+void numberLirOp(struct DequeList* blocks) {
+    int cur_op_seq = 0;
+    gothrough_BlockBeginNode_list(blocks, __numberLirOpBlock, &cur_op_seq);
 }
 
 void __compute_loop_info_func(struct FuncTabElem* func) {
@@ -94,6 +107,17 @@ void computeLoopInfo() {
 
 struct DequeList* getSuccessors(BlockBegin* block) {
     list_entry_t* head = &(block->block->successors->block_link);
+    list_entry_t* next = list_next(head);
+    struct DequeList* succ = newDequeList();
+    while (head != next) {
+        pushFrontDequeList(succ, le2BasicBlock(next)->value);
+        next = list_next(next);
+    }
+    return succ;
+}
+
+struct DequeList* getpredecessors(BlockBegin* block) {
+    list_entry_t* head = &(block->block->predecessors->block_link);
     list_entry_t* next = list_next(head);
     struct DequeList* succ = newDequeList();
     while (head != next) {

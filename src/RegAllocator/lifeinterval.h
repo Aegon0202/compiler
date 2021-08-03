@@ -30,10 +30,14 @@ typedef struct Interval {
     IntervalList* split_childer;  //分割子区间链表[child1]->[child2] 节点类型:Interval
     int phisical_reg;
     int childrenNum;
+    int is_fixed;
 } Interval;
 
 Interval* getIntervalByVal(int reg_num);
 Interval* getFixIntervalByReg(int reg_num);
+RangeList* getFirstRange(Interval* interval);
+RangeList* getLastRange(Interval* interval);
+void build_interval(struct DequeList* start);
 int isIntervalFix(Interval*);
 
 #define le2IntervalList(elem) le2struct(elem, IntervalList, link)
