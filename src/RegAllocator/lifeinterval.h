@@ -35,4 +35,8 @@ typedef struct Interval {
 Interval* getIntervalByVal(int reg_num);
 Interval* getFixIntervalByReg(int reg_num);
 int isIntervalFix(Interval*);
+
+#define le2IntervalList(elem) le2struct(elem, IntervalList, link)
+#define le2RangeList(elem) le2struct(elem, RangeList, link)
+#define le2UsePositionList(elem) le2struct(elem, usepositionList, link)
 #endif
