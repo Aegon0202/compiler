@@ -67,6 +67,7 @@ struct CondOp {
 
 struct ArmIr {
     int type;
+    int id;
     struct CondOp* cond;
     void* op1;
     void* op2;

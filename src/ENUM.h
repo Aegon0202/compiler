@@ -123,6 +123,7 @@ enum {
     ARM_MUL,
     ARM_SMULL,
     ARM_SMMUL,
+    ARM_SDIV,
     ARM_MOV,
     ARM_MVN,
     ARM_MOVT,
