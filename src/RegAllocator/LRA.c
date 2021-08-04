@@ -186,8 +186,6 @@ int getFirstUsePos(Interval* interval) {
     return ans;
 }
 
-void makeRoomForCurrent(Interval* current, Interval* it) {
-    int n = getNextIntersect(it, current);
-    splitInterval(it, n);
-    return;
+int getOptimalPos(int n) {
+    return n - 2;
 }

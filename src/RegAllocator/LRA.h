@@ -6,7 +6,6 @@
 #include "./allocation.h"
 #include "./lifeinterval.h"
 #include "blockorder.h"
-
 #define lowBit(n) ((n) & (-n))
 #define is_One(n, index) ((n) & (0x1 << (index)))
 #define set_One(n, index) ((n) |= (0x1 << (index)))
@@ -27,11 +26,10 @@ struct DequeList* getBlock_out(BlockBegin*);
 
 //usepos序列可以无序
 int getFirstUsePos(Interval* interval);
-
+int getOptimalPos(int);
 void assign_reg2interval(Interval* current, int reg);
 
 //current 和it之间有交叉，需要将it切分，使得切分后的it与current没有交叉，切分一次
-void makeRoomForCurrent(Interval* current, Interval* it);
 
 void compute_local_live_set(struct DequeList* start);
 void compute_global_live_set(struct DequeList* start);

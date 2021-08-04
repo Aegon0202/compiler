@@ -4,7 +4,7 @@
 #include "./lifeinterval.h"
 
 //基本框架
-void walkIntervals(IntervalList* unhandled);
+void walkIntervals(struct DequeList* unhandled);
 
 //将itList从A移动到B
 void MoveitFromAtoB(list_entry_t* A, list_entry_t* B, IntervalList* itList);

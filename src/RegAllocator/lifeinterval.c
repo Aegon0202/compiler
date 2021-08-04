@@ -25,7 +25,7 @@ Interval* create_new_interval(int reg_num, Interval* parent) {
     return interval;
 }
 
-Interval* splitInterval(Interval* interval, int split_pos) {
+Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandled_list_head) {
     if (split_pos >= getFirstRange(interval)->begin || split_pos <= getLastRange(interval))
         PrintErrExit("inappropriate split point");
 
@@ -60,7 +60,23 @@ Interval* splitInterval(Interval* interval, int split_pos) {
         list_add_before(child_usepos_head, usepos_elem);
     }
 
+    //insert into unhandle while maintain the order
+    list_entry_t* unhandled_elem = list_next(unhandled_list_head);
+    while (unhandled_list_head != unhandled_elem) {
+        Interval* unhandled_value = le2IntervalList(unhandled_elem)->value;
+        if (getFirstRange(unhandled_value) > getFirstRange(child)->begin) break;
+        unhandled_elem = list_next(unhandled_elem);
+    }
+    MALLOC(inter_node, IntervalList, 1);
+    inter_node->value = child;
+    list_add_before(unhandled_elem, &inter_node->link);
     return child;
+}
+
+void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled) {
+    int n = getNextIntersect(it, current);
+    splitInterval(it, n, unhandled);
+    return;
 }
 
 RangeList* create_new_range(int from, int to) {
