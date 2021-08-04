@@ -23,7 +23,6 @@ int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, l
 
 //设置free_pos
 void set_free_pos(Interval* interval, int pos);
-
-//计算current与inactiveList 中Interval的交点
-int calculateIntersection(Interval* current);
+int isIntervalsect(Interval* current, Interval* it);
+int getNextIntersect(Interval* currrent, Interval* it);
 #endif
