@@ -119,4 +119,22 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
     }
 }
 int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head) {
-}
+    int free_pos[PHYSICAL_REGISTER_NUM];
+    memset(free_pos, MAX_NUM, PHYSICAL_REGISTER_NUM * sizeof(int));
+
+    list_entry_t* active_list_tmp = list_next(active_list_head);
+    while (active_list_tmp != active_list_head) {
+        IntervalList* itList = le2struct(active_list_tmp, IntervalList, link);
+        Interval* it = itList->value;
+        set_free_pos(it, 0);
+    }
+
+    list_entry_t* inactive_list_tmp = list_next(inactive_list_head);
+    while (inactive_list_tmp != inactive_list_head) {
+        IntervalList* initList = le2struct(inactive_list_tmp, IntervalList, link);
+        Interval* init = initList->value;
+        if (isIntersect(current, init)) {
+            int inter_pos = getNextIntersect(current, init);
+            set_free_pos(init, inter_pos);
+        }
+    }
