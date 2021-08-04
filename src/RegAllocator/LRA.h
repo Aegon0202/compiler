@@ -19,10 +19,20 @@ extern struct LinearList* reg2Intival;
 list_entry_t* getIrListFromBlock(BlockBegin*);
 int getFirstOpId(BlockBegin* block);
 int getLastOpId(BlockBegin*);
+
 struct DequeList* getBlock_kill(BlockBegin*);
 struct DequeList* getBlock_gen(BlockBegin*);
 struct DequeList* getBlock_in(BlockBegin*);
 struct DequeList* getBlock_out(BlockBegin*);
+
+//usepos序列可以无序
+int getFirstUsePos(Interval* interval);
+
+void assign_reg2interval(Interval* current, int reg);
+
+//current 和it之间有交叉，需要将it切分，使得切分后的it与current没有交叉，切分一次
+void makeRoomForCurrent(Interval* current, Interval* it);
+
 void compute_local_live_set(struct DequeList* start);
 void compute_global_live_set(struct DequeList* start);
 void resolve_data_flow(struct DequeList* block_list);

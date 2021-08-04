@@ -39,7 +39,12 @@ RangeList* getFirstRange(Interval* interval);
 RangeList* getLastRange(Interval* interval);
 void build_interval(struct DequeList* start);
 int isIntervalFix(Interval*);
-
+int getInterval_assigned_reg(Interval* interval);
+int isCoverd(Interval* it, int position);
+int isIntervalsect(Interval* current, Interval* it);
+int getNextIntersect(Interval* currrent, Interval* it);
+int getNextUsage(Interval*, int);
+Interval* splitInterval(Interval* interval, int split_pos);
 #define le2IntervalList(elem) le2struct(elem, IntervalList, link)
 #define le2RangeList(elem) le2struct(elem, RangeList, link)
 #define le2UsePositionList(elem) le2struct(elem, usepositionList, link)

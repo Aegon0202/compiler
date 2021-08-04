@@ -105,3 +105,89 @@ Interval* getIntervalByVal(int reg_num) {
 Interval* getFixIntervalByReg(int reg_num) {
     return NULL;
 }
+
+int getInterval_assigned_reg(Interval* interval) {
+    return interval->phisical_reg;
+}
+int isCoverd(Interval* it, int position) {
+    int flag = 0;
+    list_entry_t* range_list_head = &it->range_list->link;
+    list_entry_t* range_list_tmp = list_next(range_list_head);
+    while (range_list_tmp != range_list_head) {
+        int tmp_begin = le2struct(range_list_tmp, RangeList, link)->begin;
+        int tmp_end = le2struct(range_list_tmp, RangeList, link);
+        if (tmp_begin <= position && tmp_end > position) {
+            flag = 1;
+        }
+    }
+    return flag;
+}
+
+//如果有交集，返回的点是 it的某个range的起点
+int getNextIntersect(Interval* current, Interval* it) {
+    list_entry_t* current_range_list = &current->range_list->link;
+    list_entry_t* current_range_elem = list_next(current_range_list);
+
+    list_entry_t* it_range_list = &it->range_list->link;
+    list_entry_t* it_range_elem = list_next(it_range_list);
+
+    RangeList* current_range_value = le2RangeList(current_range_elem);
+    RangeList* it_range_value = le2RangeList(it_range_elem);
+
+    while (it_range_value->begin >= current_range_value->end && current_range_list != current_range_elem) {
+        current_range_elem = list_next(current_range_elem);
+        current_range_value = le2RangeList(current_range_elem);
+    }
+    while (it_range_value->end <= current_range_value->begin && it_range_list != &it_range_elem) {
+        it_range_elem = list_next(it_range_elem);
+        it_range_value = le2RangeList(it_range_elem);
+    }
+
+    if (current_range_list != current_range_elem && it_range_list != &it_range_elem) {
+        return it_range_value->begin;
+    }
+
+    return -1;
+}
+
+int isIntervalsect(Interval* it1, Interval* it2) {
+    if (getNextIntersect(it1, it2) == -1)
+        return 0;
+    else
+        return 1;
+}
+
+int getNextUsage(Interval* interval, int pos) {
+    list_entry_t* usepoint_list_head = &interval->usepostion->link;
+    list_entry_t* usepoint_list_elem = list_next(usepoint_list_head);
+    while (usepoint_list_head != usepoint_list_elem) {
+        usepositionList* usepoint_list_value = le2UsePositionList(usepoint_list_elem);
+        usepoint_list_elem = list_next(usepoint_list_elem);
+        if (pos < usepoint_list_value->position)
+            return usepoint_list_value->position;
+    }
+    return 0x3f3f3f3f;
+}
+
+void assign_reg2interval(Interval* current, int reg) {
+    current->phisical_reg = reg;
+}
+
+int getFirstUsePos(Interval* interval) {
+    list_entry_t* usepos_head = &interval->usepostion->link;
+    list_entry_t* usepos_elem = list_next(usepos_head);
+    int ans = 0x3f3f3f3f;
+    while (usepos_head != usepos_elem) {
+        int usepos_value = le2UsePositionList(usepos_elem)->position;
+        usepos_elem = list_next(usepos_elem);
+
+        ans = ans > usepos_value ? usepos_value : ans;
+    }
+    return ans;
+}
+
+void makeRoomForCurrent(Interval* current, Interval* it) {
+    int n = getNextIntersect(it, current);
+    splitInterval(it, n);
+    return;
+}
