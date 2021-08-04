@@ -74,6 +74,7 @@ void MoveitFromAtoB(list_entry_t* A, list_entry_t* B, IntervalList* itList) {
     list_del(&itList->link);
     list_add_after(B, &itList->link);
 }
+
 int isCoverd(Interval* it, int position) {
     int flag = 0;
     list_entry_t* range_list_head = &it->range_list->link;
