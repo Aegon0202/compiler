@@ -67,8 +67,7 @@ void LinearScanRegAllocation() {
     compute_global_live_set(block_seq);
 
     build_interval(block_seq);
-    IntervalList* unhandled_list = __init_unhandled_list();
-    walkIntervals(unhandled_list);
+    walkIntervals(block_seq);
     resolve_data_flow(block_seq);
     assign_phisical_reg_num(block_seq);
 }

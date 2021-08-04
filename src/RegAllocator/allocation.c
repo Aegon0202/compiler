@@ -40,6 +40,9 @@ int get_max_use_pos() {
     return get_max_pos(use_pos);
 }
 
+void __init_unhandled_list(list_entry_t* unhandled_head, struct DequeList* blocks) {
+}
+
 void walkIntervals(struct DequeList* blocks) {
     MALLOC(active_list, IntervalList, 1);
     MALLOC(inactive_list, IntervalList, 1);
@@ -56,7 +59,7 @@ void walkIntervals(struct DequeList* blocks) {
     list_init(active_list_head);
     list_init(inactive_list_head);
     list_init(handled_list_head);
-    __init_unhandled_list(blocks);
+    __init_unhandled_list(unhandled_list_head, blocks);
     //to be modified
     while (!list_empty(unhandled_list_head)) {
         list_entry_t* first = list_next(unhandled_list_head);
