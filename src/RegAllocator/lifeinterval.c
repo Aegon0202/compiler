@@ -25,6 +25,60 @@ Interval* create_new_interval(int reg_num, Interval* parent) {
     return interval;
 }
 
+Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandled_list_head) {
+    if (split_pos >= getFirstRange(interval)->begin || split_pos <= getLastRange(interval))
+        PrintErrExit("inappropriate split point");
+
+    Interval* child = create_new_interval(interval->reg_num, interval);
+    MALLOC(node, IntervalList, 1);
+    node->value = child;
+    list_add_before(&interval->split_childer->link, &node->link);
+
+    //process range
+    list_entry_t* child_range_head = &child->range_list->link;
+    list_entry_t* range_head = &interval->range_list->link;
+    list_entry_t* range_elem = list_next(range_head);
+    while (range_head != range_elem) {
+        RangeList* range_value = le2RangeList(range_elem);
+        range_elem = list_next(range_elem);
+        if (range_value->end >= split_pos) continue;
+
+        list_del(range_elem);
+        list_add_before(child_range_head, range_elem);
+    }
+
+    //process usepoint
+    list_entry_t* child_usepos_head = &child->usepostion->link;
+    list_entry_t* usepos_head = &interval->usepostion->link;
+    list_entry_t* usepos_elem = list_next(usepos_head);
+    while (usepos_elem != usepos_head) {
+        int usepos_value = le2UsePositionList(usepos_elem)->position;
+        usepos_elem = list_next(usepos_elem);
+        if (usepos_value < split_pos) continue;
+
+        list_del(usepos_elem);
+        list_add_before(child_usepos_head, usepos_elem);
+    }
+
+    //insert into unhandle while maintain the order
+    list_entry_t* unhandled_elem = list_next(unhandled_list_head);
+    while (unhandled_list_head != unhandled_elem) {
+        Interval* unhandled_value = le2IntervalList(unhandled_elem)->value;
+        if (getFirstRange(unhandled_value) > getFirstRange(child)->begin) break;
+        unhandled_elem = list_next(unhandled_elem);
+    }
+    MALLOC(inter_node, IntervalList, 1);
+    inter_node->value = child;
+    list_add_before(unhandled_elem, &inter_node->link);
+    return child;
+}
+
+void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled) {
+    int n = getNextIntersect(it, current);
+    splitInterval(it, n, unhandled);
+    return;
+}
+
 RangeList* create_new_range(int from, int to) {
     MALLOC(range, RangeList, 1);
     range->begin = from;

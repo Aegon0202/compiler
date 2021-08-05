@@ -60,7 +60,7 @@ void generator_func_head(struct FuncRegOffset* f_offset, FILE* out_file) {
     Fprintf(".align\t2\n");
     Fprintf(".global\t%s\n", name);
     Fprintf(".syntax\tunified\n");
-    Fprintf(".arch armv7-a\n");
+    Fprintf(".arch armv7ve\n");
     Fprintf(".arm\n");
     Fprintf(".type\t%s,\t%%function\n", name);
     FprintfWithoutIdent("%s:\n", name);
@@ -293,10 +293,11 @@ convert_ir_func_head(k_div) {
     get_op_macro;
     convert_operand_read(op1, A1, A4, b_offset, args);
     convert_operand_read(op2, A2, A4, b_offset, args);
-    Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
+    /*Fprintf("MOVW\t%s,\t#:lower16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
     Fprintf("MOVT\t%s,\t#:upper16:%s\n", reg_to_str(A3), "__aeabi_idivmod");
-    Fprintf("BLX\t%s\n", reg_to_str(A3));
-    convert_operand_write(op3, A1, A4, b_offset, args);
+    Fprintf("BLX\t%s\n", reg_to_str(A3));*/
+    Fprintf("SDIV\t%s,\t%s,\t%s\n", reg_to_str(A3), reg_to_str(A1), reg_to_str(A2));
+    convert_operand_write(op3, A3, A4, b_offset, args);
 }
 
 convert_ir_func_head(k_mod) {
