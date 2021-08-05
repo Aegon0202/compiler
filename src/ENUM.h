@@ -95,12 +95,6 @@ enum {
     ADDRESS,
     BASIC_BLOCK,
 
-    NOT_ON_STACK,
-    ON_STACK,
-    MUST_ON_STACK,
-    READ_REG,
-    WRITE_REG,
-
     R0 = 900,
     R1,
     R2,
