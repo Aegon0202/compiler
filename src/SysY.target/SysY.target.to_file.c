@@ -1,10 +1,14 @@
 #include <stdio.h>
 
 #include "../ssa/ssa.h"
+#include "../ssa/traverse.h"
 #include "./SysY.target.arm.h"
+#include "./SysY.target.offset.h"
 extern YYSTYPE result;
 #define Fprintf(...) fprintf(out_file, "\t"__VA_ARGS__)
 #define FprintfWithoutIdent(...) fprintf(out_file, __VA_ARGS__)
+
+extern struct FuncRegOffset* f_offset;
 
 const char* reg_to_str(int reg) {
     switch (reg) {
@@ -222,29 +226,40 @@ void __convert_ir_to_file(struct ArmIr* arm_ir, FILE* out_file) {
     }
 }
 
-void __convert_to_file(struct FuncTabElem* func, FILE* out_file) {
-    // func head
-    // Fprintf(".text\n");
-    // Fprintf(".align\t2\n");
-    // Fprintf(".global\t%s\n", func->name);
-    // Fprintf(".syntax\tunified\n");
-    // Fprintf(".arch armv7ve\n");
-    // Fprintf(".arm\n");
-    // Fprintf(".type\t%s,\t%%function\n", func->name);
-    // FprintfWithoutIdent("%s:\n", func->name);
-    // Fprintf("PUSH\t{%s}\n", reg_to_str(A4));
-    // Fprintf("PUSH\t{%s}\n", reg_to_str(A3));
-    // Fprintf("PUSH\t{%s}\n", reg_to_str(A2));
-    // Fprintf("PUSH\t{%s}\n", reg_to_str(A1));
-
-    // Fprintf("PUSH\t{%s,\t%s}\n", reg_to_str(FP), reg_to_str(LR));
-    // Fprintf("PUSH\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(V1), reg_to_str(V2), reg_to_str(V3), reg_to_str(V4), reg_to_str(V5), reg_to_str(V6), reg_to_str(V7));
-
-    // Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(FP), reg_to_str(SP), 32);
-    // Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), f_offset->max_offset & 0xffff);
-    // Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (f_offset->max_offset >> 16) & 0xffff);
-    // Fprintf("ADD\t%s,%s,%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
+void __convert_to_file_block(BlockBegin* block, void* args) {
+    FILE* out_file = (FILE*)args;
+    list_entry_t* arm_head = &block->block->arm_ir_list->ir_link;
+    list_entry_t* arm_elem = list_next(arm_head);
+    while (arm_head != arm_elem) {
+        struct ArmIr* arm_ir = le2struct(arm_elem, struct ArmIr, ir_link);
+        arm_elem = list_next(arm_elem);
+        __convert_ir_to_file(arm_ir, out_file);
+    }
 }
 
-void convertArmToFile(FILE* out_file) {
+void __convert_to_file(struct DequeList* block_list, FILE* out_file) {
+    struct FuncTabElem* func = f_offset->funcelem;
+
+    Fprintf(".text\n");
+    Fprintf(".align\t2\n");
+    Fprintf(".global\t%s\n", func->name);
+    Fprintf(".syntax\tunified\n");
+    Fprintf(".arch armv7ve\n");
+    Fprintf(".arm\n");
+    Fprintf(".type\t%s,\t%%function\n", func->name);
+    FprintfWithoutIdent("%s:\n", func->name);
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A4));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A3));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A2));
+    Fprintf("PUSH\t{%s}\n", reg_to_str(A1));
+
+    Fprintf("PUSH\t{%s,\t%s}\n", reg_to_str(FP), reg_to_str(LR));
+    Fprintf("PUSH\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(V1), reg_to_str(V2), reg_to_str(V3), reg_to_str(V4), reg_to_str(V5), reg_to_str(V6), reg_to_str(V7));
+
+    Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(FP), reg_to_str(SP), 32);
+    Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), f_offset->max_offset & 0xffff);
+    Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (f_offset->max_offset >> 16) & 0xffff);
+    Fprintf("ADD\t%s,%s,%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
+
+    gothrough_BlockBeginNode_list(block_list, __convert_to_file_block, out_file);
 }
