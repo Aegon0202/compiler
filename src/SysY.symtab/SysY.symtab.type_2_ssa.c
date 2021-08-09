@@ -706,19 +706,38 @@ void toSSAAssign(struct Assign* assign, BASIC_BLOCK_TYPE* basic_block) {
 
 void toSSALAndExp(struct LAndExp* landexp, BASIC_BLOCK_TYPE* true_block, BASIC_BLOCK_TYPE* false_block, BASIC_BLOCK_TYPE* basic_block) {
     struct LAndExp* head = landexp;
+    BASIC_BLOCK_TYPE* t_jump_block = NULL;
+    BASIC_BLOCK_TYPE* f_jump_block = NULL;
     do {
         OPERAND_TYPE* cond = toSSAEqExp(landexp->eqexp, basic_block);
         if (landexp->next != head) {
             BASIC_BLOCK_TYPE* new_block = newBasicBlock(NULL);
-            newIR(BRANCH, cond, toSSABasicBlock(new_block, basic_block), toSSABasicBlock(false_block, basic_block), basic_block);
-            addBasicBlockEdge(basic_block, new_block);
-            addBasicBlockEdge(basic_block, false_block);
+
+            t_jump_block = newBasicBlock(NULL);
+            newIR(JUMP, NULL, NULL, toSSABasicBlock(new_block, t_jump_block), t_jump_block);
+            addBasicBlockEdge(t_jump_block, new_block);
+
+            f_jump_block = newBasicBlock(NULL);
+            newIR(JUMP, NULL, NULL, toSSABasicBlock(false_block, f_jump_block), f_jump_block);
+            addBasicBlockEdge(f_jump_block, false_block);
+
+            newIR(BRANCH, cond, toSSABasicBlock(t_jump_block, basic_block), toSSABasicBlock(f_jump_block, basic_block), basic_block);
+            addBasicBlockEdge(basic_block, t_jump_block);
+            addBasicBlockEdge(basic_block, f_jump_block);
 
             basic_block = new_block;
         } else {
-            newIR(BRANCH, cond, toSSABasicBlock(true_block, basic_block), toSSABasicBlock(false_block, basic_block), basic_block);
-            addBasicBlockEdge(basic_block, true_block);
-            addBasicBlockEdge(basic_block, false_block);
+            t_jump_block = newBasicBlock(NULL);
+            newIR(JUMP, NULL, NULL, toSSABasicBlock(true_block, t_jump_block), t_jump_block);
+            addBasicBlockEdge(t_jump_block, true_block);
+
+            f_jump_block = newBasicBlock(NULL);
+            newIR(JUMP, NULL, NULL, toSSABasicBlock(false_block, f_jump_block), f_jump_block);
+            addBasicBlockEdge(f_jump_block, false_block);
+
+            newIR(BRANCH, cond, toSSABasicBlock(t_jump_block, basic_block), toSSABasicBlock(f_jump_block, basic_block), basic_block);
+            addBasicBlockEdge(basic_block, t_jump_block);
+            addBasicBlockEdge(basic_block, f_jump_block);
         }
         landexp = landexp->next;
     } while (landexp != head);

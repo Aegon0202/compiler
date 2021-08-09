@@ -76,6 +76,112 @@
         WRITE_OP(IR_instance->op3);                                                \
     }
 
+#define ARM_IR_OP_READ_WRITE(ARM_IR_INSTANCE, READ_REG, READ_OPERAND2, WRITE_REG, DEFAULT) \
+    switch (ARM_IR_INSTANCE->type) {                                                       \
+        case ARM_ADD:                                                                      \
+        case ARM_SUB:                                                                      \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_OPERAND2(ARM_IR_INSTANCE->op3);                                           \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_MUL:                                                                      \
+        case ARM_SDIV:                                                                     \
+        case ARM_SMMUL:                                                                    \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_REG(ARM_IR_INSTANCE->op3);                                                \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_MOV:                                                                      \
+        case ARM_MVN:                                                                      \
+            READ_OPERAND2(ARM_IR_INSTANCE->op2);                                           \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_CLZ:                                                                      \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_MOVW:                                                                     \
+        case ARM_MOVT:                                                                     \
+        case ARM_MOVW_L:                                                                   \
+        case ARM_MOVT_L:                                                                   \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_CMP:                                                                      \
+        case ARM_CMN:                                                                      \
+            READ_REG(ARM_IR_INSTANCE->op1);                                                \
+            READ_OPERAND2(ARM_IR_INSTANCE->op2);                                           \
+            break;                                                                         \
+        case ARM_B:                                                                        \
+        case ARM_BL:                                                                       \
+            break;                                                                         \
+        case ARM_BX:                                                                       \
+        case ARM_BLX:                                                                      \
+            READ_REG(ARM_IR_INSTANCE->op1);                                                \
+            break;                                                                         \
+        case ARM_LDR_I:                                                                    \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_LDR_I_PRE:                                                                \
+        case ARM_LDR_I_POST:                                                               \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            WRITE_REG(ARM_IR_INSTANCE->op2);                                               \
+            break;                                                                         \
+        case ARM_LDR_R:                                                                    \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_OPERAND2(ARM_IR_INSTANCE->op3);                                           \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            break;                                                                         \
+        case ARM_LDR_R_PRE:                                                                \
+        case ARM_LDR_R_POST:                                                               \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_OPERAND2(ARM_IR_INSTANCE->op3);                                           \
+            WRITE_REG(ARM_IR_INSTANCE->op1);                                               \
+            WRITE_REG(ARM_IR_INSTANCE->op2);                                               \
+            break;                                                                         \
+        case ARM_STR_I:                                                                    \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_REG(ARM_IR_INSTANCE->op1);                                                \
+            break;                                                                         \
+        case ARM_STR_I_PRE:                                                                \
+        case ARM_STR_I_POST:                                                               \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_REG(ARM_IR_INSTANCE->op1);                                                \
+            WRITE_REG(ARM_IR_INSTANCE->op2);                                               \
+            break;                                                                         \
+        case ARM_STR_R:                                                                    \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_OPERAND2(ARM_IR_INSTANCE->op3);                                           \
+            READ_REG(ARM_IR_INSTANCE->op1);                                                \
+            break;                                                                         \
+        case ARM_STR_R_PRE:                                                                \
+        case ARM_STR_R_POST:                                                               \
+            READ_REG(ARM_IR_INSTANCE->op2);                                                \
+            READ_OPERAND2(ARM_IR_INSTANCE->op3);                                           \
+            READ_REG(ARM_IR_INSTANCE->op1);                                                \
+            WRITE_REG(ARM_IR_INSTANCE->op2);                                               \
+            break;                                                                         \
+        case ARM_PUSH:                                                                     \
+        case ARM_POP:                                                                      \
+        case ARM_LABEL:                                                                    \
+            break;                                                                         \
+        default:                                                                           \
+            DEFAULT;                                                                       \
+    }                                                                                      \
+    if (ARM_IR_INSTANCE->type == ARM_PUSH) {                                               \
+        int PUSH_DEQUE_NUM = sizeDequeList(ARM_IR_INSTANCE->op1);                          \
+        for (int INDEX = 0; INDEX < PUSH_DEQUE_NUM; INDEX++) {                             \
+            READ_REG(getDequeList(ARM_IR_INSTANCE->op1, INDEX));                           \
+        }                                                                                  \
+    }                                                                                      \
+    if (ARM_IR_INSTANCE->type == ARM_POP) {                                                \
+        int PUSH_DEQUE_NUM = sizeDequeList(ARM_IR_INSTANCE->op1);                          \
+        for (int INDEX = 0; INDEX < PUSH_DEQUE_NUM; INDEX++) {                             \
+            WRITE_REG(getDequeList(ARM_IR_INSTANCE->op1, INDEX));                          \
+        }                                                                                  \
+    }
+
 int isWriteOp(IR_TYPE* IR_instance, int op_index);
 int isReadOp(IR_TYPE* IR_instance, int op_index);
 

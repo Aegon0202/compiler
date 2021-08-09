@@ -1,5 +1,7 @@
 #include "LRA.h"
 
+Interval* child_at(int reg_num, int op_id);
+
 int alloc_register();
 int MaxbitMapSize;        //当前dequelist中最多能够容纳多少元素个数（64的整数倍）
 int current_bitMap_size;  //当前位图元素个数
@@ -187,4 +189,65 @@ int getFirstUsePos(Interval* interval) {
 
 int getOptimalPos(int n) {
     return n - 2;
+}
+
+void __rename_reg_num(struct Register* reg, struct ArmIr* arm_ir) {
+    if (reg->type == PHISICAL) {
+        return;
+    }
+
+    Interval* it = child_at(reg->reg, arm_ir->id);
+    reg->type = PHISICAL;
+    reg->reg = it->phisical_reg;
+}
+
+void __rename_op2_num(struct Operand2* op2, struct ArmIr* arm_ir) {
+    if (op2->type != REGISTER) {
+        return;
+    }
+    __rename_reg_num(op2->Rm.reg, arm_ir);
+    if (op2->shift_op != REGISTER) {
+        return;
+    }
+    __rename_reg_num(op2->shift.reg, arm_ir);
+}
+
+void __assign_reg_num_block(BlockBegin* block, void* args) {
+    list_entry_t* arm_head = &block->block->arm_ir_list->ir_link;
+    list_entry_t* arm_elem = list_next(arm_head);
+    while (arm_head != arm_elem) {
+        struct ArmIr* arm_ir = le2struct(arm_elem, struct ArmIr, ir_link);
+        arm_elem = list_next(arm_elem);
+#define RENAME_REG(op) __rename_reg_num(op, arm_ir)
+#define RENAME_OP2(op) __rename_op2_num(op, arm_ir)
+        ARM_IR_OP_READ_WRITE(arm_ir, RENAME_REG, RENAME_OP2, RENAME_REG, PrintErrExit("not support arm ir type %s", EnumTypeToString(arm_ir->type)););
+#undef RENAME_REG
+#undef RENAME_OP2
+    }
+}
+
+void assign_reg_num(struct DequeList* block_list) {
+    gothrough_BlockBeginNode_list_reverse(block_list, __assign_reg_num_block, NULL);
+}
+
+Interval* __find_child(Interval* p_it, int op_id) {
+    if (op_id >= getFirstRange(p_it)->begin && op_id < getLastRange(p_it)) {
+        return p_it;
+    }
+    list_entry_t* head = &p_it->split_childer->link;
+    list_entry_t* elem = list_next(head);
+    while (head != elem) {
+        Interval* c_it = le2BlockBeginNode(elem)->value;
+        elem = list_next(elem);
+        Interval* r_it = __find_child(c_it, op_id);
+        if (r_it != NULL) {
+            return r_it;
+        }
+    }
+    return NULL;
+}
+
+Interval* child_at(int reg_num, int op_id) {
+    Interval* p_it = getIntervalByVal(reg_num);
+    return __find_child(p_it, op_id);
 }

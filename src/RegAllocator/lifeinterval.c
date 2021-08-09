@@ -112,24 +112,39 @@ void add_use_pos(Interval* inter, usepositionList* use_pos) {
     list_add(&inter->usepostion->link, &use_pos->link);
 }
 
-static void __build_interval_read_op(OPERAND_TYPE* op, IR_TYPE* ir, int block_from) {
-    if (op->type != REGISTER) {
-        return;
+static void __build_interval_read_reg(struct Register* reg, struct ArmIr* arm_ir, int block_from) {
+    int op_id = arm_ir->id;
+    Interval* inter = NULL;
+    if (reg->type == REGISTER) {
+        inter = getIntervalByVal(reg->reg);
+    } else {
+        inter = getFixIntervalByReg(reg->reg);
     }
-    int op_id = ir->operation_id;
-    Interval* inter = getIntervalByVal(op->operand.reg_idx);
     add_range(inter, create_new_range(block_from, op_id + id_inc - 1));
     add_use_pos(inter, create_new_useposition(op_id));
 }
 
-static void __build_interval_write_op(OPERAND_TYPE* op, IR_TYPE* ir, int block_to) {
-    if (op->type != REGISTER) {
-        return;
+static void __build_interval_write_reg(struct Register* reg, struct ArmIr* arm_ir, int block_to) {
+    int op_id = arm_ir->id;
+    Interval* inter = NULL;
+    if (reg->type == REGISTER) {
+        inter = getIntervalByVal(reg->reg);
+    } else {
+        inter = getFixIntervalByReg(reg->reg);
     }
-    int op_id = ir->operation_id;
-    Interval* inter = getIntervalByVal(op->operand.reg_idx);
     add_range(inter, create_new_range(op_id, block_to));
     add_use_pos(inter, create_new_useposition(op_id));
+}
+
+static void __build_interval_op2(struct Operand2* op2, struct ArmIr* arm_ir, int block_from) {
+    if (op2->type != REGISTER) {
+        return;
+    }
+    __build_interval_read_reg(op2->Rm.reg, arm_ir, block_from);
+    if (op2->shift_op != REGISTER) {
+        return;
+    }
+    __build_interval_read_reg(op2->shift.reg, arm_ir, block_from);
 }
 
 void build_interval_block(BlockBegin* block, void* args) {
@@ -152,44 +167,14 @@ void build_interval_block(BlockBegin* block, void* args) {
     list_entry_t* ir_elem = list_prev(head);
     IR_LIST_TYPE* last_call = NULL;
     while (head != ir_elem) {
-        IR_TYPE* ir = le2struct(ir_elem, IR_TYPE, ir_link);
-#define READ_OP(op) __build_interval_read_op(op, ir, block_from)
-#define WRITE_OP(op) __build_interval_write_op(op, ir, block_to)
-        IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, ;)
-#undef READ_OP
-#undef WRITE_OP
-        if (ir->type == CALL) {
-            last_call = ir;
-            Interval* inter = getFixIntervalByReg(R0);
-            int op_id = ir->operation_id;
-            add_range(inter, create_new_range(op_id, op_id + id_inc - 1));
-            add_use_pos(inter, create_new_useposition(op_id));
-        } else if (ir->type == PARAM) {
-            Interval* inter = NULL;
-            switch (ir->op2->operand.v.intValue) {
-                case 0:
-                    inter = getFixIntervalByReg(R0);
-                    break;
-                case 1:
-                    inter = getFixIntervalByReg(R1);
-                    break;
-                case 2:
-                    inter = getFixIntervalByReg(R2);
-                    break;
-                case 3:
-                    inter = getFixIntervalByReg(R3);
-                    break;
-                default:
-                    break;
-            }
-            if (inter) {
-                int op_id = ir->operation_id;
-                int call_id = last_call->operation_id;
-                add_range(inter, create_new_range(op_id, call_id + id_inc - 1));
-                add_use_pos(inter, create_new_useposition(op_id));
-                add_use_pos(inter, create_new_useposition(call_id));
-            }
-        }
+        struct ArmIr* ir = le2struct(ir_elem, struct ArmIr, ir_link);
+#define READ_REG(op) __build_interval_read_reg(op, ir, block_from)
+#define READ_OP2(op) __build_interval_op2(op, ir, block_from)
+#define WRITE_REG(op) __build_interval_write_reg(op, ir, block_to)
+        ARM_IR_OP_READ_WRITE(ir, READ_REG, READ_OP2, WRITE_REG, PrintErrExit("not support arm ir type"););
+#undef READ_REG
+#undef READ_OP2
+#undef WRITE_REG
         ir_elem = list_prev(ir_elem);
     }
 }

@@ -4,7 +4,6 @@
 #include "../ssa/traverse.h"
 #include "../utils/IrType.h"
 #include "../utils/Malloc.h"
-#include "./SysY.target.arm.h"
 
 struct BlockRegOffset* newBlockRegOffset(BASIC_BLOCK_TYPE* basic_block, int now_offset) {
     MALLOC(b_offset, struct BlockRegOffset, 1);
@@ -26,11 +25,14 @@ struct FuncRegOffset* newFuncRegOffset(struct FuncTabElem* elem) {
     return f_offset;
 }
 
-void __calc_in_block_reg_offset(struct Register* reg, struct BlockRegOffset* b_offset, struct FuncRegOffset* f_offset) {
-    if (reg == NULL || reg->type != REGISTER) {  // other is immi
+void __calc_in_block_reg_offset(OPERAND_TYPE* op, struct BlockRegOffset* b_offset, struct FuncRegOffset* f_offset) {
+    if (op == NULL) {
         return;
     }
-    int reg_idx = reg->reg;
+    if (op->type != REGISTER) {  // other is immi
+        return;
+    }
+    int reg_idx = op->operand.reg_idx;
 
     int* offset_p = getLinearList(f_offset->reg_offset, reg_idx);
     IfNull(offset_p, offset_p = getLinearList(b_offset->reg_offset, reg_idx););
@@ -42,17 +44,6 @@ void __calc_in_block_reg_offset(struct Register* reg, struct BlockRegOffset* b_o
     }
 }
 
-void __calc_in_block_op2_offset(struct Operand2* op2, struct BlockRegOffset* b_offset, struct FuncRegOffset* f_offset) {
-    if (op2 == NULL || op2->type != REGISTER) {  // other is immi
-        return;
-    }
-    __calc_in_block_reg_offset(op2->Rm.reg, b_offset, f_offset);
-    if (op2->shift_type == NOP || op2->shift_op != REGISTER) {
-        return;
-    }
-    __calc_in_block_reg_offset(op2->shift.reg, b_offset, f_offset);
-}
-
 void __calc_in_block_offset(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct FuncRegOffset* f_offset = (struct FuncRegOffset*)args;
     list_entry_t* head = &(basic_block->ir_list->ir_link);
@@ -60,32 +51,35 @@ void __calc_in_block_offset(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct BlockRegOffset* b_offset = getLinearList(f_offset->block_offsets, (size_t)basic_block);
     b_offset->now_offset = f_offset->now_offset;
 
+#define READ_OP(op) __calc_in_block_reg_offset(op, b_offset, f_offset);
+#define WRITE_OP(op) __calc_in_block_reg_offset(op, b_offset, f_offset);
+
     while (head != next) {
         IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
 
-#define READ_REG(op) __calc_in_block_reg_offset(op, b_offset, f_offset);
-#define READ_OP2(op) __calc_in_block_op2_offset(op, b_offset, f_offset);
-#define WRITE_REG(op) __calc_in_block_reg_offset(op, b_offset, f_offset);
-        ARM_IR_OP_READ_WRITE(ir, READ_REG, READ_OP2, WRITE_REG, PrintErrExit("not support arm ir type %s", EnumTypeToString(ir->type)););
-#undef READ_REG
-#undef READ_OP2
-#undef WRITE_REG
+        IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit("Not support ir type %s", EnumTypeToString(ir->type)););
 
         next = list_next(next);
     }
 
     f_offset->max_offset = f_offset->max_offset < b_offset->now_offset ? f_offset->max_offset : b_offset->now_offset;
+
+#undef READ_OP
+#undef WRITE_OP
 }
 
-void __calc_between_block_reg_offset(struct Register* reg, struct BlockRegOffset* b_offset, struct FuncRegOffset* f_offset) {
-    if (reg == NULL || reg->type != REGISTER) {  // other is immi
+void __calc_between_block_reg_offset(OPERAND_TYPE* op, struct BlockRegOffset* b_offset, struct FuncRegOffset* f_offset) {
+    if (op == NULL) {
         return;
     }
-    int reg_idx = reg->reg;
+    if (op->type != REGISTER) {  // other is immi
+        return;
+    }
+    int reg_idx = op->operand.reg_idx;
 
     int* offset_p = getLinearList(f_offset->reg_offset, reg_idx);
     if (offset_p == NULL) {
-        struct VarTabElem* vte = getLinearList(reg_id_vartabelem, reg_idx - BEGIN_REG_NUM);
+        struct VarTabElem* vte = getLinearList(reg_id_vartabelem, reg_idx);
         if (vte != NULL && vte->offset != INT32_MAX) {
             MALLOC(offset_p, int, 1)
             *offset_p = vte->offset;
@@ -130,17 +124,6 @@ void __calc_between_block_reg_offset(struct Register* reg, struct BlockRegOffset
     }
 }
 
-void __calc_between_block_op2_offset(struct Operand2* op2, struct BlockRegOffset* b_offset, struct FuncRegOffset* f_offset) {
-    if (op2 == NULL || op2->type != REGISTER) {
-        return;
-    }
-    __calc_between_block_reg_offset(op2->Rm.reg, b_offset, f_offset);
-    if (op2->shift_type == NOP || op2->shift_op != REGISTER) {
-        return;
-    }
-    __calc_between_block_reg_offset(op2->shift.reg, b_offset, f_offset);
-}
-
 void __calc_between_block_offset(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct FuncRegOffset* f_offset = (struct FuncRegOffset*)args;
     list_entry_t* head = &(basic_block->ir_list->ir_link);
@@ -148,27 +131,29 @@ void __calc_between_block_offset(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct BlockRegOffset* b_offset = newBlockRegOffset(basic_block, f_offset->max_offset);
     setLinearList(f_offset->block_offsets, (size_t)basic_block, b_offset);
 
+#define READ_OP(op) __calc_between_block_reg_offset(op, b_offset, f_offset);
+#define WRITE_OP(op) __calc_between_block_reg_offset(op, b_offset, f_offset);
+
     while (head != next) {
         IR_TYPE* ir = le2struct(next, IR_TYPE, ir_link);
-#define READ_REG(op) __calc_between_block_reg_offset(op, b_offset, f_offset);
-#define READ_OP2(op) __calc_between_block_op2_offset(op, b_offset, f_offset);
-#define WRITE_REG(op) __calc_between_block_reg_offset(op, b_offset, f_offset);
-        ARM_IR_OP_READ_WRITE(ir, READ_REG, READ_OP2, WRITE_REG, PrintErrExit("not support arm ir type %s", EnumTypeToString(ir->type)););
-#undef READ_REG
-#undef READ_OP2
-#undef WRITE_REG
+
+        IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, PrintErrExit("Not support ir type %s", EnumTypeToString(ir->type)););
+
         next = list_next(next);
     }
 
     f_offset->max_offset = f_offset->max_offset < b_offset->now_offset ? f_offset->max_offset : b_offset->now_offset;
+
+#undef READ_OP
+#undef WRITE_OP
 }
 
-void __add_reg_to_user(struct Register* reg, BASIC_BLOCK_TYPE* block, struct LinearList* reg_2_user) {
-    IfNull(reg, return;);
-    if (reg->type != REGISTER) {
+void __add_op_to_user(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* block, struct LinearList* reg_2_user) {
+    IfNull(op, return;);
+    if (op->type != REGISTER) {
         return;
     }
-    int reg_idx = reg->reg;
+    int reg_idx = op->operand.reg_idx;
     struct Item* item = getLinearList(reg_2_user, reg_idx);
     if (item == NULL) {
         MALLOC_WITHOUT_DECLARE(item, struct Item, 1);
@@ -180,24 +165,12 @@ void __add_reg_to_user(struct Register* reg, BASIC_BLOCK_TYPE* block, struct Lin
     pushFrontDequeList(item->value, block);
 }
 
-void __add_op2_to_user(struct Operand2* op2, BASIC_BLOCK_TYPE* block, struct LinearList* reg_2_user) {
-    IfNull(op2, return;);
-    if (op2->type != REGISTER) {
+void __add_op_to_def(OPERAND_TYPE* op, BASIC_BLOCK_TYPE* block, struct LinearList* reg_2_def) {
+    IfNull(op, return;);
+    if (op->type != REGISTER) {
         return;
     }
-    __add_reg_to_user(op2->Rm.reg, block, reg_2_user);
-    if (op2->shift_type == NOP || op2->shift_op != REGISTER) {
-        return;
-    }
-    __add_reg_to_user(op2->shift.reg, block, reg_2_user);
-}
-
-void __add_reg_to_def(struct Register* reg, BASIC_BLOCK_TYPE* block, struct LinearList* reg_2_def) {
-    IfNull(reg, return;);
-    if (reg->type != REGISTER) {
-        return;
-    }
-    int reg_idx = reg->reg;
+    int reg_idx = op->operand.reg_idx;
     struct Item* item = getLinearList(reg_2_def, reg_idx);
     if (item == NULL) {
         MALLOC_WITHOUT_DECLARE(item, struct Item, 1);
@@ -213,17 +186,15 @@ void __add_user_block_to_def(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct FuncRegOffset* f_offset = (struct FuncRegOffset*)args;
     struct LinearList* reg_2_user = f_offset->reg_2_users;
     struct LinearList* reg_2_def = f_offset->reg_2_defs;
-    list_entry_t* ir_head = &basic_block->arm_ir_list->ir_link;
+    list_entry_t* ir_head = &basic_block->ir_list->ir_link;
     list_entry_t* ir_next = list_next(ir_head);
     while (ir_head != ir_next) {
-        struct ArmIr* ir = le2struct(ir_next, struct ArmIr, ir_link);
-#define READ_REG(op) __add_reg_to_user(op, basic_block, reg_2_user);
-#define READ_OP2(op) __add_op2_to_user(op, basic_block, reg_2_user);
-#define WRITE_REG(op) __add_reg_to_def(op, basic_block, reg_2_user);
-        ARM_IR_OP_READ_WRITE(ir, READ_REG, READ_OP2, WRITE_REG, PrintErrExit("not support arm ir type %s", EnumTypeToString(ir->type)););
-#undef READ_REG
-#undef READ_OP2
-#undef WRITE_REG
+        IR_TYPE* ir = le2struct(ir_next, IR_TYPE, ir_link);
+#define READ_OP(op) __add_op_to_user(op, basic_block, reg_2_user)
+#define WRITE_OP(op) __add_op_to_def(op, basic_block, reg_2_def)
+        IR_OP_READ_WRITE(ir, READ_OP, WRITE_OP, break;);
+#undef READ_OP
+#undef WRITE_OP
         ir_next = list_next(ir_next);
     }
 }
