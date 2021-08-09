@@ -14,6 +14,7 @@
 #define SingleBitMapSub(a, b) ((a) & (~(b)))
 #define id_inc 2
 
+extern struct FuncRegOffset* f_offset;
 extern struct LinearList* reg2Intival;
 list_entry_t* getIrListFromBlock(BlockBegin*);
 int getFirstOpId(BlockBegin* block);

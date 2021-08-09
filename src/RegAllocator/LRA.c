@@ -230,3 +230,25 @@ void __assign_reg_num_block(BlockBegin* block, void* args) {
 void assign_reg_num(struct DequeList* block_list) {
     gothrough_BlockBeginNode_list_reverse(block_list, __assign_reg_num_block, NULL);
 }
+
+Interval* __find_child(Interval* p_it, int op_id) {
+    if (op_id >= getFirstRange(p_it)->begin && op_id < getLastRange(p_it)) {
+        return p_it;
+    }
+    list_entry_t* head = &p_it->split_childer->link;
+    list_entry_t* elem = list_next(head);
+    while (head != elem) {
+        Interval* c_it = le2BlockBeginNode(elem)->value;
+        elem = list_next(elem);
+        Interval* r_it = __find_child(c_it, op_id);
+        if (r_it != NULL) {
+            return r_it;
+        }
+    }
+    return NULL;
+}
+
+Interval* child_at(int reg_num, int op_id) {
+    Interval* p_it = getIntervalByVal(reg_num);
+    return __find_child(p_it, op_id);
+}
