@@ -3,12 +3,37 @@
 #include "../ssa/ssa.h"
 #include "../ssa/traverse.h"
 #include "./SysY.target.arm.h"
-#include "./SysY.target.offset.h"
 extern YYSTYPE result;
+extern struct DequeList* string_queue;
 #define Fprintf(...) fprintf(out_file, "\t"__VA_ARGS__)
 #define FprintfWithoutIdent(...) fprintf(out_file, __VA_ARGS__)
 
-extern struct FuncRegOffset* f_offset;
+void generator_string(const char* name, const char* content, FILE* out_file) {
+    Fprintf(".section\t.rodata\n");
+    Fprintf(".align\t2\n");
+    FprintfWithoutIdent("%s:\n", name);
+    *(strchr(content, 0) - 1) = '\0';
+    Fprintf(".ascii\t\"%s\\000\"\n", content + 1);
+}
+
+void generator_global_data(struct VarTabElem* elem, FILE* out_file) {
+    if (elem->level != 0) {
+        return;
+    }
+    Fprintf(".data\n");
+    Fprintf(".align\t2\n");
+    Fprintf(".global\t%s\n", elem->name);
+    Fprintf(".type\t%s,\t%%object\n", elem->name);
+    Fprintf(".size\t%s,\t%d\n", elem->name, elem->size);
+    FprintfWithoutIdent("%s:\n", elem->name);
+    if (elem->const_init_value != NULL) {
+        for (int i = 0; i < elem->size / INT_SIZE; i++) {
+            Fprintf(".word\t%d\n", elem->const_init_value[i]);
+        }
+    } else {
+        Fprintf(".space\t%d\n", elem->size);
+    }
+}
 
 const char* reg_to_str(int reg) {
     switch (reg) {
@@ -237,9 +262,7 @@ void __convert_to_file_block(BlockBegin* block, void* args) {
     }
 }
 
-void __convert_to_file(struct DequeList* block_list, FILE* out_file) {
-    struct FuncTabElem* func = f_offset->funcelem;
-
+void __convert_to_file(struct FuncTabElem* func, struct DequeList* block_list, FILE* out_file) {
     Fprintf(".text\n");
     Fprintf(".align\t2\n");
     Fprintf(".global\t%s\n", func->name);
@@ -257,9 +280,24 @@ void __convert_to_file(struct DequeList* block_list, FILE* out_file) {
     Fprintf("PUSH\t{%s,\t%s,\t%s,\t%s,\t%s,\t%s,\t%s}\n", reg_to_str(V1), reg_to_str(V2), reg_to_str(V3), reg_to_str(V4), reg_to_str(V5), reg_to_str(V6), reg_to_str(V7));
 
     Fprintf("ADD\t%s,\t%s,\t#%d\n", reg_to_str(FP), reg_to_str(SP), 32);
-    Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), f_offset->max_offset & 0xffff);
-    Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (f_offset->max_offset >> 16) & 0xffff);
+    Fprintf("MOVW\t%s,\t#0x%04x\n", reg_to_str(A1), func->var_offset_end & 0xffff);
+    Fprintf("MOVT\t%s,\t#0x%04x\n", reg_to_str(A1), (func->var_offset_end >> 16) & 0xffff);
     Fprintf("ADD\t%s,%s,%s\n", reg_to_str(SP), reg_to_str(SP), reg_to_str(A1));
 
     gothrough_BlockBeginNode_list(block_list, __convert_to_file_block, out_file);
+}
+
+void generateGlobalToOutFile(FILE* out_file) {
+    struct BlockTabElem* b_elem = getLastDisplay(display);
+    struct VarTabElem* vte = b_elem->last;
+    while (vte != NULL) {
+        generator_global_data(vte, out_file);
+        vte = vte->link;
+    }
+    while (!isEmptyDequeList(string_queue)) {
+        struct Item* item = popFrontDequeList(string_queue);
+        generator_string(item->key, item->value, out_file);
+        free(item->key);
+        free(item);
+    }
 }

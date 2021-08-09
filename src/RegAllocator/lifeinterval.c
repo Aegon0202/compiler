@@ -4,7 +4,7 @@
 
 int __lowBitToNum(unsigned long long int n) {
     int j = 0;
-    while (n = n >> 1) {
+    while ((n = n >> 1)) {
         j++;
     }
     return j;
@@ -78,7 +78,7 @@ Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandl
     list_entry_t* unhandled_elem = list_next(unhandled_list_head);
     while (unhandled_list_head != unhandled_elem) {
         Interval* unhandled_value = le2IntervalList(unhandled_elem)->value;
-        if (getFirstRange(unhandled_value) > getFirstRange(child)->begin) break;
+        if (getFirstRange(unhandled_value)->begin > getFirstRange(child)->begin) break;
         unhandled_elem = list_next(unhandled_elem);
     }
 
@@ -158,11 +158,8 @@ void add_use_pos(Interval* inter, usepositionList* use_pos) {
 static void __build_interval_read_reg(struct Register* reg, struct ArmIr* arm_ir, int block_from) {
     int op_id = arm_ir->id;
     Interval* inter = NULL;
-    if (reg->type == REGISTER) {
-        inter = getIntervalByVal(reg->reg);
-    } else {
-        inter = getFixIntervalByReg(reg->reg);
-    }
+    inter = getIntervalByVal(reg->reg);
+
     add_range(inter, create_new_range(block_from, op_id + id_inc - 1));
     add_use_pos(inter, create_new_useposition(op_id));
 }
@@ -170,11 +167,8 @@ static void __build_interval_read_reg(struct Register* reg, struct ArmIr* arm_ir
 static void __build_interval_write_reg(struct Register* reg, struct ArmIr* arm_ir, int block_to) {
     int op_id = arm_ir->id;
     Interval* inter = NULL;
-    if (reg->type == REGISTER) {
-        inter = getIntervalByVal(reg->reg);
-    } else {
-        inter = getFixIntervalByReg(reg->reg);
-    }
+    inter = getIntervalByVal(reg->reg);
+
     add_range(inter, create_new_range(op_id, block_to));
     add_use_pos(inter, create_new_useposition(op_id));
 }
@@ -208,7 +202,7 @@ void build_interval_block(BlockBegin* block, void* args) {
     }
     list_entry_t* head = getIrListFromBlock(block);
     list_entry_t* ir_elem = list_prev(head);
-    IR_LIST_TYPE* last_call = NULL;
+
     while (head != ir_elem) {
         struct ArmIr* ir = le2struct(ir_elem, struct ArmIr, ir_link);
 #define READ_REG(op) __build_interval_read_reg(op, ir, block_from)
@@ -218,6 +212,27 @@ void build_interval_block(BlockBegin* block, void* args) {
 #undef READ_REG
 #undef READ_OP2
 #undef WRITE_REG
+        if (ir->type == ARM_BL && ir->op2 != NULL) {
+            struct Register reg;
+            int param_num = *(int*)(ir->op2);
+            reg.type = PHISICAL;
+#define tmp_macro(num)                                   \
+    if (param_num >= num) {                              \
+        reg.reg = A##num;                                \
+        __build_interval_read_reg(&reg, ir, block_from); \
+    }
+            tmp_macro(1);
+            tmp_macro(2);
+            tmp_macro(3);
+            tmp_macro(4);
+#undef tmp_macro
+        }
+        if (ir->type == ARM_BX) {
+            struct Register reg;
+            reg.type = PHISICAL;
+            reg.reg = A1;
+            __build_interval_read_reg(&reg, ir, block_from);
+        }
         ir_elem = list_prev(ir_elem);
     }
 }

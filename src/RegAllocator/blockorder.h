@@ -27,8 +27,7 @@ typedef struct BlockBeginNode {
 } BlockBeginNode;
 
 //nimen
-// 在所有函数分配之前只调用一次，遍历符号表，将所有的函数涉及到的循环信息计算出来
-void computeLoopInfo();
+
 //successor 是一个blockbegin*
 struct DequeList* getSuccessors(BlockBegin* block);
 struct DequeList* getPredecessors(BlockBegin* block);

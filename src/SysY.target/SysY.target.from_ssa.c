@@ -1,8 +1,15 @@
+#ifdef __STDC_ALLOC_LIB__
+#define __STDC_WANT_LIB_EXT2__ 1
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "../ssa/ssa.h"
 #include "../ssa/traverse.h"
 #include "./SysY.target.arm.h"
 
 struct DequeList* string_queue;
+struct Operand2* __convert_op_to_op2(OPERAND_TYPE* op, struct DequeList* queue, struct FuncTabElem* func);
 
 const char* block_label(const char* func_name, BASIC_BLOCK_TYPE* basic_block) {
     static char buffer[100];
@@ -77,6 +84,7 @@ struct Label* __convert_op_to_label(OPERAND_TYPE* op, struct FuncTabElem* func) 
         default:
             PrintErrExit("label not support op type %s\n", EnumTypeToString(op->type));
     }
+    return NULL;
 }
 
 struct Register* __convert_op_to_reg(OPERAND_TYPE* op, struct DequeList* queue, struct FuncTabElem* func) {
@@ -172,32 +180,30 @@ struct Register* __convert_op_to_reg(OPERAND_TYPE* op, struct DequeList* queue, 
         pushFrontDequeList(queue, arm_ir);
 
         return newRegister(REGISTER, new_reg_num);
-    } else {
-        PrintErrExit("not support op type %s", EnumTypeToString(op->type));
     }
+
+    PrintErrExit("not support op type %s", EnumTypeToString(op->type));
+    return NULL;
 }
 
 struct Operand2* __convert_op_to_op2(OPERAND_TYPE* op, struct DequeList* queue, struct FuncTabElem* func) {
-    struct Operand2* op2;
-    struct ArmIr* arm_ir;
-
     if (op->type == INT) {
         long long int num = op->operand.v.intValue;
         if (num >= INT8_MIN && num <= INT8_MAX) {
-            return newOperand(IMMI_8, newImmi_8(num));
+            return newOperand2(IMMI_8, newImmi_8(num));
         }
     }
-    return newOperand(REGISTER, __convert_op_to_reg(op, queue, func));
+    return newOperand2(REGISTER, __convert_op_to_reg(op, queue, func));
 }
 
 void __generator_func_return(struct DequeList* queue) {
-    OPERAND_TYPE* tmp_op;
+    OPERAND_TYPE tmp_op;
     struct ArmIr* arm_ir;
     void* arm_op1;
     void* arm_op2;
     void* arm_op3;
-    tmp_op->type = INT;
-    tmp_op->operand.v.intValue = -32;
+    tmp_op.type = INT;
+    tmp_op.operand.v.intValue = -32;
     arm_op1 = newRegister(PHISICAL, SP);
     arm_op2 = newRegister(PHISICAL, FP);
     arm_op3 = __convert_op_to_op2(&tmp_op, queue, NULL);
@@ -221,7 +227,7 @@ void __generator_func_return(struct DequeList* queue) {
     arm_ir = newArmIr(ARM_POP, NULL, arm_op1, NULL, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
-    tmp_op->operand.v.intValue = 16;
+    tmp_op.operand.v.intValue = 16;
     arm_op1 = newRegister(PHISICAL, SP);
     arm_op2 = newRegister(PHISICAL, SP);
     arm_op3 = __convert_op_to_op2(&tmp_op, queue, NULL);
@@ -232,7 +238,7 @@ void __generator_func_return(struct DequeList* queue) {
 #define func_head(type) void __convert_##type##_to_arm(IR_TYPE* ir, struct DequeList* queue, BASIC_BLOCK_TYPE* block, struct FuncTabElem* func)
 
 #define operands                 \
-    struct ArmTr* arm_ir = NULL; \
+    struct ArmIr* arm_ir = NULL; \
     struct CondOp* cond = NULL;  \
     void* arm_op1 = NULL;        \
     void* arm_op2 = NULL;        \
@@ -240,16 +246,22 @@ void __generator_func_return(struct DequeList* queue) {
     void* arm_op4 = NULL;
 
 func_head(jump) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+
     arm_op1 = __convert_op_to_label(ir->op3, func);
     arm_ir = newArmIr(ARM_B, NULL, arm_op1, NULL, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 }
 
 func_head(branch) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    struct CondOp* cond = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+
     arm_op1 = __convert_op_to_reg(ir->op1, queue, func);
-    arm_op2 = newOperand(IMMI_8, newImmi_8(0));
+    arm_op2 = newOperand2(IMMI_8, newImmi_8(0));
     arm_ir = newArmIr(ARM_CMP, NULL, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
     arm_op2 = NULL;
@@ -259,14 +271,16 @@ func_head(branch) {
     arm_ir = newArmIr(ARM_B, cond, arm_op1, NULL, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
-    cond = NULL;
     arm_op1 = __convert_op_to_label(ir->op2, func);
     arm_ir = newArmIr(ARM_B, NULL, arm_op1, NULL, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 }
 
 func_head(return_stmt) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+
     arm_op1 = newRegister(PHISICAL, A1);
     arm_op2 = __convert_op_to_reg(ir->op1, queue, func);
     arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
@@ -279,7 +293,11 @@ func_head(return_stmt) {
 }
 
 func_head(load) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
+
     arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
     arm_op2 = __convert_op_to_reg(ir->op1, queue, func);
     if (ir->op2->type == INT &&
@@ -296,7 +314,11 @@ func_head(load) {
 }
 
 func_head(store) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
+
     arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
     arm_op2 = __convert_op_to_reg(ir->op1, queue, func);
     if (ir->op2->type == INT &&
@@ -313,7 +335,10 @@ func_head(store) {
 }
 
 func_head(assign) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
 
     if (ir->op1->type == INT) {
         long long int num = ir->op1->operand.v.intValue;
@@ -332,25 +357,25 @@ func_head(assign) {
         pushFrontDequeList(queue, arm_ir);
     } else if (ir->op1->type == FRAMEPOINT) {
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-        void* arm_op2 = newRegister(PHISICAL, FP);
+        arm_op2 = newRegister(PHISICAL, FP);
         OPERAND_TYPE tmp_op;
         tmp_op.type = INT;
         tmp_op.operand.v.intValue = ir->op1->operand.v.intValue;
-        void* arm_op3 = __convert_op_to_op2(&tmp_op, queue, func);
+        arm_op3 = __convert_op_to_op2(&tmp_op, queue, func);
         arm_ir = newArmIr(ARM_ADD, NULL, arm_op1, arm_op2, arm_op3, NULL);
         pushFrontDequeList(queue, arm_ir);
     } else if (ir->op1->type == STACKPOINT) {
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-        void* arm_op2 = newRegister(PHISICAL, SP);
+        arm_op2 = newRegister(PHISICAL, SP);
         OPERAND_TYPE tmp_op;
         tmp_op.type = INT;
         tmp_op.operand.v.intValue = ir->op1->operand.v.intValue;
-        void* arm_op3 = __convert_op_to_op2(&tmp_op, queue, func);
+        arm_op3 = __convert_op_to_op2(&tmp_op, queue, func);
         arm_ir = newArmIr(ARM_ADD, NULL, arm_op1, arm_op2, arm_op3, NULL);
         pushFrontDequeList(queue, arm_ir);
     } else if (ir->op1->type == GLOBALDATA) {
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-        void* arm_op2 = newLabel(((struct VarTabElem*)ir->op1->operand.v.intValue)->name);
+        arm_op2 = newLabel(((struct VarTabElem*)ir->op1->operand.v.intValue)->name);
         arm_ir = newArmIr(ARM_MOVW_L, NULL, arm_op1, arm_op2, NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
 
@@ -360,14 +385,13 @@ func_head(assign) {
         pushFrontDequeList(queue, arm_ir);
 
     } else if (ir->op1->type == ConstSTRING) {
-        int new_reg_num = alloc_register() + BEGIN_REG_NUM;
         MALLOC(item, struct Item, 1);
         item->key = strdup(string_label(func->name, ir->op1->operand.v.str));
         item->value = strdup(ir->op1->operand.v.str);
         pushFrontDequeList(string_queue, item);
 
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-        void* arm_op2 = newLabel(item->key);
+        arm_op2 = newLabel(item->key);
         arm_ir = newArmIr(ARM_MOVW_L, NULL, arm_op1, arm_op2, NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
 
@@ -378,7 +402,7 @@ func_head(assign) {
 
     } else if (ir->op1->type == FUNCID) {
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-        void* arm_op2 = newLabel(((struct FuncTabElem*)ir->op1->operand.v.funcID)->name);
+        arm_op2 = newLabel(((struct FuncTabElem*)ir->op1->operand.v.funcID)->name);
         arm_ir = newArmIr(ARM_MOVW_L, NULL, arm_op1, arm_op2, NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
 
@@ -389,7 +413,7 @@ func_head(assign) {
 
     } else if (ir->op1->type == BASIC_BLOCK) {
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-        void* arm_op2 = newLabel(block_label(func->name, ir->op1->operand.v.b));
+        arm_op2 = newLabel(block_label(func->name, ir->op1->operand.v.b));
         arm_ir = newArmIr(ARM_MOVW_L, NULL, arm_op1, arm_op2, NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
 
@@ -404,7 +428,11 @@ func_head(assign) {
 }
 
 func_head(k_not) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    struct CondOp* cond = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+
     OPERAND_TYPE tmp_op;
     tmp_op.type = INT;
     tmp_op.operand.v.intValue = 0;
@@ -430,7 +458,10 @@ func_head(k_not) {
 
 #define convert_ir_bi_op(type, op)                                          \
     func_head(type) {                                                       \
-        operands;                                                           \
+        struct ArmIr* arm_ir = NULL;                                        \
+        void* arm_op1 = NULL;                                               \
+        void* arm_op2 = NULL;                                               \
+        void* arm_op3 = NULL;                                               \
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);                \
         arm_op2 = __convert_op_to_reg(ir->op1, queue, func);                \
         arm_op3 = __convert_op_to_op2(ir->op2, queue, func);                \
@@ -444,7 +475,11 @@ convert_ir_bi_op(k_sub, SUB);
 
 #define convert_ir_bi_op(type, op)                                          \
     func_head(type) {                                                       \
-        operands;                                                           \
+        struct ArmIr* arm_ir = NULL;                                        \
+        void* arm_op1 = NULL;                                               \
+        void* arm_op2 = NULL;                                               \
+        void* arm_op3 = NULL;                                               \
+                                                                            \
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);                \
         arm_op2 = __convert_op_to_reg(ir->op1, queue, func);                \
         arm_op3 = __convert_op_to_reg(ir->op2, queue, func);                \
@@ -455,7 +490,11 @@ convert_ir_bi_op(k_mul, MUL);
 convert_ir_bi_op(k_div, SDIV);
 #undef convert_ir_bi_op
 func_head(k_mod) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
+
     void* numerator = __convert_op_to_reg(ir->op1, queue, func);    // 分子
     void* denominator = __convert_op_to_reg(ir->op2, queue, func);  //分母
     int new_reg_num = alloc_register() + BEGIN_REG_NUM;
@@ -481,7 +520,11 @@ func_head(k_mod) {
 
 #define convert_ir_bi_op(c_type, true_cond, false_cond)                 \
     func_head(c_type) {                                                 \
-        operands;                                                       \
+        struct ArmIr* arm_ir = NULL;                                    \
+        struct CondOp* cond = NULL;                                     \
+        void* arm_op1 = NULL;                                           \
+        void* arm_op2 = NULL;                                           \
+                                                                        \
         OPERAND_TYPE tmp_op;                                            \
         tmp_op.type = INT;                                              \
         tmp_op.operand.v.intValue = 0;                                  \
@@ -513,7 +556,11 @@ convert_ir_bi_op(k_gte, GE, LT);
 #undef convert_ir_bi_op
 
 func_head(normal_call) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
+
     int param_num = ir->op2->operand.v.intValue;
     list_entry_t* param_elem = list_prev(&ir->ir_link);
     for (int i = 0; i < param_num; i++) {
@@ -549,7 +596,9 @@ func_head(normal_call) {
     }
 
     arm_op1 = __convert_op_to_label(ir->op1, func);
-    arm_ir = newArmIr(ARM_BL, NULL, arm_op1, NULL, NULL, NULL);
+    MALLOC_WITHOUT_DECLARE(arm_op2, int, 1);
+    *(int*)arm_op2 = param_num;
+    arm_ir = newArmIr(ARM_BL, NULL, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
     arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
@@ -570,8 +619,12 @@ func_head(normal_call) {
 }
 
 func_head(tail_recusive) {
-    operands;
-    list_entry_t* param_elem = list_prev(ir);
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
+
+    list_entry_t* param_elem = list_prev(&ir->ir_link);
     int param_num = ir->op2->operand.v.intValue;
     int fp_offset = 4;
     OPERAND_TYPE tmp_op;
@@ -589,7 +642,6 @@ func_head(tail_recusive) {
 
     param_elem = list_next(param_elem);
     for (int i = 0; i < param_num; i++) {
-        IR_TYPE* param_ir = le2struct(param_elem, IR_TYPE, ir_link);
         int new_reg = alloc_register() + BEGIN_REG_NUM;
         param_elem = list_next(param_elem);
         arm_op1 = newDequeList();
@@ -619,14 +671,18 @@ func_head(tail_recusive) {
 }
 
 func_head(tail_call) {
-    operands;
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op1 = NULL;
+    void* arm_op2 = NULL;
+    void* arm_op3 = NULL;
+
     int param_num = ir->op2->operand.v.intValue;
     int fp_offset = 4;
     OPERAND_TYPE tmp_op;
     tmp_op.type = INT;
     tmp_op.operand.v.intValue = 0;
 
-    list_entry_t* param_elem = list_prev(ir);
+    list_entry_t* param_elem = list_prev(&ir->ir_link);
     for (int i = 0; i < param_num; i++) {
         param_elem = list_prev(param_elem);
     }
@@ -697,7 +753,14 @@ func_head(tail_call) {
     pushFrontDequeList(queue, arm_ir);
 
     arm_op1 = __convert_op_to_label(ir->op1, func);
-    arm_ir = newArmIr(ARM_BL, NULL, arm_op1, NULL, NULL, NULL);
+    MALLOC_WITHOUT_DECLARE(arm_op2, int, 1);
+    *(int*)arm_op2 = param_num;
+    arm_ir = newArmIr(ARM_BL, NULL, arm_op1, arm_op2, NULL, NULL);
+    pushFrontDequeList(queue, arm_ir);
+
+    arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
+    arm_op2 = newRegister(PHISICAL, A1);
+    arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
     __generator_func_return(queue);
@@ -707,7 +770,6 @@ func_head(tail_call) {
 }
 
 func_head(call) {
-    operands;
     if (__is_tail_call(ir, block)) {
         if (strcmp(func->name, ((struct FuncTabElem*)(ir->op1->operand.v.funcID))->name) == 0) {
             return __convert_tail_recusive_to_arm(ir, queue, block, func);
@@ -721,7 +783,6 @@ func_head(call) {
 #undef func_head
 #undef opreands
 void __convert_ir_ssa_to_arm(IR_TYPE* ir, struct DequeList* queue, BASIC_BLOCK_TYPE* block, struct FuncTabElem* func) {
-    struct ArmTr* arm_ir = NULL;
     switch (ir->type) {
         case NOP:
         case PARAM:
@@ -736,7 +797,7 @@ void __convert_ir_ssa_to_arm(IR_TYPE* ir, struct DequeList* queue, BASIC_BLOCK_T
             __convert_branch_to_arm(ir, queue, block, func);
             break;
         case RETURNSTMT:
-            __convert_returnstmt_to_arm(ir, queue, block, func);
+            __convert_return_stmt_to_arm(ir, queue, block, func);
             break;
         case LOAD:
             __convert_load_to_arm(ir, queue, block, func);
@@ -765,12 +826,6 @@ void __convert_ir_ssa_to_arm(IR_TYPE* ir, struct DequeList* queue, BASIC_BLOCK_T
         case K_MOD:
             __convert_k_mod_to_arm(ir, queue, block, func);
             break;
-        case K_AND:
-            __convert_k_and_to_arm(ir, queue, block, func);
-            break;
-        case K_OR:
-            __convert_k_or_to_arm(ir, queue, block, func);
-            break;
         case K_EQ:
             __convert_k_eq_to_arm(ir, queue, block, func);
             break;
@@ -791,6 +846,7 @@ void __convert_ir_ssa_to_arm(IR_TYPE* ir, struct DequeList* queue, BASIC_BLOCK_T
             break;
 
         default:
+            PrintErrExit("not support ssa ir type %d, %s", ir->type, EnumTypeToString(ir->type));
     }
 }
 

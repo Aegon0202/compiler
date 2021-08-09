@@ -16,6 +16,8 @@ typedef struct BasicBlockNode BasicBlockNode;
 typedef struct Ir Ir;
 typedef struct Phi Phi;
 typedef struct Operand Operand;
+typedef struct BasicBlock BasicBlock;
+typedef struct BlockBegin BlockBegin;
 
 struct Phi {
     Operand* value;
@@ -23,7 +25,7 @@ struct Phi {
     list_entry_t op_link;
 };
 
-typedef struct BasicBlock {
+struct BasicBlock {
     int is_sealed;                 //前驱节点是否已经确定
     int is_full;                   //
     Ir* ir_list;                   // 基本块内包含的ir
@@ -42,12 +44,10 @@ typedef struct BasicBlock {
     int has_already;
     int work;
 
-
     //----------------------------
     BlockBegin* block_LRA;
     struct ArmIr* arm_ir_list;
-
-} BasicBlock;
+};
 
 //基本块链表
 struct BasicBlockNode {

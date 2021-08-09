@@ -1,6 +1,5 @@
 #include <assert.h>
 
-#include "../SysY.target/SysY.target.offset.h"
 #include "LRA.h"
 #include "lifeinterval.h"
 struct FuncRegOffset* f_offset;
@@ -14,7 +13,7 @@ int get_reg_offset(int reg_num) {
     return interval->spill_slot;
 }
 
-void resolve_data_flow_block(BlockBegin* block) {
+void resolve_data_flow_block(BlockBegin* block, void* args) {
     int pre_last_opid = getLastOpId(block);
     struct DequeList* sux = getSuccessors(block);
     struct DequeList* from_to_queue = newDequeList();
@@ -41,8 +40,8 @@ void resolve_data_flow_block(BlockBegin* block) {
                 tmp -= bit;
 
                 Interval* p_inter = getIntervalByVal(index);
-                Interval* f_inter = getintervalByChildAt(p_inter, pre_last_opid);
-                Interval* t_inter = getintervalByChildAt(p_inter, suc_first_opid);
+                Interval* f_inter = child_at(p_inter->reg_num, pre_last_opid);
+                Interval* t_inter = child_at(p_inter->reg_num, suc_first_opid);
                 if (f_inter != t_inter && f_inter->phisical_reg != t_inter->phisical_reg) {
                     MALLOC(item, struct Item, 1);
                     item->key = f_inter;
@@ -51,7 +50,8 @@ void resolve_data_flow_block(BlockBegin* block) {
                 }
             }
         }
-        int size = sizeDequeList(from_to_queue);
+
+        size = sizeDequeList(from_to_queue);
         for (int i = 0; i < size; i++) {
             Interval* f_inter = ((struct Item*)getDequeList(from_to_queue, size))->key;
             int* block_num = getLinearList(block_register, f_inter->phisical_reg);
@@ -71,7 +71,7 @@ void resolve_data_flow_block(BlockBegin* block) {
                 Interval* t_inter = item->value;
                 int* block_num = getLinearList(block_register, t_inter->phisical_reg);
                 if (t_inter->phisical_reg == -1) {
-                    int off = __get_reg_offset(t_inter->reg_num, suc->block);
+                    int off = get_reg_offset(t_inter->reg_num);
                     struct ArmIr* arm_ir = NULL;
                     void* arm_op3 = NULL;
                     void* arm_op1 = newRegister(PHISICAL, f_inter->phisical_reg);
@@ -97,7 +97,7 @@ void resolve_data_flow_block(BlockBegin* block) {
                     processed_interval = 1;
                 } else if (*block_num == 0) {
                     if (f_inter->phisical_reg == -1) {
-                        int off = __get_reg_offset(f_inter->reg_num, block->block);
+                        int off = get_reg_offset(f_inter->reg_num);
                         struct ArmIr* arm_ir = NULL;
                         void* arm_op3 = NULL;
                         void* arm_op1 = newRegister(PHISICAL, t_inter->phisical_reg);
@@ -120,7 +120,7 @@ void resolve_data_flow_block(BlockBegin* block) {
                     } else {
                         struct ArmIr* arm_ir = NULL;
                         void* arm_op1 = newRegister(PHISICAL, t_inter->phisical_reg);
-                        void* arm_op2 = newOperand(REGISTER, newRegister(PHISICAL, f_inter->phisical_reg));
+                        void* arm_op2 = newOperand2(REGISTER, newRegister(PHISICAL, f_inter->phisical_reg));
                         arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
                         list_add_before(add_before_entry, &arm_ir->ir_link);
                     }
@@ -135,13 +135,12 @@ void resolve_data_flow_block(BlockBegin* block) {
             if (!processed_interval) {
                 struct Item* spill_from_to = getFrontDequeList(not_processed_interval);
                 Interval* f_inter = spill_from_to->key;
-                Interval* t_inter = spill_from_to->value;
                 Interval* spill_it = create_new_interval(f_inter->reg_num, f_inter);
 
                 spill_from_to->key = spill_it;
                 spill_it->phisical_reg = -1;
 
-                int off = __get_reg_offset(f_inter->reg_num, block->block);
+                int off = get_reg_offset(f_inter->reg_num);
                 struct ArmIr* arm_ir = NULL;
                 void* arm_op3 = NULL;
                 void* arm_op1 = newRegister(PHISICAL, f_inter->phisical_reg);
@@ -165,7 +164,7 @@ void resolve_data_flow_block(BlockBegin* block) {
                 int* block_num = getLinearList(block_register, f_inter->phisical_reg);
                 *block_num -= 1;
             }
-            freeDequeList(from_to_queue);
+            freeDequeList(&from_to_queue);
             from_to_queue = not_processed_interval;
         }
     }

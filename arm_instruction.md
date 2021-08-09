@@ -97,7 +97,7 @@
 | `ARM_CMP` 更新 `op1`  `-`  `op2` 的 `CPSR` 标记              | `struct Register *`   | `struct Operand2 *`  | `NULL`              | `NULL`            |
 | `ARM_CMN` 更新 `op1`  `+`  `op2` 的 `CPSR` 标记              | `struct Register *`   | `struct Operand2 *`  | `NULL`              | `NULL`            |
 | `ARM_B`  `PC`  `<-`  `op1` <br/> `label` 为此指令 $\pm$  `32`  `MB ` | `struct Label *`      | `NULL`              | `NULL`              | `NULL`            |
-| `ARM_BL`  `PC`  `<-`  `op1` <br/> `LR` `<-`  下一条指令的地址<br/> `label` 为此指令 $\pm$  `32`  `MB ` | `struct Label *`      | `NULL`              | `NULL`              | `NULL`            |
+| `ARM_BL`  `PC`  `<-`  `op1` <br/> `LR` `<-`  下一条指令的地址<br/> `label` 为此指令 $\pm$​  `32`  `MB `<br/>如果`op2`不为`NULL`，此条为`call`，`op2`中存放参数个数 | `struct Label *`      | `int`或`NULL` | `NULL`              | `NULL`            |
 | `ARM_BX`  `PC`  `<-`  `op1` <br/>如果 `op1`  `[`  `0`  `]` 为 `0` ，目标为 `ARM` <br/>如果 `op1`  `[`  `0`  `]` 为 `1` ，目标为 `Thumb` | `struct Register *`   | `NULL`              | `NULL`              | `NULL`            |
 | `ARM_BLX`  `PC`  `<-`  `op1` <br/> `LR` `<-`  下一条指令的地址<br/>如果 `op1`  `[`  `0`  `]` 为 `0` ，目标为 `ARM` <br/>如果 `op1`  `[`  `0`  `]` 为 `1` ，目标为 `Thumb` | `struct Register *`   | `NULL`              | `NULL`              | `NULL`            |
 | `ARM_LDR_I`  `op1`  `<-`  `mem`  `[`  `op2`  `+`  `op3`  `]` <br/>`op3` 的范围是 `-`  `4095`  `~`  `+`  `4095` <br/> `LDR`  `op1`  `,`  `[`  `op2`  `,`  `#`  `op3`  `] ` | `struct Register *`   | `struct Register *` | `struct Immi_12 *`  | `NULL`            |

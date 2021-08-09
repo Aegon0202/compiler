@@ -6,6 +6,8 @@
 
 #include "./SysY.target.arm.h"
 
+#include <stdio.h>
+
 #include "../ssa/ssa.h"
 
 struct Immi_8* newImmi_8(int num) {
@@ -39,7 +41,7 @@ struct Label* newLabel(const char* label_name) {
     return label;
 }
 
-struct Operand* newOperand(int type, void* Rm) {
+struct Operand2* newOperand2(int type, void* Rm) {
     MALLOC(opr, struct Operand2, 1);
     opr->type = type;
     opr->Rm.immi_8 = Rm;

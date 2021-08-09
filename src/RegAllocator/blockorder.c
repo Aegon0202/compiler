@@ -75,7 +75,7 @@ void numberLirOp(struct DequeList* blocks) {
 void __compute_loop_info_func(struct FuncTabElem* func) {
     int num = sizeDequeList(func->loop_blocks);
     for (int i = 0; i < num; i++) {
-        struct LoopBlocks* lb = getDequeList(func, i);
+        struct LoopBlocks* lb = getDequeList(func->loop_blocks, i);
         int b_num = sizeDequeList(lb->blocks);
         for (int j = 0; j < b_num; j++) {
             BASIC_BLOCK_TYPE* block = getDequeList(lb->blocks, j);
@@ -84,23 +84,14 @@ void __compute_loop_info_func(struct FuncTabElem* func) {
     }
 
     for (int i = 0; i < num; i++) {
-        struct LoopBlocks* lb = getDequeList(func, i);
+        struct LoopBlocks* lb = getDequeList(func->loop_blocks, i);
         int b_num = sizeDequeList(lb->blocks);
         BASIC_BLOCK_TYPE* entry = lb->loop_entry;
         for (int j = 0; j < b_num; j++) {
             BASIC_BLOCK_TYPE* block = getDequeList(lb->blocks, j);
             if (block->block_LRA->loop_depth == entry->block_LRA->loop_depth) {
-                block->block_LRA->loop_index = entry;
+                block->block_LRA->loop_index = (size_t)entry;
             }
-        }
-    }
-}
-
-void computeLoopInfo() {
-    for (int i = 0; i < func_table->next_func_index; i++) {
-        struct FuncTabElem* func = getLinearList(func_table, i);
-        if (func->blocks != NULL) {
-            __compute_loop_info_func(func);
         }
     }
 }

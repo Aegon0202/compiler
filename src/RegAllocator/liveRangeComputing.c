@@ -19,7 +19,7 @@ int isBitMapEqual(struct DequeList* bm1, struct DequeList* bm2) {
 
 //bm1 = bm2
 struct DequeList* newBitMap(int size) {
-    struct Dequelist* bm = newDequeList();
+    struct DequeList* bm = newDequeList();
     for (int i = 0; i < size; i++) {
         MALLOC(j, long long int, 1);
         *j = 0;

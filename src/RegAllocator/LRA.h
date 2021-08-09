@@ -38,4 +38,5 @@ void gothrough_BlockBeginNode_list(struct DequeList* block_list_head, void (*fun
 void gothrough_BlockBeginNode_list_reverse(struct DequeList* block_list_head, void (*func)(BlockBegin*, void*), void* args);
 #define le2BlockBeginNode(elem) le2struct(elem, BlockBeginNode, link)
 
+Interval* child_at(int reg_num, int op_id);
 #endif

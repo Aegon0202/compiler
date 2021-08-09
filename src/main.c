@@ -15,7 +15,6 @@ YYSTYPE result;
 int S_flag;
 int O_flag;
 struct DequeList* allBlock;
-
 int yyparse(void);
 void init();
 void __debug_pause_there();
@@ -23,6 +22,8 @@ void convertAlltoSSAform();
 void convertAllOutSSAform();
 void convertSSAToArmFunc(struct FuncTabElem* func);
 void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args);
+void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file);
+void generateGlobalToOutFile(FILE* out_file);
 
 int main(int argc, char** argv) {
     init();
@@ -77,10 +78,10 @@ int main(int argc, char** argv) {
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {
-            convertSSAToArmFunc(elem);
-            deepTraverseSuccessorsBasicBlock(elem->blocks, __get_all_blocks, allBlock);
+            LinearScanRegAllocation(elem, output_file);
         }
     }
+    generateGlobalToOutFile(output_file);
 
     return 0;
 }

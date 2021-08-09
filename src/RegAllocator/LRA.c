@@ -3,8 +3,10 @@
 Interval* child_at(int reg_num, int op_id);
 
 int alloc_register();
-void assign_reg_num(struct DequeList* block_list);
 void __compute_loop_info_func(struct FuncTabElem* func);
+void __convert_to_file(struct FuncTabElem* func, struct DequeList* block_list, FILE* out_file);
+void __add_bit_map_global(struct DequeList* block_list);
+void assign_phisical_reg_num(struct DequeList* block_list);
 
 int MaxbitMapSize;        //当前dequelist中最多能够容纳多少元素个数（64的整数倍）
 int current_bitMap_size;  //当前位图元素个数
@@ -63,18 +65,12 @@ void __init_bit_map_global() {
     __add_bit_map_global(allBlock);
 }
 
-void assign_phisical_reg_num_block(BlockBegin* block, void* args) {
-    list_entry_t* ir_list = getIrListFromBlock(block);
-    list_entry_t* ir_elem = list_next(ir_list);
-    while (ir_elem != ir_list) {
-    }
-}
-
 //对每个函数
-void LinearScanRegAllocation(struct FuncTabElem* elem) {
+void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file) {
     if (elem->blocks == NULL) {
         return;
     }
+    spill_current = elem->var_offset_end;
     __compute_loop_info_func(elem);
 
     struct DequeList* block_seq = computeBlockOrder(((BASIC_BLOCK_TYPE*)elem->blocks)->block_LRA);
@@ -86,6 +82,9 @@ void LinearScanRegAllocation(struct FuncTabElem* elem) {
     walkIntervals(block_seq);
     resolve_data_flow(block_seq);
     assign_phisical_reg_num(block_seq);
+
+    elem->var_offset_end = spill_current;
+    __convert_to_file(elem, block_seq, out_file);
 }
 
 //----------------------
@@ -117,10 +116,6 @@ Interval* getIntervalByVal(int reg_num) {
     return getLinearList(reg2Intival, reg_num);
 }
 
-Interval* getFixIntervalByReg(int reg_num) {
-    return NULL;
-}
-
 int getInterval_assigned_reg(Interval* interval) {
     return interval->phisical_reg;
 }
@@ -130,7 +125,7 @@ int isCoverd(Interval* it, int position) {
     list_entry_t* range_list_tmp = list_next(range_list_head);
     while (range_list_tmp != range_list_head) {
         int tmp_begin = le2struct(range_list_tmp, RangeList, link)->begin;
-        int tmp_end = le2struct(range_list_tmp, RangeList, link);
+        int tmp_end = le2struct(range_list_tmp, RangeList, link)->end;
         if (tmp_begin <= position && tmp_end > position) {
             flag = 1;
         }
@@ -153,12 +148,12 @@ int getNextIntersect(Interval* current, Interval* it) {
         current_range_elem = list_next(current_range_elem);
         current_range_value = le2RangeList(current_range_elem);
     }
-    while (it_range_value->end <= current_range_value->begin && it_range_list != &it_range_elem) {
+    while (it_range_value->end <= current_range_value->begin && it_range_list != it_range_elem) {
         it_range_elem = list_next(it_range_elem);
         it_range_value = le2RangeList(it_range_elem);
     }
 
-    if (current_range_list != current_range_elem && it_range_list != &it_range_elem) {
+    if (current_range_list != current_range_elem && it_range_list != it_range_elem) {
         return it_range_value->begin;
     }
 
@@ -240,7 +235,7 @@ void __assign_reg_num_block(BlockBegin* block, void* args) {
     }
 }
 
-void assign_reg_num(struct DequeList* block_list) {
+void assign_phisical_reg_num(struct DequeList* block_list) {
     gothrough_BlockBeginNode_list_reverse(block_list, __assign_reg_num_block, NULL);
 }
 
@@ -251,7 +246,7 @@ Interval* __find_child(Interval* p_it, int op_id) {
     list_entry_t* head = &p_it->split_childer->link;
     list_entry_t* elem = list_next(head);
     while (head != elem) {
-        Interval* c_it = le2BlockBeginNode(elem)->value;
+        Interval* c_it = le2IntervalList(elem)->value;
         elem = list_next(elem);
         Interval* r_it = __find_child(c_it, op_id);
         if (r_it != NULL) {
@@ -281,4 +276,6 @@ list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id) {
             }
         }
     }
+    PrintErrExit("not found arm op id %d", op_id);
+    return NULL;
 }

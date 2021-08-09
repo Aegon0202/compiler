@@ -36,11 +36,10 @@ typedef struct Interval {
 } Interval;
 
 Interval* getIntervalByVal(int reg_num);
-Interval* getFixIntervalByReg(int reg_num);
 RangeList* getFirstRange(Interval* interval);
 RangeList* getLastRange(Interval* interval);
 void build_interval(struct DequeList* start);
-int isIntervalFix(Interval*);
+int isIntervalFixed(Interval*);
 int getInterval_assigned_reg(Interval* interval);
 int isCoverd(Interval* it, int position);
 int isIntervalsect(Interval* current, Interval* it);
