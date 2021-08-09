@@ -121,7 +121,6 @@ struct Definition* get_op_definition(Operand* op) {
 //创建一个新的block
 BasicBlock* create_new_block() {
     MALLOC(block, BasicBlock, 1);
-    printf("create block address %p\n", block);
     MALLOC_WITHOUT_DECLARE(block->predecessors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->successors, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->ir_list, Ir, 1);

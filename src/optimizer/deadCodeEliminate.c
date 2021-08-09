@@ -173,7 +173,6 @@ void deadCodeEliminate(struct FuncTabElem* func) {
         struct AddressSet* address = le2struct(next, struct AddressSet, link);
         int* status = getLinearList(live, (size_t)address->address.ir);
         if (!(*status)) {
-            printf("dead code eliminte\n");
             __print_ssa_ir(address->address.ir);
             delete_ir(address->address.ir, address->address.block);
         }
