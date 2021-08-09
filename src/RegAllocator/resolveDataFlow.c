@@ -5,15 +5,13 @@
 #include "lifeinterval.h"
 struct FuncRegOffset* f_offset;
 Interval* create_new_interval(int reg_num, Interval* parent);
+int allocate_spill_slot();
 
-int __get_reg_offset(int reg_num, BasicBlock* basic_block) {
-    int* off = getLinearList(f_offset, reg_num);
-    if (off == NULL) {
-        struct BlockRegOffset* b_offset = getLinearList(f_offset->block_offsets, basic_block);
-        off = getLinearList(b_offset->reg_offset, reg_num);
-    }
-    EnsureNotNull(off);
-    return *off;
+int get_reg_offset(int reg_num) {
+    Interval* interval = getIntervalByVal(reg_num);
+    if (interval->spill_slot == 0)
+        interval->spill_slot = allocate_spill_slot();
+    return interval->spill_slot;
 }
 
 void resolve_data_flow_block(BlockBegin* block) {
@@ -30,7 +28,7 @@ void resolve_data_flow_block(BlockBegin* block) {
         list_entry_t* add_before_entry = NULL;
         if (block->block->successor_num > 1) {
             assert(suc->block->predecessor_num == 1);
-            add_before_entry = suc->block->arm_ir_list->ir_link.next;
+            add_before_entry = suc->block->arm_ir_list->ir_link.next->next;
         } else {
             add_before_entry = block->block->arm_ir_list->ir_link.prev->prev;
         }
@@ -138,7 +136,7 @@ void resolve_data_flow_block(BlockBegin* block) {
                 struct Item* spill_from_to = getFrontDequeList(not_processed_interval);
                 Interval* f_inter = spill_from_to->key;
                 Interval* t_inter = spill_from_to->value;
-                Interval* spill_it = create_new_interval(f_inter->reg_num, NULL);
+                Interval* spill_it = create_new_interval(f_inter->reg_num, f_inter);
 
                 spill_from_to->key = spill_it;
                 spill_it->phisical_reg = -1;

@@ -24,7 +24,7 @@ struct DequeList* computeBlockOrder(BlockBegin* func_entry_block) {
         BlockBeginNode* bNode = le2struct(tail, BlockBeginNode, link);
         BlockBegin* b = bNode->value;
         successors = getSuccessors(b);
-        pushBackDequeList(blocks, b);
+        pushFrontDequeList(blocks, b);
         count++;
         for (; !isEmptyDequeList(successors);) {
             BlockBegin* bb = (BlockBegin*)popBackDequeList(successors);
@@ -62,7 +62,7 @@ void __numberLirOpBlock(BlockBegin* block, void* args) {
     list_entry_t* ir_elem = list_next(ir_list);
     while (ir_list != ir_elem) {
         le2struct(ir_elem, struct ArmIr, ir_link)->id = (*begin_op_seq);
-        (*begin_op_seq) += 2;
+        (*begin_op_seq) += id_inc;
         ir_elem = list_next(ir_elem);
     }
 }

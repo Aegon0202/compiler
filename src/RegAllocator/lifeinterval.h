@@ -31,6 +31,8 @@ typedef struct Interval {
     int phisical_reg;
     int childrenNum;
     int is_fixed;
+    int spill_slot;
+    int is_spilled;  //是否需要load
 } Interval;
 
 Interval* getIntervalByVal(int reg_num);
@@ -45,7 +47,7 @@ int isIntervalsect(Interval* current, Interval* it);
 int getNextIntersect(Interval* currrent, Interval* it);
 int getNextUsage(Interval*, int);
 Interval* splitInterval(Interval* interval, int split_pos, list_entry_t*);
-void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t*);
+void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t*, struct DequeList* blocks);
 
 #define le2IntervalList(elem) le2struct(elem, IntervalList, link)
 #define le2RangeList(elem) le2struct(elem, RangeList, link)
