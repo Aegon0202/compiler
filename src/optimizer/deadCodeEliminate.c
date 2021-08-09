@@ -5,6 +5,7 @@
 #include "./local_op.h"
 struct LinearList* block_2_rcfg_block;
 struct LinearList* rcfg_block_2_block;
+void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args);
 
 void __gen_rcfg_block(BASIC_BLOCK_TYPE* block, void* args) {
     if (getLinearList(block_2_rcfg_block, (size_t)block) == NULL) {
@@ -30,11 +31,6 @@ void __connect_rcfg_block(BASIC_BLOCK_TYPE* block, void* args) {
     if (ir->type == RETURNSTMT) {
         connect_block(rcfg_entry, r_block);
     }
-}
-
-void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args) {
-    struct DequeList* deque = (struct DequeList*)args;
-    pushFrontDequeList(deque, basic_block);
 }
 
 void free_CFG(BASIC_BLOCK_TYPE* block) {

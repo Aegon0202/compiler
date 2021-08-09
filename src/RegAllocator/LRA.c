@@ -3,6 +3,9 @@
 Interval* child_at(int reg_num, int op_id);
 
 int alloc_register();
+void assign_reg_num(struct DequeList* block_list);
+void __compute_loop_info_func(struct FuncTabElem* func);
+
 int MaxbitMapSize;        //当前dequelist中最多能够容纳多少元素个数（64的整数倍）
 int current_bitMap_size;  //当前位图元素个数
 struct LinearList* reg2Intival;
@@ -62,8 +65,13 @@ void assign_phisical_reg_num_block(BlockBegin* block, void* args) {
 }
 
 //对每个函数
-void LinearScanRegAllocation() {
-    struct DequeList* block_seq = computeBlockOrder(NULL);
+void LinearScanRegAllocation(struct FuncTabElem* elem) {
+    if (elem->blocks == NULL) {
+        return;
+    }
+    __compute_loop_info_func(elem);
+
+    struct DequeList* block_seq = computeBlockOrder(((BASIC_BLOCK_TYPE*)elem->blocks)->block_LRA);
     numberLirOp(block_seq);
     compute_local_live_set(block_seq);
     compute_global_live_set(block_seq);

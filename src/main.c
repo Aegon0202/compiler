@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "RegAllocator/LRA.h"
 #include "SysY.symtab/SysY.symtab.ssa.h"
 #include "SysY.target/SysY.target.arm.h"
 #include "SysY.type/SysY.type.def.h"
@@ -10,17 +11,18 @@
 #include "parser/SysY.tab.h"
 #include "ssa/ssa.h"
 #include "ssa/traverse.h"
-
 YYSTYPE result;
 int S_flag;
 int O_flag;
+struct DequeList* allBlock;
+
 int yyparse(void);
 void init();
 void __debug_pause_there();
-int df_plus_test(BasicBlock* start);
-void __placement_phi(BasicBlock* start);
 void convertAlltoSSAform();
 void convertAllOutSSAform();
+void convertSSAToArmFunc(struct FuncTabElem* func);
+void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args);
 
 int main(int argc, char** argv) {
     init();
@@ -62,12 +64,30 @@ int main(int argc, char** argv) {
     //printf("\n\n\n");
     //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("uniquePaths", func_table)->blocks, __print_basic_block, NULL);
     convertAllOutSSAform();
-    generateAllToOutFile(output_file);
-    //printToken(result.compunit, &printToken_ins);
-    //toASTCompUnit(result.compunit);
-    //printASTAll(funcsymtable_p->head);
-    //printToken(result.compunit, printToken_ins);
+
+    allBlock = newDequeList();
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks) {
+            convertSSAToArmFunc(elem);
+            deepTraverseSuccessorsBasicBlock(elem->blocks, __get_all_blocks, allBlock);
+        }
+    }
+
+    for (int i = 0; i < func_table->next_func_index; i++) {
+        struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
+        if (elem->blocks) {
+            convertSSAToArmFunc(elem);
+            deepTraverseSuccessorsBasicBlock(elem->blocks, __get_all_blocks, allBlock);
+        }
+    }
+
     return 0;
+}
+
+void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args) {
+    struct DequeList* deque = (struct DequeList*)args;
+    pushFrontDequeList(deque, basic_block);
 }
 
 void __debug_pause_there() {
