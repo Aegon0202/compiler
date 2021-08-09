@@ -7,6 +7,12 @@ int MaxbitMapSize;        //当前dequelist中最多能够容纳多少元素个�
 int current_bitMap_size;  //当前位图元素个数
 struct LinearList* reg2Intival;
 extern struct DequeList* allBlock;
+int spill_current;
+
+int allocate_spill_slot() {
+    spill_current -= INT_SIZE;
+    return spill_current;
+}
 
 int get_new_reg_num() {
     if (current_bitMap_size == MaxbitMapSize) {
@@ -231,7 +237,7 @@ void assign_reg_num(struct DequeList* block_list) {
 }
 
 Interval* __find_child(Interval* p_it, int op_id) {
-    if (op_id >= getFirstRange(p_it)->begin && op_id < getLastRange(p_it)) {
+    if (op_id >= getFirstRange(p_it)->begin && op_id < getLastRange(p_it)->end) {
         return p_it;
     }
     list_entry_t* head = &p_it->split_childer->link;
@@ -250,4 +256,21 @@ Interval* __find_child(Interval* p_it, int op_id) {
 Interval* child_at(int reg_num, int op_id) {
     Interval* p_it = getIntervalByVal(reg_num);
     return __find_child(p_it, op_id);
+}
+
+list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id) {
+    for (int i = 0; i < sizeDequeList(block_list); i++) {
+        BlockBegin* block = getDequeList(block_list, i);
+        if (block->first_op_id <= op_id && block->last_op_id >= op_id) {
+            list_entry_t* ir_list = getIrListFromBlock(block);
+            list_entry_t* ir_elem = list_next(ir_list);
+            while (ir_list != ir_elem) {
+                struct ArmIr* ir_value = le2struct(ir_elem, struct ArmIr, ir_link);
+
+                if (ir_value->id == op_id)
+                    return ir_elem;
+                ir_elem = list_next(ir_elem);
+            }
+        }
+    }
 }

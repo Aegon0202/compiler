@@ -14,17 +14,16 @@
 #define SingleBitMapSub(a, b) ((a) & (~(b)))
 #define id_inc 2
 
-extern struct FuncRegOffset* f_offset;
 extern struct LinearList* reg2Intival;
 list_entry_t* getIrListFromBlock(BlockBegin*);
 int getFirstOpId(BlockBegin* block);
 int getLastOpId(BlockBegin*);
-
+int get_reg_offset(int reg_num);
 struct DequeList* getBlock_kill(BlockBegin*);
 struct DequeList* getBlock_gen(BlockBegin*);
 struct DequeList* getBlock_in(BlockBegin*);
 struct DequeList* getBlock_out(BlockBegin*);
-
+list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id);
 //usepos序列可以无序
 int getFirstUsePos(Interval* interval);
 int getOptimalPos(int);

@@ -1,6 +1,7 @@
 #include "lifeinterval.h"
 
 #include "LRA.h"
+
 int __lowBitToNum(unsigned long long int n) {
     int j = 0;
     while (n = n >> 1) {
@@ -16,6 +17,7 @@ Interval* create_new_interval(int reg_num, Interval* parent) {
     interval->phisical_reg = -1;
     interval->is_fixed = 0;
     interval->split_parent = parent;
+    interval->spill_slot = 0;
     MALLOC_WITHOUT_DECLARE(interval->range_list, RangeList, 1);
     MALLOC_WITHOUT_DECLARE(interval->split_childer, IntervalList, 1);
     MALLOC_WITHOUT_DECLARE(interval->usepostion, usepositionList, 1);
@@ -26,10 +28,13 @@ Interval* create_new_interval(int reg_num, Interval* parent) {
 }
 
 Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandled_list_head) {
-    if (split_pos >= getFirstRange(interval)->begin || split_pos <= getLastRange(interval))
+    if (split_pos >= getFirstRange(interval)->begin || split_pos <= getLastRange(interval)->end)
         PrintErrExit("inappropriate split point");
 
     Interval* child = create_new_interval(interval->reg_num, interval);
+    child->reg_num = interval->reg_num;
+    child->spill_slot = interval->spill_slot;
+
     MALLOC(node, IntervalList, 1);
     node->value = child;
     list_add_before(&interval->split_childer->link, &node->link);
@@ -41,10 +46,19 @@ Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandl
     while (range_head != range_elem) {
         RangeList* range_value = le2RangeList(range_elem);
         range_elem = list_next(range_elem);
-        if (range_value->end >= split_pos) continue;
 
-        list_del(range_elem);
-        list_add_before(child_range_head, range_elem);
+        if (range_value->end <= split_pos) continue;
+
+        if (range_value->begin < split_pos) {
+            MALLOC(new_range, RangeList, 1);
+            new_range->begin = split_pos;
+            new_range->end = range_value->end;
+            range_value->end = split_pos;
+            list_add_before(child_range_head, &new_range->link);
+        } else {
+            list_del(range_elem);
+            list_add_before(child_range_head, range_elem);
+        }
     }
 
     //process usepoint
@@ -67,15 +81,39 @@ Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandl
         if (getFirstRange(unhandled_value) > getFirstRange(child)->begin) break;
         unhandled_elem = list_next(unhandled_elem);
     }
+
     MALLOC(inter_node, IntervalList, 1);
     inter_node->value = child;
     list_add_before(unhandled_elem, &inter_node->link);
     return child;
 }
 
-void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled) {
+void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled, struct DequeList* blocks) {
     int n = getNextIntersect(it, current);
-    splitInterval(it, n, unhandled);
+    Interval* child = splitInterval(it, n, unhandled);
+    int off = get_reg_offset(it->reg_num);
+    child->is_spilled = 1;
+
+    list_entry_t* add_before_entry = getArmIrByOpid(blocks, n);
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op3 = NULL;
+    void* arm_op1 = newRegister(PHISICAL, it->phisical_reg);
+    void* arm_op2 = newRegister(PHISICAL, FP);
+    if (off > -4095 && off < 4095) {
+        arm_op3 = newImmi_12(off);
+        arm_ir = newArmIr(ARM_STR_I, NULL, arm_op1, arm_op2, arm_op3, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+    } else {
+        arm_ir = newArmIr(ARM_MOVW, NULL, newRegister(PHISICAL, IP), newImmi_16(off), NULL, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+        if (off > INT16_MAX || off < INT16_MIN) {
+            arm_ir = newArmIr(ARM_MOVT, NULL, newRegister(PHISICAL, off), newImmi_16(off >> 16), NULL, NULL);
+            list_add_before(add_before_entry, &arm_ir->ir_link);
+        }
+        arm_op3 = newRegister(PHISICAL, IP);
+        arm_ir = newArmIr(ARM_STR_R, NULL, arm_op1, arm_op2, arm_op3, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+    }
     return;
 }
 
@@ -104,8 +142,13 @@ void add_range(Interval* inter, RangeList* range) {
     if (first_range->begin == range->begin) {
         free(range);
         return;
+    } else if (first_range->begin < range->begin) {
+        first_range->begin = range->begin;
+        free(range);
+        return;
+    } else {
+        list_add(head, &range->link);
     }
-    list_add(head, &range->link);
 }
 
 void add_use_pos(Interval* inter, usepositionList* use_pos) {

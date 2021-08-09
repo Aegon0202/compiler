@@ -47,7 +47,8 @@
                 "memory_resource": "c",
                 "lifeinterval.h": "c",
                 "sysy.target.arm.h": "c",
-                "lra.h": "c"
+                "lra.h": "c",
+                "sysy.target.offset.h": "c"
         },
         "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
         "files.autoSave": "onFocusChange",

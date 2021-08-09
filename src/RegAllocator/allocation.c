@@ -41,6 +41,9 @@ int get_max_use_pos() {
 }
 
 void __init_unhandled_list(list_entry_t* unhandled_head, struct DequeList* blocks) {
+    for (int i = 0; i < sizeDequeList(blocks); i++) {
+        getDequeList(blocks, i);
+    }
 }
 
 void walkIntervals(struct DequeList* blocks) {
@@ -63,9 +66,9 @@ void walkIntervals(struct DequeList* blocks) {
     //to be modified
     while (!list_empty(unhandled_list_head)) {
         list_entry_t* first = list_next(unhandled_list_head);
-        IntervalList* currrent = le2struct(first, IntervalList, link);
+        IntervalList* current = le2struct(first, IntervalList, link);
         list_del(first);  //拿到并删除unhandleList的头结点
-        int position = le2struct(list_next(currrent->value->range_list), RangeList, link)->begin;
+        int position = le2struct(list_next(current->value->range_list), RangeList, link)->begin;
 
         list_entry_t* active_list_tmp = list_next(active_list_head);
 
@@ -104,8 +107,14 @@ void walkIntervals(struct DequeList* blocks) {
             }
         }
 
-        int isAllocatedFree = 0;
-        //Try to Allocate Free Register for Current
+        int isAllocatedFree = tryAllocateFreeRegister(current->value, active_list_head, inactive_list_head, unhandled_list_head);
+        if (!isAllocatedFree) {
+            allocate_blocked_reg(current->value, active_list_head, inactive_list_head, unhandled_list_head, blocks);
+        }
+        if (current->value->phisical_reg >= 0) {
+            list_del(&current->link);
+            list_add_before(active_list_head, &current->link);
+        }
     }
 }
 
@@ -114,7 +123,7 @@ void MoveitFromAtoB(list_entry_t* A, list_entry_t* B, IntervalList* itList) {
     list_add_after(B, &itList->link);
 }
 
-void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t* inactive, list_entry_t* unhandled) {
+void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t* inactive, list_entry_t* unhandled, struct DequeList* blocks) {
     memset(blocked_pos, 0x3f, sizeof blocked_pos);
     memset(use_pos, 0x3f, sizeof use_pos);
 
@@ -161,14 +170,14 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
         while (active_elem != active) {
             Interval* it = le2IntervalList(active_elem);
             active_elem = list_next(active);
-            makeRoomForCurrent(current, it, unhandled);
+            makeRoomForCurrent(current, it, unhandled, blocks);
         }
         inactive_elem = list_next(inactive);
         while (inactive_elem != inactive) {
             Interval* it = le2IntervalList(inactive_elem);
             inactive_elem = list_next(inactive_elem);
             if (!isIntersect(it, current)) continue;
-            makeRoomForCurrent(current, it, unhandled);
+            makeRoomForCurrent(current, it, unhandled, blocks);
         }
     } else {
         //spill current
@@ -181,14 +190,14 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
         while (active_elem != active) {
             Interval* it = le2IntervalList(active_elem);
             active_elem = list_next(active);
-            makeRoomForCurrent(current, it, unhandled);
+            makeRoomForCurrent(current, it, unhandled, blocks);
         }
         inactive_elem = list_next(inactive);
         while (inactive_elem != inactive) {
             Interval* it = le2IntervalList(inactive_elem);
             inactive_elem = list_next(inactive_elem);
             if (!isIntersect(it, current)) continue;
-            makeRoomForCurrent(current, it, unhandled);
+            makeRoomForCurrent(current, it, unhandled, blocks);
         }
     }
 }
