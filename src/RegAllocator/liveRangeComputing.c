@@ -84,7 +84,7 @@ void BitMapSub(struct DequeList* bm1, struct DequeList* bm2, struct DequeList* b
     }
 }
 
-void __CLS_read_op(Operand* op, struct DequeList* b_gen, struct DequeList* b_kill) {
+void __CLS_read_op(struct Register* op, struct DequeList* b_gen, struct DequeList* b_kill) {
     if (op->type != REGISTER) return;
 
     int reg = op->operand.reg_idx;
@@ -115,14 +115,16 @@ void compute_local_live_set_block(BlockBegin* block, void* args) {
     struct DequeList* b_kill = getBlock_kill(block);
 
     while (ir_elem != ir_list) {
-        Ir* ir_value = le2struct(ir_elem, Ir, ir_link);
+        struct ArmIr* ir_value = le2struct(ir_elem, struct ArmIr, ir_link);
         ir_elem = list_next(ir_list);
 
 #define READ_OP(op) __CLS_read_op(op, b_gen, b_kill)
 #define WRITE_OP(op) __CLS_write_op(op, b_kill)
-        IR_OP_READ_WRITE(ir_value, READ_OP, WRITE_OP, PrintErrExit(" "););
+#define READ_OP2(op) __CLS_read_op2(op, b_gen, b_kill)
+        ARM_IR_OP_READ_WRITE(ir_value, READ_OP, , WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
+#undef READ_OP2
     }
 }
 

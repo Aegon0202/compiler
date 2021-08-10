@@ -916,7 +916,6 @@ void toSSAFuncDef(struct FuncDef* funcdef) {
     func_fparam_offset = 4;  // $fp, $lr
     max_func_offset = 0;
     has_side_effect = 0;
-    printf("start parse func:%s\n", fte->name);
     struct FuncFParams* f_head = funcdef->funcfparams;
     struct FuncFParams* funcfparams = f_head;
 

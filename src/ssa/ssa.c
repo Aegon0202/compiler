@@ -156,6 +156,19 @@ BasicBlock* create_new_block() {
     list_init(&(block->Children->block_link));
     list_init(&(block->dominant_frontier->block_link));
     list_init(&(block->arm_ir_list->ir_link));
+
+    BlockBegin* begin = block->block_LRA;
+    begin->block = block;
+    begin->block_live_gen = newDequeList();
+    begin->block_live_in = newDequeList();
+    begin->block_live_kill = newDequeList();
+    begin->block_live_out = newDequeList();
+    begin->cur_val_num = 0;
+    begin->first_op_id = -1;
+    begin->last_op_id = -1;
+    begin->loop_depth = 0;
+    begin->loop_index = 0;
+
     return block;
 }
 int getPredecessorNum(BasicBlock* basic_block) {

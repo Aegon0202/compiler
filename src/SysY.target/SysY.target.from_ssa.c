@@ -281,8 +281,12 @@ func_head(return_stmt) {
     void* arm_op1 = NULL;
     void* arm_op2 = NULL;
 
+    if (ir->op1 == NULL) {
+        ir->op1 = create_new_operand(INT, -1, 0);
+    }
+
     arm_op1 = newRegister(PHISICAL, A1);
-    arm_op2 = __convert_op_to_reg(ir->op1, queue, func);
+    arm_op2 = __convert_op_to_op2(ir->op1, queue, func);
     arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
@@ -442,14 +446,14 @@ func_head(k_not) {
     pushFrontDequeList(queue, arm_ir);
 
     cond = newCondOp(EQ);
-    arm_op1 = __convert_op_to_label(ir->op3, func);
+    arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
     tmp_op.operand.v.intValue = 1;
     arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);
     arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
     cond = newCondOp(NE);
-    arm_op1 = __convert_op_to_label(ir->op2, func);
+    arm_op1 = __convert_op_to_reg(ir->op2, queue, func);
     tmp_op.operand.v.intValue = 0;
     arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);
     arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL);
@@ -534,14 +538,14 @@ func_head(k_mod) {
         pushFrontDequeList(queue, arm_ir);                              \
                                                                         \
         cond = newCondOp(true_cond);                                    \
-        arm_op1 = __convert_op_to_label(ir->op3, func);                 \
+        arm_op1 = __convert_op_to_reg(ir->op2, queue, func);            \
         tmp_op.operand.v.intValue = 1;                                  \
         arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);            \
         arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL); \
         pushFrontDequeList(queue, arm_ir);                              \
                                                                         \
         cond = newCondOp(false_cond);                                   \
-        arm_op1 = __convert_op_to_label(ir->op2, func);                 \
+        arm_op1 = __convert_op_to_reg(ir->op2, queue, func);            \
         tmp_op.operand.v.intValue = 0;                                  \
         arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);            \
         arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL); \

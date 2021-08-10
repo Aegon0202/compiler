@@ -101,7 +101,7 @@ struct DequeList* getSuccessors(BlockBegin* block) {
     list_entry_t* next = list_next(head);
     struct DequeList* succ = newDequeList();
     while (head != next) {
-        pushFrontDequeList(succ, le2BasicBlock(next)->value);
+        pushFrontDequeList(succ, le2BasicBlock(next)->value->block_LRA);
         next = list_next(next);
     }
     return succ;
@@ -112,7 +112,7 @@ struct DequeList* getpredecessors(BlockBegin* block) {
     list_entry_t* next = list_next(head);
     struct DequeList* succ = newDequeList();
     while (head != next) {
-        pushFrontDequeList(succ, le2BasicBlock(next)->value);
+        pushFrontDequeList(succ, le2BasicBlock(next)->value->block_LRA);
         next = list_next(next);
     }
     return succ;

@@ -159,7 +159,6 @@ void __loop_invariant_extraction(struct LoopBlocks* loop) {
                     struct Definition* def = get_op_definition(move_ir->op3);
                     IR_TYPE* before_ir = le2struct(list_prev(&before_entry_last_ir->ir_link), IR_TYPE, ir_link);
                     change_def_address(move_ir, def->def_address->block, before_entry, before_ir);
-                    __print_ssa_ir(move_ir);
                 }
             }
             while (!isEmptyDequeList(li.ir_rely)) {
