@@ -24,6 +24,7 @@ void convertSSAToArmFunc(struct FuncTabElem* func);
 void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args);
 void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file);
 void generateGlobalToOutFile(FILE* out_file);
+void __init_bit_map_global();
 
 int main(int argc, char** argv) {
     init();
@@ -75,6 +76,7 @@ int main(int argc, char** argv) {
         }
     }
 
+    __init_bit_map_global();
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {

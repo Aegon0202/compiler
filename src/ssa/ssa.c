@@ -159,10 +159,6 @@ BasicBlock* create_new_block() {
 
     BlockBegin* begin = block->block_LRA;
     begin->block = block;
-    begin->block_live_gen = newDequeList();
-    begin->block_live_in = newDequeList();
-    begin->block_live_kill = newDequeList();
-    begin->block_live_out = newDequeList();
     begin->cur_val_num = 0;
     begin->first_op_id = -1;
     begin->last_op_id = -1;
