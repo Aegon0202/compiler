@@ -34,7 +34,6 @@ struct BasicBlock {
     BasicBlockNode* predecessors;  //前驱节点
     int successor_num;             //后代个数
     BasicBlockNode* successors;    //后代节点
-
     BasicBlockNode* dominator;          //必经节点集
     BasicBlockNode* i_dominator;        //直接必经结点，长度为1的链表
     BasicBlockNode* Children;           //该结点直接统治的结点集

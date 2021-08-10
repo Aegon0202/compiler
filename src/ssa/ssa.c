@@ -129,6 +129,8 @@ BasicBlock* create_new_block() {
     MALLOC_WITHOUT_DECLARE(block->i_dominator, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->Children, BasicBlockNode, 1);
     MALLOC_WITHOUT_DECLARE(block->dominant_frontier, BasicBlockNode, 1);
+    MALLOC_WITHOUT_DECLARE(block->block_LRA, BlockBegin, 1);
+    MALLOC_WITHOUT_DECLARE(block->arm_ir_list, struct ArmIr, 1);
     block->is_sealed = 0;
     block->is_full = 0;
     block->predecessor_num = 0;
@@ -143,6 +145,8 @@ BasicBlock* create_new_block() {
     block->dominant_frontier->value = NULL;
     block->has_already = 0;
     block->work = 0;
+    block->block_LRA->block = block;
+    block->arm_ir_list->type = NOP;
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
@@ -151,6 +155,7 @@ BasicBlock* create_new_block() {
     list_init(&(block->i_dominator->block_link));
     list_init(&(block->Children->block_link));
     list_init(&(block->dominant_frontier->block_link));
+    list_init(&(block->arm_ir_list->ir_link));
     return block;
 }
 int getPredecessorNum(BasicBlock* basic_block) {
