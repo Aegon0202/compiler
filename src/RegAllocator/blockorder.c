@@ -60,11 +60,13 @@ void __numberLirOpBlock(BlockBegin* block, void* args) {
     int* begin_op_seq = (int*)args;
     list_entry_t* ir_list = getIrListFromBlock(block);
     list_entry_t* ir_elem = list_next(ir_list);
+    block->first_op_id = *begin_op_seq;
     while (ir_list != ir_elem) {
         le2struct(ir_elem, struct ArmIr, ir_link)->id = (*begin_op_seq);
         (*begin_op_seq) += id_inc;
         ir_elem = list_next(ir_elem);
     }
+    block->last_op_id = *begin_op_seq - id_inc;
 }
 
 void numberLirOp(struct DequeList* blocks) {

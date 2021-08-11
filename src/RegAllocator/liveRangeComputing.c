@@ -87,7 +87,7 @@ void BitMapSub(struct DequeList* bm1, struct DequeList* bm2, struct DequeList* b
 void __CLS_read_op(struct Register* op, struct DequeList* b_gen, struct DequeList* b_kill) {
     if (op->type != REGISTER) return;
 
-    int reg = op->operand.reg_idx;
+    int reg = op->reg;
     int index1 = reg / 64;
     int index2 = index1 - 64 * index1;
     unsigned long long* ll = getDequeList(b_kill, index1);
@@ -97,14 +97,21 @@ void __CLS_read_op(struct Register* op, struct DequeList* b_gen, struct DequeLis
     }
 }
 
-void __CLS_write_op(Operand* op, struct DequeList* b_kill) {
+void __CLS_write_op(struct Register* op, struct DequeList* b_kill) {
     if (op->type != REGISTER) return;
 
-    int reg = op->operand.reg_idx;
+    int reg = op->reg;
     int index1 = reg / 64;
     int index2 = index1 - 64 * index1;
     unsigned long long* ll = getDequeList(b_kill, index1);
     set_One(*ll, index2);
+}
+
+void __CLS_read_op2(struct Operand2* op, struct DequeList* b_gen, struct DequeList* b_kill) {
+    if (op->type != REGISTER) return;
+    __CLS_read_op(op->Rm.reg, b_gen, b_kill);
+    if (op->shift_op != REGISTER) return;
+    __CLS_read_op(op->shift.reg, b_gen, b_kill);
 }
 
 void compute_local_live_set_block(BlockBegin* block, void* args) {
