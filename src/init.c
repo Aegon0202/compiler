@@ -3,6 +3,7 @@
 #include "./optimizer/local_op.h"
 #include "./optimizer/peephole.h"
 #include "./ssa/ssa.h"
+extern struct DequeList* string_queue;
 // 进行所有必要的初始化。
 void init() {
     id_list = newLinearList();
@@ -23,5 +24,6 @@ void init() {
     constValue = newLinearList();
     constType = newLinearList();
     reg2Intival = newLinearList();
+    string_queue = newDequeList();
     init_all_table();
 }

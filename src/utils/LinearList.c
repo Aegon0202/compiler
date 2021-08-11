@@ -92,8 +92,6 @@ void* getLinearList(struct LinearList* linear, ull index) {
     IfNull(linear, return NULL;);
     IfNull(linear->content, return NULL;);
     return getLinearListElem(linear->content, index);
-
-    return NULL;
 }
 
 void* setLinearList(struct LinearList* linear, ull index, void* value) {
@@ -106,15 +104,15 @@ void* setLinearList(struct LinearList* linear, ull index, void* value) {
 void* popLinearList(struct LinearList* linear) {
     EnsureNotNull(linear);
     EnsureNotNull(linear->content);
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        struct Item* item = popLinearListElem(linear->content);
-        if (item != NULL) {
-            void* value = item->value;
-            free(item->key);
-            free(item);
-            return value;
-        }
+
+    struct Item* item = popLinearListElem(linear->content);
+    if (item != NULL) {
+        void* value = item->value;
+        free(item->key);
+        free(item);
+        return value;
     }
+
     return NULL;
 }
 
@@ -123,15 +121,15 @@ int freeLinearList(struct LinearList** linear_p) {
     IfNull(*linear_p, { *linear_p = NULL; return 0; });
     struct LinearList* linear = *linear_p;
     IfNull(linear->content, { free(linear->content); free(linear); *linear_p=NULL; return 0; });
-    for (int i = 0; i < TOTAL_LEVEL; i++) {
-        struct Item* item = popLinearListElem(linear->content);
-        if (item != NULL) {
-            setLinearList(linear, *(ull*)(item->key), item->value);
-            free(item->key);
-            free(item);
-            return -1;
-        }
-    };
+
+    struct Item* item = popLinearListElem(linear->content);
+    if (item != NULL) {
+        setLinearList(linear, *(ull*)(item->key), item->value);
+        free(item->key);
+        free(item);
+        return -1;
+    }
+
     free(linear->content);
     free(linear);
     *linear_p = NULL;
@@ -142,8 +140,6 @@ void* removeLinearList(struct LinearList* linear, unsigned long long int index) 
     EnsureNotNull(linear);
     EnsureNotNull(linear->content);
     return removeLinearListElem(linear->content, index);
-
-    return NULL;
 }
 
 // from begin_index +1 to end_index
@@ -176,4 +172,18 @@ struct DequeList* convertToDequeList(struct LinearList* linear) {
     }
     freeLinearList(&linear);
     return queue;
+}
+
+void forEachLinearList(struct LinearList* linear, void (*map_func)(void*, void*), void* args) {
+    struct LinearList* n_list = newLinearList();
+    struct Item* item = NULL;
+    while ((item = popLinearListElem(linear->content)) != NULL) {
+        setLinearList(n_list, *(ull*)(item->key), item->value);
+        map_func(item->value, args);
+        free(item->key);
+        free(item);
+    }
+    free(linear->content);
+    linear->content = n_list->content;
+    free(n_list);
 }

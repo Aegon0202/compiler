@@ -28,6 +28,14 @@ struct DequeList* newBitMap(int size) {
     return bm;
 }
 
+void freeBitMap(struct DequeList* bm) {
+    long long int* j = NULL;
+    while ((j = popBackDequeList(bm)) != NULL) {
+        free(j);
+    }
+    freeDequeList(&bm);
+}
+
 //bm1 = bm2
 void BitMapCopy(struct DequeList* bm1, struct DequeList* bm2) {
     int size1 = sizeDequeList(bm1);
@@ -89,7 +97,7 @@ void __CLS_read_op(struct Register* op, struct DequeList* b_gen, struct DequeLis
 
     int reg = op->reg;
     int index1 = reg / 64;
-    int index2 = index1 - 64 * index1;
+    int index2 = reg - 64 * index1;
     unsigned long long* ll = getDequeList(b_kill, index1);
     if (!is_One(*ll, index2)) {
         ll = getDequeList(b_gen, index1);
@@ -102,7 +110,7 @@ void __CLS_write_op(struct Register* op, struct DequeList* b_kill) {
 
     int reg = op->reg;
     int index1 = reg / 64;
-    int index2 = index1 - 64 * index1;
+    int index2 = reg - 64 * index1;
     unsigned long long* ll = getDequeList(b_kill, index1);
     set_One(*ll, index2);
 }
@@ -123,12 +131,12 @@ void compute_local_live_set_block(BlockBegin* block, void* args) {
 
     while (ir_elem != ir_list) {
         struct ArmIr* ir_value = le2struct(ir_elem, struct ArmIr, ir_link);
-        ir_elem = list_next(ir_list);
+        ir_elem = list_next(ir_elem);
 
 #define READ_OP(op) __CLS_read_op(op, b_gen, b_kill)
 #define WRITE_OP(op) __CLS_write_op(op, b_kill)
 #define READ_OP2(op) __CLS_read_op2(op, b_gen, b_kill)
-        ARM_IR_OP_READ_WRITE(ir_value, READ_OP, , WRITE_OP, PrintErrExit(" "););
+        ARM_IR_OP_READ_WRITE(ir_value, READ_OP, READ_OP2, WRITE_OP, PrintErrExit(" "););
 #undef READ_OP
 #undef WRITE_OP
 #undef READ_OP2
@@ -167,6 +175,10 @@ void compute_global_live_set_block(BlockBegin* block, void* args) {
         change = 1;
         BitMapCopy(b_live_out, tmp_live_out);
     }
+
+    freeBitMap(tmp_live_out);
+    freeBitMap(tmp_live_in);
+    freeBitMap(tmp);
 }
 
 void compute_global_live_set(struct DequeList* block_list) {

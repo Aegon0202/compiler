@@ -6,7 +6,7 @@
 #define INT_SIZE 4
 
 enum {
-    R0 = 1,
+    R0 = 0,
     R1,
     R2,
     R3,

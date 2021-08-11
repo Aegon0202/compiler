@@ -118,4 +118,15 @@ void* reduceLinearList(struct LinearList* linear, unsigned long long int begin_i
  */
 struct DequeList* convertToDequeList(struct LinearList* linear);
 
+/**
+ * 在当前列表中进行map操作，返回一个新列表
+ * 对其中所有的元素进行
+ * 
+ * :param (struct LinearList**) linear 一个指向LinearList的指针
+ * :param (void (*)(void* value, void* args)) map_func 一个函数，第一个参数为表中的元素，第二个参数为args
+ * :param (void*) args 传进map_func的第二个参数
+ * 
+ * :return (void)
+ */
+void forEachLinearList(struct LinearList* linear, void (*map_func)(void*, void*), void* args);
 #endif

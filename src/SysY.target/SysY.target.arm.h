@@ -85,4 +85,7 @@ struct Operand2* newOperand2(int type, void* Rm);
 struct CondOp* newCondOp(int type);
 struct ArmIr* newArmIr(int type, struct CondOp* cond, void* op1, void* op2, void* op3, void* op4);
 
+typedef struct BlockBegin BlockBegin;
+void __print_arm_ir_block(BlockBegin* block, void* args);
+void __print_arm_ir(struct ArmIr* arm_ir);
 #endif

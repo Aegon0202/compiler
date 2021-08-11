@@ -26,6 +26,30 @@ void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file);
 void generateGlobalToOutFile(FILE* out_file);
 void __init_bit_map_global();
 
+void __print_pre_and_suc(BASIC_BLOCK_TYPE* block, void* args) {
+    list_entry_t* head;
+    list_entry_t* elem;
+    printf("block address: %p:\n", block);
+    head = &block->predecessors->block_link;
+    elem = list_next(head);
+    printf("predecessors:");
+    while (head != elem) {
+        printf(" %p", le2BasicBlock(elem)->value);
+        elem = list_next(elem);
+    }
+    printf("\n");
+
+    head = &block->successors->block_link;
+    elem = list_next(head);
+    printf("successors:");
+    while (head != elem) {
+        printf(" %p", le2BasicBlock(elem)->value);
+        elem = list_next(elem);
+    }
+    printf("\n");
+    printf("\n");
+}
+
 int main(int argc, char** argv) {
     init();
     int index;
@@ -64,9 +88,9 @@ int main(int argc, char** argv) {
         }
     }
     //printf("\n\n\n");
-    //deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("uniquePaths", func_table)->blocks, __print_basic_block, NULL);
     convertAllOutSSAform();
 
+    deepTraverseSuccessorsBasicBlock(getFuncTabElemByName("main", func_table)->blocks, __print_basic_block, NULL);
     allBlock = newDequeList();
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
@@ -91,7 +115,7 @@ int main(int argc, char** argv) {
 
 void __get_all_blocks(BASIC_BLOCK_TYPE* basic_block, void* args) {
     struct DequeList* deque = (struct DequeList*)args;
-    pushFrontDequeList(deque, basic_block);
+    pushFrontDequeList(deque, basic_block->block_LRA);
 }
 
 void __debug_pause_there() {

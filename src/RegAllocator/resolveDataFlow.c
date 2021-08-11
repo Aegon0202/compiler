@@ -5,6 +5,7 @@
 struct FuncRegOffset* f_offset;
 Interval* create_new_interval(int reg_num, Interval* parent);
 int allocate_spill_slot();
+int __lowBitToNum(unsigned long long int n);
 
 int get_reg_offset(int reg_num) {
     Interval* interval = getIntervalByVal(reg_num);
@@ -20,7 +21,7 @@ void resolve_data_flow_block(BlockBegin* block, void* args) {
     struct LinearList* block_register = newLinearList();
     while (!isEmptyDequeList(sux)) {
         BlockBegin* suc = popBackDequeList(sux);
-        int suc_first_opid = getFirstOpId(block);
+        int suc_first_opid = getFirstOpId(suc);
         struct DequeList* suc_live_in = getBlock_in(suc);
         int size = sizeDequeList(suc_live_in);
 
@@ -36,7 +37,7 @@ void resolve_data_flow_block(BlockBegin* block, void* args) {
             unsigned long long int tmp = *((long long int*)getDequeList(suc_live_in, i));
             while (tmp) {
                 int bit = lowBit(tmp);
-                int index = bit + 64 * i;
+                int index = __lowBitToNum(bit) + 64 * i;
                 tmp -= bit;
 
                 Interval* p_inter = getIntervalByVal(index);

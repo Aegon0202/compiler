@@ -27,6 +27,38 @@ Interval* create_new_interval(int reg_num, Interval* parent) {
     return interval;
 }
 
+void free_interval(Interval* it) {
+    list_entry_t* head = &it->range_list->link;
+    while (!list_empty(head)) {
+        list_entry_t* elem = list_next(head);
+        list_del(elem);
+        RangeList* rl = le2RangeList(elem);
+        free(rl);
+    }
+    free(it->range_list);
+
+    head = &it->split_childer->link;
+    while (!list_empty(head)) {
+        list_entry_t* elem = list_next(head);
+        list_del(elem);
+        IntervalList* il = le2IntervalList(elem);
+        free_interval(il->value);
+        free(il);
+    }
+    free(it->split_childer);
+
+    head = &it->usepostion->link;
+    while (!list_empty(head)) {
+        list_entry_t* elem = list_next(head);
+        list_del(elem);
+        usepositionList* ul = le2UsePositionList(elem);
+        free(ul);
+    }
+    free(it->usepostion);
+
+    free(it);
+}
+
 Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandled_list_head) {
     if (split_pos >= getFirstRange(interval)->begin || split_pos <= getLastRange(interval)->end)
         PrintErrExit("inappropriate split point");
@@ -169,7 +201,7 @@ static void __build_interval_write_reg(struct Register* reg, struct ArmIr* arm_i
     Interval* inter = NULL;
     inter = getIntervalByVal(reg->reg);
 
-    add_range(inter, create_new_range(op_id, block_to));
+    getFirstRange(inter)->begin = arm_ir->id;
     add_use_pos(inter, create_new_useposition(op_id));
 }
 
@@ -213,6 +245,10 @@ void build_interval_block(BlockBegin* block, void* args) {
 #undef READ_OP2
 #undef WRITE_REG
         if (ir->type == ARM_BL && ir->op2 != NULL) {
+            add_range(getIntervalByVal(A1), create_new_range(ir->id, ir->id + id_inc - 1));
+            add_range(getIntervalByVal(A2), create_new_range(ir->id, ir->id + id_inc - 1));
+            add_range(getIntervalByVal(A3), create_new_range(ir->id, ir->id + id_inc - 1));
+            add_range(getIntervalByVal(A4), create_new_range(ir->id, ir->id + id_inc - 1));
             struct Register reg;
             int param_num = *(int*)(ir->op2);
             reg.type = PHISICAL;

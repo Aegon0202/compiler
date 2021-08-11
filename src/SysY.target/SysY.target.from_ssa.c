@@ -453,7 +453,7 @@ func_head(k_not) {
     pushFrontDequeList(queue, arm_ir);
 
     cond = newCondOp(NE);
-    arm_op1 = __convert_op_to_reg(ir->op2, queue, func);
+    arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
     tmp_op.operand.v.intValue = 0;
     arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);
     arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL);
@@ -517,7 +517,7 @@ func_head(k_mod) {
 
     arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
     arm_op2 = newRegister(((struct Register*)numerator)->type, ((struct Register*)numerator)->reg);
-    arm_op3 = newRegister(REGISTER, new_reg_num);
+    arm_op3 = newOperand2(REGISTER, newRegister(REGISTER, new_reg_num));
     arm_ir = newArmIr(ARM_SUB, NULL, arm_op1, arm_op2, arm_op3, NULL);
     pushFrontDequeList(queue, arm_ir);
 }
@@ -538,14 +538,14 @@ func_head(k_mod) {
         pushFrontDequeList(queue, arm_ir);                              \
                                                                         \
         cond = newCondOp(true_cond);                                    \
-        arm_op1 = __convert_op_to_reg(ir->op2, queue, func);            \
+        arm_op1 = __convert_op_to_reg(ir->op3, queue, func);            \
         tmp_op.operand.v.intValue = 1;                                  \
         arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);            \
         arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL); \
         pushFrontDequeList(queue, arm_ir);                              \
                                                                         \
         cond = newCondOp(false_cond);                                   \
-        arm_op1 = __convert_op_to_reg(ir->op2, queue, func);            \
+        arm_op1 = __convert_op_to_reg(ir->op3, queue, func);            \
         tmp_op.operand.v.intValue = 0;                                  \
         arm_op2 = __convert_op_to_op2(&tmp_op, queue, func);            \
         arm_ir = newArmIr(ARM_MOV, cond, arm_op1, arm_op2, NULL, NULL); \
@@ -570,22 +570,22 @@ func_head(normal_call) {
     for (int i = 0; i < param_num; i++) {
         IR_LIST_TYPE* param_ir = le2struct(param_elem, IR_TYPE, ir_link);
         param_elem = list_prev(param_elem);
-        if (param_ir->op2->operand.v.intValue == 1) {
+        if (param_ir->op2->operand.v.intValue == 0) {
             arm_op1 = newRegister(PHISICAL, A1);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
             pushFrontDequeList(queue, arm_ir);
-        } else if (param_ir->op2->operand.v.intValue == 2) {
+        } else if (param_ir->op2->operand.v.intValue == 1) {
             arm_op1 = newRegister(PHISICAL, A2);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
             pushFrontDequeList(queue, arm_ir);
-        } else if (param_ir->op2->operand.v.intValue == 3) {
+        } else if (param_ir->op2->operand.v.intValue == 2) {
             arm_op1 = newRegister(PHISICAL, A3);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
             pushFrontDequeList(queue, arm_ir);
-        } else if (param_ir->op2->operand.v.intValue == 4) {
+        } else if (param_ir->op2->operand.v.intValue == 3) {
             arm_op1 = newRegister(PHISICAL, A4);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
@@ -606,7 +606,7 @@ func_head(normal_call) {
     pushFrontDequeList(queue, arm_ir);
 
     arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-    arm_op2 = newRegister(PHISICAL, A1);
+    arm_op2 = newOperand2(REGISTER, newRegister(PHISICAL, A1));
     arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
@@ -713,22 +713,22 @@ func_head(tail_call) {
         arm_ir = newArmIr(ARM_POP, NULL, arm_op1, NULL, NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
 
-        if (param_ir->op2->operand.v.intValue == 1) {
+        if (param_ir->op2->operand.v.intValue == 0) {
             arm_op1 = newRegister(PHISICAL, A1);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
             pushFrontDequeList(queue, arm_ir);
-        } else if (param_ir->op2->operand.v.intValue == 2) {
+        } else if (param_ir->op2->operand.v.intValue == 1) {
             arm_op1 = newRegister(PHISICAL, A2);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
             pushFrontDequeList(queue, arm_ir);
-        } else if (param_ir->op2->operand.v.intValue == 3) {
+        } else if (param_ir->op2->operand.v.intValue == 2) {
             arm_op1 = newRegister(PHISICAL, A3);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
             pushFrontDequeList(queue, arm_ir);
-        } else if (param_ir->op2->operand.v.intValue == 4) {
+        } else if (param_ir->op2->operand.v.intValue == 3) {
             arm_op1 = newRegister(PHISICAL, A4);
             arm_op2 = __convert_op_to_op2(param_ir->op3, queue, func);
             arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
@@ -763,7 +763,7 @@ func_head(tail_call) {
     pushFrontDequeList(queue, arm_ir);
 
     arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-    arm_op2 = newRegister(PHISICAL, A1);
+    arm_op2 = newOperand2(REGISTER, newRegister(PHISICAL, A1));
     arm_ir = newArmIr(ARM_MOV, NULL, arm_op1, arm_op2, NULL, NULL);
     pushFrontDequeList(queue, arm_ir);
 
@@ -780,8 +780,8 @@ func_head(call) {
         } else {
             return __convert_tail_call_to_arm(ir, queue, block, func);
         }
-        return __convert_normal_call_to_arm(ir, queue, block, func);
     }
+    return __convert_normal_call_to_arm(ir, queue, block, func);
 }
 
 #undef func_head

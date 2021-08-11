@@ -8,8 +8,10 @@
 int free_pos[PHISICAL_REG_NUM];
 int use_pos[PHISICAL_REG_NUM];
 int blocked_pos[PHISICAL_REG_NUM];
+
 int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head, list_entry_t* unhandled);
 void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t* inactive, list_entry_t* unhandled, struct DequeList* blocks);
+void __insert_interval_to_unhandled(Interval* it, list_entry_t* unhandled_list);
 
 void set_use_pos(Interval* interval, int pos) {
     int reg = getInterval_assigned_reg(interval);
@@ -42,10 +44,10 @@ int get_max_use_pos() {
     return get_max_pos(use_pos);
 }
 
-void __init_unhandled_list(list_entry_t* unhandled_head, struct DequeList* blocks) {
-    for (int i = 0; i < sizeDequeList(blocks); i++) {
-        getDequeList(blocks, i);
-    }
+void __init_unhandled_list(void* value, void* args) {
+    Interval* it = (Interval*)value;
+    list_entry_t* head = (list_entry_t*)args;
+    __insert_interval_to_unhandled(it, head);
 }
 
 void walkIntervals(struct DequeList* blocks) {
@@ -64,7 +66,8 @@ void walkIntervals(struct DequeList* blocks) {
     list_init(active_list_head);
     list_init(inactive_list_head);
     list_init(handled_list_head);
-    __init_unhandled_list(unhandled_list_head, blocks);
+    forEachLinearList(reg2Intival, __init_unhandled_list, unhandled_list_head);
+    //__init_unhandled_list(unhandled_list_head, blocks);
     //to be modified
     while (!list_empty(unhandled_list_head)) {
         list_entry_t* first = list_next(unhandled_list_head);
@@ -99,13 +102,13 @@ void walkIntervals(struct DequeList* blocks) {
             //获取当前Interval的最后一个range的后部区间
             int initposition = le2struct(list_next(&init->range_list->link), RangeList, link)->begin;
             if (initposition < position) {
-                inactive_list_tmp = list_next(active_list_tmp);
-                MoveitFromAtoB(active_list_head, handled_list_head, initList);
+                inactive_list_tmp = list_next(inactive_list_tmp);
+                MoveitFromAtoB(inactive_list_head, handled_list_head, initList);
             } else if (isCoverd(init, position)) {
-                inactive_list_tmp = list_next(active_list_tmp);
-                MoveitFromAtoB(active_list_head, inactive_list_head, initList);
+                inactive_list_tmp = list_next(inactive_list_tmp);
+                MoveitFromAtoB(inactive_list_head, active_list_head, initList);
             } else {
-                inactive_list_tmp = list_next(active_list_tmp);
+                inactive_list_tmp = list_next(inactive_list_tmp);
             }
         }
 
@@ -164,7 +167,6 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
         int optimal_pos = getOptimalPos(getFirstUsePos(current));
         splitInterval(current, optimal_pos, unhandled);
 
-        //add to unhandle
     } else if (blocked_pos[reg] > getLastRange(current)->end) {
         assign_reg2interval(current, reg);
         //spill and split it in active and inactive
@@ -211,6 +213,7 @@ int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, l
         IntervalList* itList = le2struct(active_list_tmp, IntervalList, link);
         Interval* it = itList->value;
         set_free_pos(it, 0);
+        active_list_tmp = list_next(active_list_tmp);
     }
 
     list_entry_t* inactive_list_tmp = list_next(inactive_list_head);
@@ -221,6 +224,7 @@ int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, l
             int inter_pos = getNextIntersect(current, init);
             set_free_pos(init, inter_pos);
         }
+        inactive_list_tmp = list_next(inactive_list_tmp);
     }
     int reg = get_max_free_pos();
 
@@ -232,7 +236,21 @@ int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, l
         assign_reg2interval(current, reg);
         int optimal_pos = getOptimalPos(free_pos[reg]);
         splitInterval(current, optimal_pos, unhandled);
-        //add to unhandle
     }
     return 1;
+}
+
+void __insert_interval_to_unhandled(Interval* it, list_entry_t* unhandled_list) {
+    list_entry_t* elem = list_next(unhandled_list);
+    int begin = getFirstRange(it)->begin;
+    while (elem != unhandled_list) {
+        Interval* cur = le2IntervalList(elem)->value;
+        if (getFirstRange(cur)->begin >= begin) {
+            break;
+        }
+        elem = list_next(elem);
+    }
+    MALLOC(l, IntervalList, 1);
+    l->value = it;
+    list_add_before(elem, &l->link);
 }

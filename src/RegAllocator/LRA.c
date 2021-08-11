@@ -49,8 +49,14 @@ void __add_bit_map(BlockBegin* block, void* args) {
         MALLOC(j, long long int, 1);
         *j = 0;
         pushFrontDequeList(block->block_live_gen, j);
+
+        MALLOC_WITHOUT_DECLARE(j, long long int, 1);
         pushFrontDequeList(block->block_live_in, j);
+
+        MALLOC_WITHOUT_DECLARE(j, long long int, 1);
         pushFrontDequeList(block->block_live_out, j);
+
+        MALLOC_WITHOUT_DECLARE(j, long long int, 1);
         pushFrontDequeList(block->block_live_kill, j);
     }
 }
@@ -61,7 +67,7 @@ void __add_bit_map_global(struct DequeList* block_list) {
 
 void __init_bit_map_global() {
     current_bitMap_size = alloc_register();
-    MaxbitMapSize = current_bitMap_size / 64 + 64 * 5;
+    MaxbitMapSize = current_bitMap_size + BEGIN_REG_NUM + 5 * 64;
     __add_bit_map_global(allBlock);
 }
 
@@ -78,6 +84,8 @@ void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file) {
     compute_local_live_set(block_seq);
     compute_global_live_set(block_seq);
 
+    gothrough_BlockBeginNode_list(block_seq, __print_arm_ir_block, NULL);
+
     build_interval(block_seq);
     walkIntervals(block_seq);
     resolve_data_flow(block_seq);
@@ -85,6 +93,11 @@ void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file) {
 
     elem->var_offset_end = spill_current;
     __convert_to_file(elem, block_seq, out_file);
+
+    Interval* it = NULL;
+    while ((it = popLinearList(reg2Intival)) != NULL) {
+        free_interval(it);
+    }
 }
 
 //----------------------
@@ -113,7 +126,15 @@ struct DequeList* getBlock_out(BlockBegin* block) {
 }
 
 Interval* getIntervalByVal(int reg_num) {
-    return getLinearList(reg2Intival, reg_num);
+    Interval* it = getLinearList(reg2Intival, reg_num);
+    if (it == NULL) {
+        it = create_new_interval(reg_num, NULL);
+        setLinearList(reg2Intival, reg_num, it);
+        if (reg_num < BEGIN_REG_NUM) {
+            it->is_fixed = 1;
+        }
+    }
+    return it;
 }
 
 int getInterval_assigned_reg(Interval* interval) {
@@ -129,6 +150,7 @@ int isCoverd(Interval* it, int position) {
         if (tmp_begin <= position && tmp_end > position) {
             flag = 1;
         }
+        range_list_tmp = list_next(range_list_tmp);
     }
     return flag;
 }
@@ -240,11 +262,17 @@ void assign_phisical_reg_num(struct DequeList* block_list) {
 }
 
 Interval* __find_child(Interval* p_it, int op_id) {
-    if (op_id >= getFirstRange(p_it)->begin && op_id < getLastRange(p_it)->end) {
-        return p_it;
-    }
-    list_entry_t* head = &p_it->split_childer->link;
+    list_entry_t* head = &p_it->usepostion->link;
     list_entry_t* elem = list_next(head);
+    while (head != elem) {
+        if (le2UsePositionList(elem)->position == op_id) {
+            return p_it;
+        }
+        elem = list_next(elem);
+    }
+
+    head = &p_it->split_childer->link;
+    elem = list_next(head);
     while (head != elem) {
         Interval* c_it = le2IntervalList(elem)->value;
         elem = list_next(elem);
