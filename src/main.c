@@ -77,6 +77,7 @@ int main(int argc, char** argv) {
     }
 
     __init_bit_map_global();
+
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks) {

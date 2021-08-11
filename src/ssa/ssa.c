@@ -147,6 +147,10 @@ BasicBlock* create_new_block() {
     block->work = 0;
     block->block_LRA->block = block;
     block->arm_ir_list->type = NOP;
+    block->block_LRA->block_live_gen = newDequeList();
+    block->block_LRA->block_live_kill = newDequeList();
+    block->block_LRA->block_live_in = newDequeList();
+    block->block_LRA->block_live_out = newDequeList();
     list_init(&(block->predecessors->block_link));
     list_init(&(block->successors->block_link));
     list_init(&(block->ir_list->ir_link));
