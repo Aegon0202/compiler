@@ -45,9 +45,8 @@ int isCoverd(Interval* it, int position);
 int isIntervalsect(Interval* current, Interval* it);
 int getNextIntersect(Interval* currrent, Interval* it);
 int getNextUsage(Interval*, int);
-Interval* splitInterval(Interval* interval, int split_pos, list_entry_t*);
+Interval* splitInterval(Interval* interval, int split_pos);
 void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t*, struct DequeList* blocks);
-
 #define le2IntervalList(elem) le2struct(elem, IntervalList, link)
 #define le2RangeList(elem) le2struct(elem, RangeList, link)
 #define le2UsePositionList(elem) le2struct(elem, usepositionList, link)

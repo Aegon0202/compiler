@@ -94,10 +94,10 @@ struct Register* __convert_op_to_reg(OPERAND_TYPE* op, struct DequeList* queue, 
         int new_reg_num = alloc_register() + BEGIN_REG_NUM;
         arm_ir = newArmIr(ARM_MOVW, NULL, newRegister(REGISTER, new_reg_num), newImmi_16(num), NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
-        if (num > INT16_MAX || num < INT16_MIN) {
-            arm_ir = newArmIr(ARM_MOVT, NULL, newRegister(REGISTER, new_reg_num), newImmi_16(num >> 16), NULL, NULL);
-            pushFrontDequeList(queue, arm_ir);
-        }
+
+        arm_ir = newArmIr(ARM_MOVT, NULL, newRegister(REGISTER, new_reg_num), newImmi_16(num >> 16), NULL, NULL);
+        pushFrontDequeList(queue, arm_ir);
+
         return newRegister(REGISTER, new_reg_num);
     } else if (op->type == REGISTER) {
         return newRegister(REGISTER, op->operand.reg_idx + BEGIN_REG_NUM);
@@ -349,11 +349,11 @@ func_head(assign) {
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
         arm_ir = newArmIr(ARM_MOVW, NULL, arm_op1, newImmi_16(num), NULL, NULL);
         pushFrontDequeList(queue, arm_ir);
-        if (num > INT16_MAX || num < INT16_MIN) {
-            arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
-            arm_ir = newArmIr(ARM_MOVT, NULL, arm_op1, newImmi_16(num >> 16), NULL, NULL);
-            pushFrontDequeList(queue, arm_ir);
-        }
+
+        arm_op1 = __convert_op_to_reg(ir->op3, queue, func);
+        arm_ir = newArmIr(ARM_MOVT, NULL, arm_op1, newImmi_16(num >> 16), NULL, NULL);
+        pushFrontDequeList(queue, arm_ir);
+
     } else if (ir->op1->type == REGISTER) {
         arm_op2 = __convert_op_to_op2(ir->op1, queue, func);
         arm_op1 = __convert_op_to_reg(ir->op3, queue, func);

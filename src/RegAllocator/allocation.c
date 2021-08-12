@@ -4,7 +4,7 @@
 #include "../utils/link.h"
 #include "./lifeinterval.h"
 #include "LRA.h"
-#define PHISICAL_REG_NUM 15
+#define PHISICAL_REG_NUM 10
 int free_pos[PHISICAL_REG_NUM];
 int use_pos[PHISICAL_REG_NUM];
 int blocked_pos[PHISICAL_REG_NUM];
@@ -82,11 +82,11 @@ void walkIntervals(struct DequeList* blocks) {
             IntervalList* itList = le2struct(active_list_tmp, IntervalList, link);
             Interval* it = itList->value;
             //获取当前Interval的最后一个range的后部区间
-            int itposition = le2struct(list_next(&it->range_list->link), RangeList, link)->begin;
+            int itposition = le2struct(list_prev(&it->range_list->link), RangeList, link)->end;
             if (itposition < position) {
                 active_list_tmp = list_next(active_list_tmp);
                 MoveitFromAtoB(active_list_head, handled_list_head, itList);
-            } else if (isCoverd(it, position)) {
+            } else if (!isCoverd(it, position)) {
                 active_list_tmp = list_next(active_list_tmp);
                 MoveitFromAtoB(active_list_head, inactive_list_head, itList);
             } else {
@@ -100,7 +100,7 @@ void walkIntervals(struct DequeList* blocks) {
             IntervalList* initList = le2struct(inactive_list_tmp, IntervalList, link);
             Interval* init = initList->value;
             //获取当前Interval的最后一个range的后部区间
-            int initposition = le2struct(list_next(&init->range_list->link), RangeList, link)->begin;
+            int initposition = le2struct(list_prev(&init->range_list->link), RangeList, link)->end;
             if (initposition < position) {
                 inactive_list_tmp = list_next(inactive_list_tmp);
                 MoveitFromAtoB(inactive_list_head, handled_list_head, initList);
@@ -165,7 +165,7 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
         //assign spill slot to current
         //split current before first usePos
         int optimal_pos = getOptimalPos(getFirstUsePos(current));
-        splitInterval(current, optimal_pos, unhandled);
+        __insert_interval_to_unhandled(splitInterval(current, optimal_pos), unhandled);
 
     } else if (blocked_pos[reg] > getLastRange(current)->end) {
         assign_reg2interval(current, reg);
@@ -174,32 +174,34 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
         while (active_elem != active) {
             Interval* it = le2IntervalList(active_elem)->value;
             active_elem = list_next(active);
-            makeRoomForCurrent(current, it, unhandled, blocks);
+            if (it->reg_num == reg)
+                makeRoomForCurrent(current, it, unhandled, blocks);
         }
         inactive_elem = list_next(inactive);
         while (inactive_elem != inactive) {
             Interval* it = le2IntervalList(inactive_elem)->value;
             inactive_elem = list_next(inactive_elem);
-            if (!isIntervalsect(it, current)) continue;
+            if (!isIntervalsect(it, current) || it->reg_num != reg) continue;
             makeRoomForCurrent(current, it, unhandled, blocks);
         }
     } else {
         //spill current
         int current_split = getOptimalPos(blocked_pos[reg]);
-        splitInterval(current, current_split, unhandled);
+        __insert_interval_to_unhandled(splitInterval(current, current_split), unhandled);
 
         //split it
         active_elem = list_next(active);
         while (active_elem != active) {
             Interval* it = le2IntervalList(active_elem)->value;
             active_elem = list_next(active);
-            makeRoomForCurrent(current, it, unhandled, blocks);
+            if (it->reg_num == reg)
+                makeRoomForCurrent(current, it, unhandled, blocks);
         }
         inactive_elem = list_next(inactive);
         while (inactive_elem != inactive) {
             Interval* it = le2IntervalList(inactive_elem)->value;
             inactive_elem = list_next(inactive_elem);
-            if (!isIntervalsect(it, current)) continue;
+            if (!isIntervalsect(it, current) || it->reg_num != reg) continue;
             makeRoomForCurrent(current, it, unhandled, blocks);
         }
     }
@@ -235,7 +237,7 @@ int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, l
     } else {
         assign_reg2interval(current, reg);
         int optimal_pos = getOptimalPos(free_pos[reg]);
-        splitInterval(current, optimal_pos, unhandled);
+        __insert_interval_to_unhandled(splitInterval(current, optimal_pos), unhandled);
     }
     return 1;
 }

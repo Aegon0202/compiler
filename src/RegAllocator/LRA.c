@@ -219,7 +219,7 @@ int getFirstUsePos(Interval* interval) {
 }
 
 int getOptimalPos(int n) {
-    return n - 2;
+    return n - 1;
 }
 
 void __rename_reg_num(struct Register* reg, struct ArmIr* arm_ir) {
@@ -292,7 +292,7 @@ Interval* child_at(int reg_num, int op_id) {
 list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id) {
     for (int i = 0; i < sizeDequeList(block_list); i++) {
         BlockBegin* block = getDequeList(block_list, i);
-        if (block->first_op_id <= op_id && block->last_op_id >= op_id) {
+        if (block->first_op_id <= op_id & &block->last_op_id >= op_id) {
             list_entry_t* ir_list = getIrListFromBlock(block);
             list_entry_t* ir_elem = list_next(ir_list);
             while (ir_list != ir_elem) {

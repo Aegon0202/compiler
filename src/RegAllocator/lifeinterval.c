@@ -1,7 +1,7 @@
 #include "lifeinterval.h"
 
 #include "LRA.h"
-
+void __insert_interval_to_unhandled(Interval* it, list_entry_t* unhandled_list);
 int __lowBitToNum(unsigned long long int n) {
     int j = 0;
     while ((n = n >> 1)) {
@@ -59,8 +59,13 @@ void free_interval(Interval* it) {
     free(it);
 }
 
-Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandled_list_head) {
-    if (split_pos >= getFirstRange(interval)->begin || split_pos <= getLastRange(interval)->end)
+int __is_exit_usepos(Interval* it) {
+    list_entry_t* head = &it->usepostion->link;
+    return list_next(head) != head;
+}
+
+Interval* splitInterval(Interval* interval, int split_pos) {
+    if (split_pos <= getFirstRange(interval)->begin || split_pos >= getLastRange(interval)->end)
         PrintErrExit("inappropriate split point");
 
     Interval* child = create_new_interval(interval->reg_num, interval);
@@ -99,30 +104,23 @@ Interval* splitInterval(Interval* interval, int split_pos, list_entry_t* unhandl
     list_entry_t* usepos_elem = list_next(usepos_head);
     while (usepos_elem != usepos_head) {
         int usepos_value = le2UsePositionList(usepos_elem)->position;
-        usepos_elem = list_next(usepos_elem);
-        if (usepos_value < split_pos) continue;
-
-        list_del(usepos_elem);
-        list_add_before(child_usepos_head, usepos_elem);
+        if (usepos_value > split_pos) {
+            list_entry_t* t_elem = list_next(usepos_elem);
+            list_del(usepos_elem);
+            list_add_before(child_usepos_head, usepos_elem);
+            usepos_elem = t_elem;
+        } else {
+            usepos_elem = list_next(usepos_elem);
+        }
     }
 
     //insert into unhandle while maintain the order
-    list_entry_t* unhandled_elem = list_next(unhandled_list_head);
-    while (unhandled_list_head != unhandled_elem) {
-        Interval* unhandled_value = le2IntervalList(unhandled_elem)->value;
-        if (getFirstRange(unhandled_value)->begin > getFirstRange(child)->begin) break;
-        unhandled_elem = list_next(unhandled_elem);
-    }
-
-    MALLOC(inter_node, IntervalList, 1);
-    inter_node->value = child;
-    list_add_before(unhandled_elem, &inter_node->link);
     return child;
 }
 
 void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled, struct DequeList* blocks) {
     int n = getNextIntersect(it, current);
-    Interval* child = splitInterval(it, n, unhandled);
+    Interval* child = splitInterval(it, n);
     int off = get_reg_offset(it->reg_num);
     child->is_spilled = 1;
 
@@ -131,6 +129,7 @@ void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled
     void* arm_op3 = NULL;
     void* arm_op1 = newRegister(PHISICAL, it->phisical_reg);
     void* arm_op2 = newRegister(PHISICAL, FP);
+
     if (off > -4095 && off < 4095) {
         arm_op3 = newImmi_12(off);
         arm_ir = newArmIr(ARM_STR_I, NULL, arm_op1, arm_op2, arm_op3, NULL);
@@ -145,6 +144,17 @@ void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled
         arm_op3 = newRegister(PHISICAL, IP);
         arm_ir = newArmIr(ARM_STR_R, NULL, arm_op1, arm_op2, arm_op3, NULL);
         list_add_before(add_before_entry, &arm_ir->ir_link);
+    }
+
+    if (__is_exit_usepos(child)) {
+        int usepos = getFirstUsePos(child);
+        int split_pos = getOptimalPos(usepos);
+        Interval* grandChild = splitInterval(child, split_pos);
+        grandChild->is_spilled = 1;
+        child->phisical_reg = -1;
+        __insert_interval_to_unhandled(grandChild, unhandled);
+    } else {
+        child->phisical_reg = -1;  //该interval已经被处理，应放入handledlist里
     }
     return;
 }
@@ -192,7 +202,7 @@ static void __build_interval_read_reg(struct Register* reg, struct ArmIr* arm_ir
     Interval* inter = NULL;
     inter = getIntervalByVal(reg->reg);
 
-    add_range(inter, create_new_range(block_from, op_id + id_inc - 1));
+    add_range(inter, create_new_range(block_from, op_id));
     add_use_pos(inter, create_new_useposition(op_id));
 }
 
@@ -275,4 +285,17 @@ void build_interval_block(BlockBegin* block, void* args) {
 
 void build_interval(struct DequeList* start) {
     gothrough_BlockBeginNode_list_reverse(start, build_interval_block, NULL);
+}
+
+void insert2unhandle(list_entry_t* unhandled_list_head, Interval* child) {
+    list_entry_t* unhandled_elem = list_next(unhandled_list_head);
+    while (unhandled_list_head != unhandled_elem) {
+        Interval* unhandled_value = le2IntervalList(unhandled_elem)->value;
+        if (getFirstRange(unhandled_value)->begin > getFirstRange(child)->begin) break;
+        unhandled_elem = list_next(unhandled_elem);
+    }
+
+    MALLOC(inter_node, IntervalList, 1);
+    inter_node->value = child;
+    list_add_before(unhandled_elem, &inter_node->link);
 }

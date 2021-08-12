@@ -175,16 +175,16 @@ void __convert_ir_to_file(struct ArmIr* arm_ir, FILE* out_file) {
             Fprintf("CLZ%s\t%s,\t%s\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), __convert_reg_to_str(arm_ir->op2));
             break;
         case ARM_MOVW:
-            Fprintf("MOVW%s\t%s,\t#%d\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Immi_16*)(arm_ir->op2))->num);
+            Fprintf("MOVW%s\t%s,\t#0x%04x\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Immi_16*)(arm_ir->op2))->num & 0xffff);
             break;
         case ARM_MOVT:
-            Fprintf("MOVT%s\t%s,\t#%d\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Immi_16*)(arm_ir->op2))->num);
+            Fprintf("MOVT%s\t%s,\t#0x%04x\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Immi_16*)(arm_ir->op2))->num & 0xffff);
             break;
         case ARM_MOVW_L:
-            Fprintf("MOVW%s\t%s,\t#:lower:%s\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Label*)(arm_ir->op2))->label);
+            Fprintf("MOVW%s\t%s,\t#:lower16:%s\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Label*)(arm_ir->op2))->label);
             break;
         case ARM_MOVT_L:
-            Fprintf("MOVT%s\t%s,\t#:upper:%s\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Label*)(arm_ir->op2))->label);
+            Fprintf("MOVT%s\t%s,\t#:upper16:%s\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), ((struct Label*)(arm_ir->op2))->label);
             break;
         case ARM_CMP:
             Fprintf("CMP%s\t%s,\t%s\n", __convert_cond_to_str(arm_ir->cond), __convert_reg_to_str(arm_ir->op1), __convert_op2_to_str(arm_ir->op2));
