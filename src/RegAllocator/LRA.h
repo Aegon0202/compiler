@@ -7,8 +7,8 @@
 #include "./lifeinterval.h"
 #include "blockorder.h"
 #define lowBit(n) ((n) & (-n))
-#define is_One(n, index) ((n) & (0x1 << (index)))
-#define set_One(n, index) ((n) |= (0x1 << (index)))
+#define is_One(n, index) ((n) & ((long long int)0x1 << (index)))
+#define set_One(n, index) ((n) |= ((long long int)0x1 << (index)))
 #define SingleBitMapUnion(a, b) ((a) | (b))
 #define SingleBitMapIntersect(a, b) ((a) & (b))
 #define SingleBitMapSub(a, b) ((a) & (~(b)))

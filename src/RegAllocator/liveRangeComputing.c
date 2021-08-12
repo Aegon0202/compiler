@@ -93,6 +93,9 @@ void BitMapSub(struct DequeList* bm1, struct DequeList* bm2, struct DequeList* b
 }
 
 void __CLS_read_op(struct Register* op, struct DequeList* b_gen, struct DequeList* b_kill) {
+    if (op->reg == 229) {
+        printf(" ");
+    }
     if (op->type != REGISTER) return;
 
     int reg = op->reg;

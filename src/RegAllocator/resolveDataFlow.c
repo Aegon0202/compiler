@@ -36,7 +36,7 @@ void resolve_data_flow_block(BlockBegin* block, void* args) {
         for (int i = 0; i < size; i++) {
             unsigned long long int tmp = *((long long int*)getDequeList(suc_live_in, i));
             while (tmp) {
-                int bit = lowBit(tmp);
+                long long int bit = lowBit(tmp);
                 int index = __lowBitToNum(bit) + 64 * i;
                 tmp -= bit;
 
