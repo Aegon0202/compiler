@@ -41,4 +41,6 @@ void gothrough_BlockBeginNode_list_reverse(struct DequeList* block_list_head, vo
 Interval* child_at(int reg_num, int op_id);
 Interval* create_new_interval(int reg_num, Interval* parent);
 void free_interval(Interval* it);
+void store_reg_to_stack(Interval* it, list_entry_t* add_before_entry);
+void load_reg_from_stack(Interval* it, list_entry_t* add_before_entry);
 #endif

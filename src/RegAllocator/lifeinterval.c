@@ -14,7 +14,7 @@ Interval* create_new_interval(int reg_num, Interval* parent) {
     MALLOC(interval, Interval, 1);
     interval->reg_num = reg_num;
     interval->childrenNum = 0;
-    interval->phisical_reg = -1;
+    interval->phisical_reg = -2;
     interval->is_fixed = 0;
     interval->split_parent = parent;
     interval->spill_slot = 0;
@@ -74,7 +74,7 @@ Interval* splitInterval(Interval* interval, int split_pos) {
 
     MALLOC(node, IntervalList, 1);
     node->value = child;
-    list_add_before(&interval->split_childer->link, &node->link);
+    list_add_after(&interval->split_childer->link, &node->link);
 
     //process range
     list_entry_t* child_range_head = &child->range_list->link;
@@ -82,19 +82,21 @@ Interval* splitInterval(Interval* interval, int split_pos) {
     list_entry_t* range_elem = list_next(range_head);
     while (range_head != range_elem) {
         RangeList* range_value = le2RangeList(range_elem);
-        range_elem = list_next(range_elem);
 
-        if (range_value->end <= split_pos) continue;
-
-        if (range_value->begin < split_pos) {
+        if (range_value->end <= split_pos) {
+            range_elem = list_next(range_elem);
+        } else if (range_value->begin < split_pos) {
             MALLOC(new_range, RangeList, 1);
             new_range->begin = split_pos;
             new_range->end = range_value->end;
             range_value->end = split_pos;
             list_add_before(child_range_head, &new_range->link);
+            range_elem = list_next(range_elem);
         } else {
+            list_entry_t* t_elem = list_next(range_elem);
             list_del(range_elem);
             list_add_before(child_range_head, range_elem);
+            range_elem = t_elem;
         }
     }
 
@@ -121,30 +123,11 @@ Interval* splitInterval(Interval* interval, int split_pos) {
 void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled, struct DequeList* blocks) {
     int n = getNextIntersect(it, current);
     Interval* child = splitInterval(it, n);
-    int off = get_reg_offset(it->reg_num);
     child->is_spilled = 1;
 
     list_entry_t* add_before_entry = getArmIrByOpid(blocks, n);
-    struct ArmIr* arm_ir = NULL;
-    void* arm_op3 = NULL;
-    void* arm_op1 = newRegister(PHISICAL, it->phisical_reg);
-    void* arm_op2 = newRegister(PHISICAL, FP);
-
-    if (off > -4095 && off < 4095) {
-        arm_op3 = newImmi_12(off);
-        arm_ir = newArmIr(ARM_STR_I, NULL, arm_op1, arm_op2, arm_op3, NULL);
-        list_add_before(add_before_entry, &arm_ir->ir_link);
-    } else {
-        arm_ir = newArmIr(ARM_MOVW, NULL, newRegister(PHISICAL, IP), newImmi_16(off), NULL, NULL);
-        list_add_before(add_before_entry, &arm_ir->ir_link);
-        if (off > INT16_MAX || off < INT16_MIN) {
-            arm_ir = newArmIr(ARM_MOVT, NULL, newRegister(PHISICAL, off), newImmi_16(off >> 16), NULL, NULL);
-            list_add_before(add_before_entry, &arm_ir->ir_link);
-        }
-        arm_op3 = newRegister(PHISICAL, IP);
-        arm_ir = newArmIr(ARM_STR_R, NULL, arm_op1, arm_op2, arm_op3, NULL);
-        list_add_before(add_before_entry, &arm_ir->ir_link);
-    }
+    if (le2struct(add_before_entry, struct ArmIr, ir_link)->type != ARM_LABEL)
+        store_reg_to_stack(it, add_before_entry);
 
     if (__is_exit_usepos(child)) {
         int usepos = getFirstUsePos(child);
@@ -207,11 +190,21 @@ static void __build_interval_read_reg(struct Register* reg, struct ArmIr* arm_ir
 }
 
 static void __build_interval_write_reg(struct Register* reg, struct ArmIr* arm_ir, int block_to) {
+    if (arm_ir->type == ARM_MOVT || arm_ir->type == ARM_MOVT_L) {
+        return;
+    }
+
     int op_id = arm_ir->id;
     Interval* inter = NULL;
     inter = getIntervalByVal(reg->reg);
 
-    getFirstRange(inter)->begin = arm_ir->id;
+    list_entry_t* head = &inter->range_list->link;
+    if (head == head->next) {
+        add_range(inter, create_new_range(op_id, op_id + 1));
+    } else {
+        getFirstRange(inter)->begin = op_id;
+    }
+
     add_use_pos(inter, create_new_useposition(op_id));
 }
 
@@ -228,7 +221,7 @@ static void __build_interval_op2(struct Operand2* op2, struct ArmIr* arm_ir, int
 
 void build_interval_block(BlockBegin* block, void* args) {
     int block_from = getFirstOpId(block);
-    int block_to = getLastOpId(block) + id_inc;
+    int block_to = getLastOpId(block);
     struct DequeList* b_live_out = getBlock_out(block);
     int size = sizeDequeList(b_live_out);
     for (int i = 0; i < size; i++) {
@@ -255,29 +248,69 @@ void build_interval_block(BlockBegin* block, void* args) {
 #undef READ_OP2
 #undef WRITE_REG
         if (ir->type == ARM_BL && ir->op2 != NULL) {
-            add_range(getIntervalByVal(A1), create_new_range(ir->id, ir->id + id_inc - 1));
-            add_range(getIntervalByVal(A2), create_new_range(ir->id, ir->id + id_inc - 1));
-            add_range(getIntervalByVal(A3), create_new_range(ir->id, ir->id + id_inc - 1));
-            add_range(getIntervalByVal(A4), create_new_range(ir->id, ir->id + id_inc - 1));
             struct Register reg;
             int param_num = *(int*)(ir->op2);
             reg.type = PHISICAL;
-#define tmp_macro(num)                                   \
-    if (param_num >= num) {                              \
-        reg.reg = A##num;                                \
-        __build_interval_read_reg(&reg, ir, block_from); \
-    }
-            tmp_macro(1);
-            tmp_macro(2);
-            tmp_macro(3);
-            tmp_macro(4);
-#undef tmp_macro
+            reg.reg = A1;
+            __build_interval_write_reg(&reg, ir, block_from);
+
+            switch (param_num) {
+                case 0:
+                    add_range(getIntervalByVal(A1), create_new_range(ir->id, ir->id + id_inc - 1));
+                    add_range(getIntervalByVal(A2), create_new_range(ir->id, ir->id + id_inc - 1));
+                    add_range(getIntervalByVal(A3), create_new_range(ir->id, ir->id + id_inc - 1));
+                    add_range(getIntervalByVal(A4), create_new_range(ir->id, ir->id + id_inc - 1));
+                    break;
+                case 1:
+                    reg.reg = A1;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    add_range(getIntervalByVal(A2), create_new_range(ir->id, ir->id + id_inc - 1));
+                    add_range(getIntervalByVal(A3), create_new_range(ir->id, ir->id + id_inc - 1));
+                    add_range(getIntervalByVal(A4), create_new_range(ir->id, ir->id + id_inc - 1));
+                    break;
+                case 2:
+                    reg.reg = A1;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    reg.reg = A2;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    add_range(getIntervalByVal(A3), create_new_range(ir->id, ir->id + id_inc - 1));
+                    add_range(getIntervalByVal(A4), create_new_range(ir->id, ir->id + id_inc - 1));
+                    break;
+                case 3:
+                    reg.reg = A1;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    reg.reg = A2;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    reg.reg = A3;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    add_range(getIntervalByVal(A4), create_new_range(ir->id, ir->id + id_inc - 1));
+                    break;
+                default:
+                    reg.reg = A1;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    reg.reg = A2;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    reg.reg = A3;
+                    __build_interval_read_reg(&reg, ir, block_from);
+                    reg.reg = A4;
+                    __build_interval_read_reg(&reg, ir, block_from);
+            }
         }
         if (ir->type == ARM_BX) {
             struct Register reg;
             reg.type = PHISICAL;
-            reg.reg = A1;
-            __build_interval_read_reg(&reg, ir, block_from);
+#define tmp_macro(num) \
+    reg.reg = R##num;  \
+    __build_interval_read_reg(&reg, ir, block_from);
+            tmp_macro(0);
+            tmp_macro(4);
+            tmp_macro(5);
+            tmp_macro(6);
+            tmp_macro(7);
+            tmp_macro(8);
+            tmp_macro(9);
+            tmp_macro(10);
+#undef tmp_macro
         }
         ir_elem = list_prev(ir_elem);
     }

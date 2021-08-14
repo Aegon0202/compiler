@@ -135,3 +135,8 @@ struct LinearList* convertToLinearList(struct DequeList* queue, unsigned long lo
     *num = i;
     return linear;
 }
+
+void freeFuncDequeList(struct DequeList* queue, void (*free_func)(void*, void*), void* args) {
+    freeFuncLinearList(queue->content, free_func, args);
+    free(queue);
+}

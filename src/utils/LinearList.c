@@ -187,3 +187,15 @@ void forEachLinearList(struct LinearList* linear, void (*map_func)(void*, void*)
     linear->content = n_list->content;
     free(n_list);
 }
+
+void freeFuncLinearList(struct LinearList* linear, void (*free_func)(void*, void*), void* args) {
+    void* value = NULL;
+    while ((value = popLinearList(linear)) != NULL) {
+        IfNotNull(free_func, free_func(value, args););
+    }
+    freeLinearList(&linear);
+}
+
+void only_free(void* value, void* args) {
+    free(value);
+}

@@ -37,4 +37,6 @@ void* getDequeList(struct DequeList* deque, unsigned long long int index);
  * :return (struct LinearList*) 生成的LinearList，是新创建的，不需要时记得释放。
  */
 struct LinearList* convertToLinearList(struct DequeList* queue, unsigned long long int* num);
+
+void freeFuncDequeList(struct DequeList* queue, void (*free_func)(void*, void*), void* args);
 #endif

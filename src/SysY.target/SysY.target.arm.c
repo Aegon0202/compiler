@@ -18,7 +18,7 @@ struct Immi_8* newImmi_8(int num) {
 
 struct Immi_12* newImmi_12(int num) {
     MALLOC(imm, struct Immi_12, 1);
-    imm->num = num & 0xfff;
+    imm->num = num;
     return imm;
 }
 

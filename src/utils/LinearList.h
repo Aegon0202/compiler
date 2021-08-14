@@ -129,4 +129,19 @@ struct DequeList* convertToDequeList(struct LinearList* linear);
  * :return (void)
  */
 void forEachLinearList(struct LinearList* linear, void (*map_func)(void*, void*), void* args);
+
+/**
+ * 在当前列表中进行map操作，返回一个新列表
+ * 对其中所有的元素进行
+ * 
+ * :param (struct LinearList**) linear 一个指向LinearList的指针
+ * :param (void (*)(void* value, void* args)) free_func 一个函数，第一个参数为表中的元素，第二个参数为args
+ * 用于释放表中的value对应的数据
+ * :param (void*) args 传进map_func的第二个参数
+ * 
+ * :return (void)
+ */
+void freeFuncLinearList(struct LinearList* linear, void (*free_func)(void*, void*), void* args);
+
+void only_free(void* value, void* args);
 #endif

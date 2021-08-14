@@ -14,4 +14,8 @@
     EnsureNotNull(varname);                          \
     memset(varname, 0, sizeof(type) * (num));
 
+#define FREE(varname) \
+    free(varname);    \
+    varname = NULL;
+
 #endif

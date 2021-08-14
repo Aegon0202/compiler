@@ -132,6 +132,7 @@ Interval* getIntervalByVal(int reg_num) {
         setLinearList(reg2Intival, reg_num, it);
         if (reg_num < BEGIN_REG_NUM) {
             it->is_fixed = 1;
+            it->phisical_reg = reg_num;
         }
     }
     return it;
@@ -142,12 +143,13 @@ int getInterval_assigned_reg(Interval* interval) {
 }
 int isCoverd(Interval* it, int position) {
     int flag = 0;
+    int begin_pos = position + (position & 0x1);
     list_entry_t* range_list_head = &it->range_list->link;
     list_entry_t* range_list_tmp = list_next(range_list_head);
     while (range_list_tmp != range_list_head) {
         int tmp_begin = le2struct(range_list_tmp, RangeList, link)->begin;
         int tmp_end = le2struct(range_list_tmp, RangeList, link)->end;
-        if (tmp_begin <= position && tmp_end > position) {
+        if (tmp_begin <= begin_pos && tmp_end > position) {
             flag = 1;
         }
         range_list_tmp = list_next(range_list_tmp);
@@ -166,17 +168,19 @@ int getNextIntersect(Interval* current, Interval* it) {
     RangeList* current_range_value = le2RangeList(current_range_elem);
     RangeList* it_range_value = le2RangeList(it_range_elem);
 
-    while (it_range_value->begin >= current_range_value->end && current_range_list != current_range_elem) {
-        current_range_elem = list_next(current_range_elem);
-        current_range_value = le2RangeList(current_range_elem);
-    }
-    while (it_range_value->end <= current_range_value->begin && it_range_list != it_range_elem) {
-        it_range_elem = list_next(it_range_elem);
-        it_range_value = le2RangeList(it_range_elem);
-    }
+    while (current_range_list != current_range_elem && it_range_list != it_range_elem) {
+        while (it_range_value->begin >= current_range_value->end && current_range_list != current_range_elem) {
+            current_range_elem = list_next(current_range_elem);
+            current_range_value = le2RangeList(current_range_elem);
+        }
+        while (it_range_value->end <= current_range_value->begin && it_range_list != it_range_elem) {
+            it_range_elem = list_next(it_range_elem);
+            it_range_value = le2RangeList(it_range_elem);
+        }
 
-    if (current_range_list != current_range_elem && it_range_list != it_range_elem) {
-        return it_range_value->begin;
+        if (current_range_list != current_range_elem && it_range_list != it_range_elem && it_range_value->begin < current_range_value->end && it_range_value->end > current_range_value->begin) {
+            return it_range_value->begin;
+        }
     }
 
     return -1;
@@ -262,17 +266,12 @@ void assign_phisical_reg_num(struct DequeList* block_list) {
 }
 
 Interval* __find_child(Interval* p_it, int op_id) {
-    list_entry_t* head = &p_it->usepostion->link;
-    list_entry_t* elem = list_next(head);
-    while (head != elem) {
-        if (le2UsePositionList(elem)->position == op_id) {
-            return p_it;
-        }
-        elem = list_next(elem);
+    if (getFirstRange(p_it)->begin <= op_id && getLastRange(p_it)->end >= op_id) {
+        return p_it;
     }
 
-    head = &p_it->split_childer->link;
-    elem = list_next(head);
+    list_entry_t* head = &p_it->split_childer->link;
+    list_entry_t* elem = list_next(head);
     while (head != elem) {
         Interval* c_it = le2IntervalList(elem)->value;
         elem = list_next(elem);
@@ -290,9 +289,10 @@ Interval* child_at(int reg_num, int op_id) {
 }
 
 list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id) {
+    op_id += op_id & 0x1;
     for (int i = 0; i < sizeDequeList(block_list); i++) {
         BlockBegin* block = getDequeList(block_list, i);
-        if (block->first_op_id <= op_id & &block->last_op_id >= op_id) {
+        if (block->first_op_id <= op_id && block->last_op_id >= op_id) {
             list_entry_t* ir_list = getIrListFromBlock(block);
             list_entry_t* ir_elem = list_next(ir_list);
             while (ir_list != ir_elem) {
@@ -306,4 +306,52 @@ list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id) {
     }
     PrintErrExit("not found arm op id %d", op_id);
     return NULL;
+}
+
+void store_reg_to_stack(Interval* it, list_entry_t* add_before_entry) {
+    int off = get_reg_offset(it->reg_num);
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op3 = NULL;
+    void* arm_op1 = newRegister(PHISICAL, it->phisical_reg);
+    void* arm_op2 = newRegister(PHISICAL, FP);
+
+    if (off > -4095 && off < 4095) {
+        arm_op3 = newImmi_12(off);
+        arm_ir = newArmIr(ARM_STR_I, NULL, arm_op1, arm_op2, arm_op3, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+    } else {
+        arm_ir = newArmIr(ARM_MOVW, NULL, newRegister(PHISICAL, IP), newImmi_16(off), NULL, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+
+        arm_ir = newArmIr(ARM_MOVT, NULL, newRegister(PHISICAL, off), newImmi_16(off >> 16), NULL, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+
+        arm_op3 = newRegister(PHISICAL, IP);
+        arm_ir = newArmIr(ARM_STR_R, NULL, arm_op1, arm_op2, arm_op3, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+    }
+}
+
+void load_reg_from_stack(Interval* it, list_entry_t* add_before_entry) {
+    int off = get_reg_offset(it->reg_num);
+    struct ArmIr* arm_ir = NULL;
+    void* arm_op3 = NULL;
+    void* arm_op1 = newRegister(PHISICAL, it->phisical_reg);
+    void* arm_op2 = newRegister(PHISICAL, FP);
+
+    if (off > -4095 && off < 4095) {
+        arm_op3 = newImmi_12(off);
+        arm_ir = newArmIr(ARM_LDR_I, NULL, arm_op1, arm_op2, arm_op3, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+    } else {
+        arm_ir = newArmIr(ARM_MOVW, NULL, newRegister(PHISICAL, IP), newImmi_16(off), NULL, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+
+        arm_ir = newArmIr(ARM_MOVT, NULL, newRegister(PHISICAL, off), newImmi_16(off >> 16), NULL, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+
+        arm_op3 = newRegister(PHISICAL, IP);
+        arm_ir = newArmIr(ARM_LDR_R, NULL, arm_op1, arm_op2, arm_op3, NULL);
+        list_add_before(add_before_entry, &arm_ir->ir_link);
+    }
 }
