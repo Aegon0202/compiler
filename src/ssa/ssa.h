@@ -5,6 +5,7 @@
 #include "../SysY.symtab/SysY.symtab.def.h"
 #include "../SysY.target/SysY.target.arm.h"
 #include "../SysY.type/SysY.type.def.h"
+#include "../utils/BitMap.h"
 #include "../utils/DequeList.h"
 #include "../utils/Malloc.h"
 #include "../utils/link.h"
@@ -40,10 +41,9 @@ struct BasicBlock {
     BasicBlockNode* dominant_frontier;  //该结点的必经边界
     //-----------------以下为数据流分析的辅助数据结构（直接必经结点的计算）
     //bit map:
-    //suc
-    //pre
-    //bucket
+    struct BitMap* bucket;
     //
+    int index;
     int sdno;  //编号
     int depth_num;
     int size;
@@ -152,7 +152,7 @@ Operand* search_op_in_phi_list(Ir* Phi_ir, int reg);
 struct Definition* get_op_definition(Operand* op);
 
 void __dominance_frontier(BasicBlock* start);
-void __caculate_dominance(BasicBlock* start);
+void __caculate_dominance(struct FuncTabElem* func);
 void __immediate_dominance(BasicBlock* start);
 list_entry_t* DF_plus(list_entry_t* list);
 void __get_all_nodes(BasicBlock* block, void* node);

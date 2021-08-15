@@ -7,13 +7,15 @@
 #include "./ssa.h"
 #include "traverse.h"
 
-extern int n_for_fast_dom;
-extern BasicBlock* n0;
+static int n_for_fast_dom;
+static BasicBlock* n0;
 
 void depth_first_search_dom(BasicBlock* block) {
     block->sdno = ++n_for_fast_dom;
     block->ancestor = block->child = n0;
     block->size = 1;
+    block->label = block;
+    block->index = block->sdno;
 
     list_entry_t* block_head = &block->successors->block_link;
     list_entry_t* block_elem = list_next(block_head);
@@ -71,5 +73,103 @@ void Link(BasicBlock* v, BasicBlock* w) {
     while (s != n0) {
         s->ancestor = v;
         s = s->child;
+    }
+}
+
+void __init_index_to_block(BasicBlock* block, void* args) {
+    BasicBlock** index_to_block = (BasicBlock**)args;
+    index_to_block[block->index] = block;
+}
+
+void __delete_old_data(BasicBlock* block, void* args) {
+    block->index = 0;
+    block->sdno = 0;
+    block->depth_num = 0;
+    block->size = 0;
+    block->parent = NULL;
+    block->idom = NULL;
+    block->label = NULL;
+    block->child = NULL;
+    block->ancestor = NULL;
+
+    if (block->bucket != NULL) {
+        freeBitMap(block->bucket);
+        block->bucket = NULL;
+    }
+}
+
+void __caculate_dominance(struct FuncTabElem* func) {
+    BasicBlock* start = func->blocks;
+    int max_index;
+    n_for_fast_dom = 0;
+
+    deepTraverseSuccessorsBasicBlock(start, __delete_old_data, NULL);
+
+    n0->size = 0;
+    n0->sdno = 0;
+    n0->label = n0;
+    n0->ancestor = n0;
+
+    depth_first_search_dom(start);
+    max_index = n_for_fast_dom + 1;
+
+    if (n0->bucket != NULL) {
+        free(n0->bucket);
+    }
+    n0->bucket = newBitMap(max_index);
+
+    if (func->index_to_block != NULL) {
+        free(func->index_to_block);
+    }
+    MALLOC_WITHOUT_DECLARE(func->index_to_block, BasicBlock*, max_index);
+    deepTraverseSuccessorsBasicBlock(start, __init_index_to_block, func->index_to_block);
+    BasicBlock** index_to_block = func->index_to_block;
+
+    for (int i = 0; i < max_index; i++) {
+        BasicBlock* block = index_to_block[i];
+        block->bucket = newBitMap(max_index);
+    }
+
+    for (int i = n_for_fast_dom; i >= 2; i--) {
+        BasicBlock* w = index_to_block[i];
+
+        list_entry_t* head = &w->predecessors->block_link;
+        list_entry_t* elem = list_next(head);
+        while (head != elem) {
+            BasicBlock* v = le2BasicBlock(elem)->value;
+            BasicBlock* u = Eval(v);
+            if (u->sdno < w->sdno) {
+                w->sdno = u->sdno;
+            }
+            elem = list_next(elem);
+        }
+        setBitMap(index_to_block[w->sdno]->bucket, w->index);
+        Link(w->parent, w);
+
+        struct BitMap* bucket = w->parent->bucket;
+        int index;
+        if (getBitMap(bucket, 0)) {
+            index = 0;
+        } else {
+            index = getNextSetBitMap(bucket, 0);
+        }
+        while (index != -1) {
+            BasicBlock* v = index_to_block[index];
+            clearBitMap(bucket, index);
+            BasicBlock* u = Eval(v);
+            if (u->sdno < v->sdno) {
+                v->idom = u;
+            } else {
+                v->idom = w->parent;
+            }
+            index = getNextSetBitMap(bucket, index);
+        }
+    }
+
+    for (int i = 2; i <= n_for_fast_dom; i++) {
+        BasicBlock* w = index_to_block[i];
+        if (w->idom != index_to_block[w->sdno]) {
+            w->idom = w->idom->idom;
+        }
     }
 }

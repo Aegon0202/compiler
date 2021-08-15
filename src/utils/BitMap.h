@@ -8,7 +8,13 @@ struct BitMap {
 };
 
 struct BitMap* newBitMap(int length);
-void freeBitMap(struct Bitmap* map);
+void freeBitMap(struct BitMap* map);
+
+void setBitMap(struct BitMap* map, int index);
+
+void clearBitMap(struct BitMap* map, int index);
+
+int getBitMap(struct BitMap* map, int index);
 
 // 返回 map1 和 map2 的并集
 struct BitMap* unionBitMap(struct BitMap* map1, struct BitMap* map2);
@@ -20,4 +26,5 @@ struct BitMap* differenceBitMap(struct BitMap* map1, struct BitMap* map2);
 void copyBitMap(struct BitMap* map1, struct BitMap* map2);
 // map1 == map2 ?
 int equalBitMap(struct BitMap* map1, struct BitMap* map2);
+int getNextSetBitMap(struct BitMap* map, int from);
 #endif

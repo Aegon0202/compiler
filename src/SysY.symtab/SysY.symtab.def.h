@@ -55,6 +55,12 @@ struct FuncTabElem {
     void* rcfg_blocks;
 #endif
     struct DequeList* loop_blocks;  // value: struct LoopBlocks
+
+#ifdef BASIC_BLOCK_TYPE
+    BASIC_BLOCK_TYPE** index_to_block;
+#else
+    void** index_to_block;
+#endif
 };
 
 struct BlockTabElem {

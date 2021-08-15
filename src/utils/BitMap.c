@@ -112,7 +112,8 @@ int getNextSetBitMap(struct BitMap* map, int from) {
     int f_index = bitmap_address(from);
 
     int64_t t_mask = from & 0x3f;
-    t_mask = (((int64_t)0x1) << t_mask) - 1;
+    t_mask = (((int64_t)0x1) << (t_mask + 1)) - 1;
+
     int64_t content = map->content[f_index] & ~t_mask;
     if (content) {
         return (f_index << 6) + low_index(content);
