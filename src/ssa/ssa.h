@@ -132,7 +132,7 @@ BasicBlock* create_new_block();
 Operand* create_new_operand(int type, int reg, long long value);
 void disconnect_block(BasicBlock* pre, BasicBlock* suc);
 Ir* create_new_phi(Phi* op1, Operand* op3, Operand*, BasicBlock*);
-void update_CFG(BasicBlock* start);
+void update_CFG(struct FuncTabElem* func);
 //建立祖先后代关系
 void connect_block(BasicBlock* pre, BasicBlock* suc);
 int read_variable(ID id, BasicBlock* block);
@@ -151,9 +151,9 @@ void change_def_address(Ir* old_ir, BasicBlock* old_block, BasicBlock* new_block
 Operand* search_op_in_phi_list(Ir* Phi_ir, int reg);
 struct Definition* get_op_definition(Operand* op);
 
-void __dominance_frontier(BasicBlock* start);
+void __dominance_frontier(struct FuncTabElem* func);
 void __caculate_dominance(struct FuncTabElem* func);
-void __immediate_dominance(BasicBlock* start);
+void __immediate_dominance(struct FuncTabElem* func);
 list_entry_t* DF_plus(list_entry_t* list);
 void __get_all_nodes(BasicBlock* block, void* node);
 

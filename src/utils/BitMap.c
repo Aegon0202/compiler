@@ -10,7 +10,7 @@ struct BitMap* newBitMap(int length) {
     MALLOC(map, struct BitMap, 1);
     map->length = length;
     int size = LENGTH_TO_SIZE(length);
-    MALLOC_WITHOUT_DECLARE(map->content, int64_t, size);
+    MALLOC_WITHOUT_DECLARE(map->content, uint64_t, size);
     return map;
 }
 void freeBitMap(struct BitMap* map) {
@@ -18,8 +18,8 @@ void freeBitMap(struct BitMap* map) {
     free(map);
 }
 
-int64_t bitmap_mask(int index) {
-    return ((int64_t)0x1) << (index & 0x3f);
+uint64_t bitmap_mask(int index) {
+    return ((uint64_t)0x1) << (index & 0x3f);
 }
 
 int bitmap_address(int index) {
@@ -33,7 +33,7 @@ void setBitMap(struct BitMap* map, int index) {
 
 void clearBitMap(struct BitMap* map, int index) {
     assert(index < map->length);
-    map->content[bitmap_address(index)] |= ~bitmap_mask(index);
+    map->content[bitmap_address(index)] &= ~bitmap_mask(index);
 }
 
 int getBitMap(struct BitMap* map, int index) {
@@ -96,7 +96,7 @@ int equalBitMap(struct BitMap* map1, struct BitMap* map2) {
     return 1;
 }
 
-int low_index(int64_t content) {
+int low_index(uint64_t content) {
     assert(content);
     content = content & (-content);
     int j = 0;
@@ -111,10 +111,10 @@ int getNextSetBitMap(struct BitMap* map, int from) {
     int size = LENGTH_TO_SIZE(map->length);
     int f_index = bitmap_address(from);
 
-    int64_t t_mask = from & 0x3f;
-    t_mask = (((int64_t)0x1) << (t_mask + 1)) - 1;
+    uint64_t t_mask = from & 0x3f;
+    t_mask = (((uint64_t)0x1) << (t_mask + 1)) - 1;
 
-    int64_t content = map->content[f_index] & ~t_mask;
+    uint64_t content = map->content[f_index] & ~t_mask;
     if (content) {
         return (f_index << 6) + low_index(content);
     }

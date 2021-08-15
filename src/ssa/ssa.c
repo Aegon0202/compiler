@@ -704,65 +704,6 @@ int __list_equal(list_entry_t* list1, list_entry_t* list2) {
     return __is_sublist(list1, list2) && __is_sublist(list2, list1);
 }
 
-//计算被block直接统治的结点
-void __caclulate_children(BasicBlock* block, void* args) {
-    BasicBlockNode* b = le2BasicBlock(block->i_dominator->block_link.next);
-    if (b->value == NULL)
-        return;
-    list_entry_t* list = &(b->value->Children->block_link);
-    if (!__search_BlockNode_elem(list, block)) {
-        MALLOC(node, BasicBlockNode, 1);
-        node->value = block;
-        list_add(list, &(node->block_link));
-    }
-}
-
-void __immediate_dominance(BasicBlock* start) {
-    __caculate_dominance(start);
-
-    deepTraverseSuccessorsBasicBlock(start, __init_strict_dominator, NULL);
-    list_entry_t *head, *elem;
-
-    //获取全部basic block
-    MALLOC(node_set, BasicBlockNode, 1);
-    list_init(&(node_set->block_link));
-    deepTraverseSuccessorsBasicBlock(start, __get_all_nodes, node_set);
-    head = &(node_set->block_link);
-    elem = list_next(head);
-
-    //对所有非起始结点
-    while (head != elem) {
-        list_entry_t* s_head = &(le2BasicBlock(elem)->value->i_dominator->block_link);
-        list_entry_t* s_elem = list_next(s_head);
-        while (s_head != s_elem) {
-            BasicBlock* s_value = le2BasicBlock(s_elem)->value;
-            list_entry_t* t_head = &(le2BasicBlock(elem)->value->i_dominator->block_link);
-            list_entry_t* t_elem = list_next(t_head);
-            while (t_head != t_elem) {
-                BasicBlock* t_value = le2BasicBlock(t_elem)->value;
-                if (t_value == s_value) {
-                    t_elem = list_next(t_elem);
-                    continue;
-                }
-                list_entry_t* del = __search_BlockNode_elem(&(s_value->i_dominator->block_link), t_value);
-                if (del) {
-                    BasicBlockNode* del_node = le2BasicBlock(t_elem);
-                    list_entry_t* tmp = list_next(t_elem);
-                    list_del(t_elem);
-                    free(del_node);
-                    t_elem = tmp;
-                    continue;
-                }
-                t_elem = list_next(t_elem);
-            }
-            s_elem = list_next(s_elem);
-        }
-        elem = list_next(elem);
-    }
-    deepTraverseSuccessorsBasicBlock(start, __caclulate_children, NULL);
-    __delet_list(&(node_set->block_link));
-}
-
 void Post_order_traverse(BasicBlock* start, BasicBlockNode* node_set) {
     list_entry_t* list = &(node_set->block_link);
     list_entry_t* child_head = &(start->Children->block_link);
@@ -778,8 +719,10 @@ void Post_order_traverse(BasicBlock* start, BasicBlockNode* node_set) {
     list_add_before(list, &(node->block_link));
 }
 
-void __dominance_frontier(BasicBlock* start) {
-    __immediate_dominance(start);
+void __dominance_frontier(struct FuncTabElem* func) {
+    __caculate_dominance(func);
+    BasicBlock* start = func->blocks;
+
     list_entry_t *head, *elem;
     BasicBlockNode* node;
     //获取全部basic block
@@ -844,10 +787,11 @@ void delete_control_flow_ans(BasicBlock* block, void* args) {
     list_init(&block->dominant_frontier->block_link);
 }
 
-void update_CFG(BasicBlock* start) {
+void update_CFG(struct FuncTabElem* func) {
+    BasicBlock* start = func->blocks;
     deepTraverseSuccessorsBasicBlock(start, delete_control_flow_ans, NULL);
 
-    __dominance_frontier(start);
+    __dominance_frontier(func);
 }
 
 list_entry_t* caculate_DF_set(list_entry_t* list) {

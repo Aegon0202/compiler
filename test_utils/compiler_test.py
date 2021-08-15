@@ -24,8 +24,6 @@ if __name__ == "__main__":
     os.mkdir("tmp_result")
     for f in os.listdir(test_folder):
         f_name, f_ext = os.path.splitext(f)
-        if f_name == "103_long_func":
-            continue
         if f_ext == ".sy":
             print(f"testing {f}")
             f = os.path.join(test_folder, f)

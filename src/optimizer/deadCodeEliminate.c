@@ -46,7 +46,7 @@ void generateRCFG(struct FuncTabElem* elem) {
         elem->rcfg_blocks = create_new_block();
         deepTraverseSuccessorsBasicBlock(elem->blocks, __gen_rcfg_block, NULL);
         deepTraverseSuccessorsBasicBlock(elem->blocks, __connect_rcfg_block, elem->rcfg_blocks);
-        __dominance_frontier(elem->rcfg_blocks);
+        __dominance_frontier(elem);
     }
 }
 

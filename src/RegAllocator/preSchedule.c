@@ -1,5 +1,7 @@
 
 #include "LRA.h"
+int __is_free2schedule(struct ArmIr* ir);
+
 static int maxpriority = 0;
 
 struct DependencyNode {
@@ -25,6 +27,14 @@ struct propertyNode* create_new_prop_node() {
     return node;
 }
 
+void __set_priority(struct ArmIr* arm_ir, int maxpriority) {
+    struct propertyNode* node = getLinearList(propertyList, (size_t)arm_ir);
+    node->priority = maxpriority;
+}
+int __get_priority(struct ArmIr* arm_ir) {
+    struct propertyNode* node = getLinearList(propertyList, (size_t)arm_ir);
+    return node->priority;
+}
 int __is_store(struct ArmIr* ir) {
     switch (ir->id) {
         case ARM_STR_I:
@@ -61,7 +71,7 @@ int __is_conditional_ir(struct ArmIr* ir) {
 }
 
 void __get_sux(struct ArmIr* ir, struct DequeList* list) {
-    struct DequeList* sux = getLinearList(dependency_suc, ir);
+    struct DequeList* sux = getLinearList(dependency_suc, (size_t)ir);
     for (int i = 0; i < sizeDequeList(sux); i++) {
         struct DependencyNode* node = getDequeList(sux, i);
         pushBackDequeList(list, node->ir_index);
@@ -69,7 +79,7 @@ void __get_sux(struct ArmIr* ir, struct DequeList* list) {
 }
 
 void __get_pred(struct ArmIr* ir, struct DequeList* list) {
-    struct DequeList* pred = getLinearList(dependency_pred, ir);
+    struct DequeList* pred = getLinearList(dependency_pred, (size_t)ir);
     for (int i = 0; i < sizeDequeList(pred); i++) {
         struct DependencyNode* node = getDequeList(pred, i);
         pushBackDequeList(list, node->ir_index);
@@ -77,12 +87,13 @@ void __get_pred(struct ArmIr* ir, struct DequeList* list) {
 }
 
 int __get_dependent_type(struct ArmIr* pre, struct ArmIr* suc) {
-    struct DequeList* sux = getLinearList(dependency_suc, pre);
+    struct DequeList* sux = getLinearList(dependency_suc, (size_t)pre);
     for (int i = 0; i < sizeDequeList(sux); i++) {
         struct DependencyNode* node = getDequeList(sux, i);
         if (node->ir_index == suc) return node->type;
     }
     PrintErrExit(" ");
+    return 0;
 }
 
 void __init_dependenc_graph(BlockBegin* block) {
@@ -92,8 +103,8 @@ void __init_dependenc_graph(BlockBegin* block) {
         struct ArmIr* ir_value = le2struct(elem, struct ArmIr, ir_link);
         struct DequeList* dl1 = newDequeList();
         struct DequeList* dl2 = newDequeList();
-        setLinearList(dependency_suc, ir_value, dl1);
-        setLinearList(dependency_pred, ir_value, dl2);
+        setLinearList(dependency_suc, (size_t)ir_value, dl1);
+        setLinearList(dependency_pred, (size_t)ir_value, dl2);
         elem = list_next(elem);
     }
 }
@@ -116,7 +127,7 @@ void __is_last_used(BlockBegin* block, struct ArmIr* ir, struct Register* target
     struct DequeList* block_out = getBlock_out(block);
     long long int* j = getDequeList(block_out, index1);
     long long int i = *j & (0x1 << index2);
-    if (i != 0) return 0;
+    if (i != 0) return;
     while (ir_elem != ir_head) {
         struct ArmIr* ir_value = le2struct(ir_elem, struct ArmIr, ir_link);
 
@@ -135,7 +146,7 @@ void __is_last_used(BlockBegin* block, struct ArmIr* ir, struct Register* target
 void __compute_pressure_read_op(BlockBegin* block, struct ArmIr* ir, struct Register* target, int* pressure) {
     if (target->type != REGISTER) return;
     int res = 1;
-    __is_last_used(block, ir, target, res);
+    __is_last_used(block, ir, target, &res);
     if (res) *pressure = *pressure - 1;
 }
 
@@ -168,9 +179,9 @@ void connectNode(struct ArmIr* pre, struct ArmIr* suc, int type) {
     MALLOC(node2, struct DependencyNode, 1);
     node2->type = type;
     node2->ir_index = pre;
-    struct DequeList* dl = getLinearList(dependency_suc, pre);
+    struct DequeList* dl = getLinearList(dependency_suc, (size_t)pre);
     pushBackDequeList(dl, node1);
-    struct DequeList* dl2 = getLinearList(dependency_pred, suc);
+    struct DequeList* dl2 = getLinearList(dependency_pred, (size_t)suc);
     pushBackDequeList(dl2, node2);
 }
 
@@ -338,8 +349,8 @@ void __update_priority(struct ArmIr* ir_node) {
             }
         }
     }
-    freeDequeList(worklist);
-    freeDequeList(tmp);
+    freeDequeList(&worklist);
+    freeDequeList(&tmp);
 }
 
 void __compute_near(struct ArmIr* ir) {
@@ -348,16 +359,16 @@ void __compute_near(struct ArmIr* ir) {
     while (!isEmptyDequeList(sux)) {
         struct ArmIr* suc = popBackDequeList(sux);
         if (__get_dependent_type(ir, suc) == RAW) {
-            struct propertyNode* suc_prop = getLinearList(propertyList, suc);
-            struct propertyNode* pre_prop = getLinearList(propertyList, ir);
+            struct propertyNode* suc_prop = getLinearList(propertyList, (size_t)suc);
+            struct propertyNode* pre_prop = getLinearList(propertyList, (size_t)ir);
             suc_prop->near = suc_prop->near > (pre_prop->near + 1) ? suc_prop->near : pre_prop->near + 1;
         }
     }
-    freeDequeList(sux);
+    freeDequeList(&sux);
 }
 
 int __compute_maxdepth(struct ArmIr* ir) {
-    struct propertyNode* property = getLinearList(propertyList, ir);
+    struct propertyNode* property = getLinearList(propertyList, (size_t)ir);
     if (property->maxDepth != -1) return property->maxDepth;
 
     struct DequeList* sux = newDequeList();
@@ -368,7 +379,7 @@ int __compute_maxdepth(struct ArmIr* ir) {
         int tmp = __compute_maxdepth(suc);
         maxdepth = maxdepth > tmp ? maxdepth : tmp;
     }
-    freeDequeList(sux);
+    freeDequeList(&sux);
     return maxdepth;
 }
 
@@ -387,7 +398,7 @@ void __init_property(BlockBegin* block) {
         property->is_schedule = 0;
         property->priority = 0;
 
-        setLinearList(propertyList, value, property);
+        setLinearList(propertyList, (size_t)value, property);
         elem = list_next(elem);
     }
     elem = list_next(head);
@@ -403,7 +414,7 @@ void __init_readyList(struct DequeList* readyList, list_entry_t* head) {
     list_entry_t* elem = list_next(head);
     while (elem != head) {
         struct ArmIr* ir_value = le2struct(elem, struct ArmIr, ir_link);
-        struct DequeList* preds = getLinearList(dependency_pred, ir_value);
+        struct DequeList* preds = getLinearList(dependency_pred, (size_t)ir_value);
         if (isEmptyDequeList(preds)) pushBackDequeList(readyList, ir_value);
         elem = list_next(elem);
     }
@@ -411,10 +422,10 @@ void __init_readyList(struct DequeList* readyList, list_entry_t* head) {
 
 struct ArmIr* selectNode(struct DequeList* readyList) {
     struct ArmIr* ir_max = getDequeList(readyList, 0);
-    for (int i = 1; i < sizeDequeList; i++) {
+    for (int i = 1; i < sizeDequeList(readyList); i++) {
         struct ArmIr* ir = getDequeList(readyList, i);
-        struct propertyNode* max_property = getLinearList(propertyList, ir_max);
-        struct propertyNode* property = getLinearList(propertyList, ir);
+        struct propertyNode* max_property = getLinearList(propertyList, (size_t)ir_max);
+        struct propertyNode* property = getLinearList(propertyList, (size_t)ir);
         if (max_property->priority > property->priority) continue;
         if (max_property->priority < property->priority) {
             ir_max = ir;
@@ -449,15 +460,15 @@ int __is_free2schedule(struct ArmIr* ir) {
     __get_pred(ir, pred);
     while (!isEmptyDequeList(pred)) {
         struct ArmIr* ir_value = popBackDequeList(pred);
-        struct propertyNode* prop = getLinearList(propertyList, ir_value);
+        struct propertyNode* prop = getLinearList(propertyList, (size_t)ir_value);
         if (!prop->is_schedule) return 0;
     }
-    freeDequeList(pred);
+    freeDequeList(&pred);
     return 1;
 }
 
 struct DequeList* preSchedule_local(BlockBegin* block) {
-    __init_denpendency_graph(block);
+    // __init_denpendency_graph(block);
     dependency_analysis_block(block, NULL);
     __init_property(block);
     struct DequeList* tmp_deque = newDequeList();
@@ -473,7 +484,7 @@ struct DequeList* preSchedule_local(BlockBegin* block) {
         }
         //调度
         pushBackDequeList(schedule_list, ir_node);
-        struct propertyNode* prop = getLinearList(propertyList, ir_node);
+        struct propertyNode* prop = getLinearList(propertyList, (size_t)ir_node);
         prop->is_schedule = 1;
         __get_sux(ir_node, tmp_deque);
         while (!isEmptyDequeList(tmp_deque)) {
@@ -483,8 +494,8 @@ struct DequeList* preSchedule_local(BlockBegin* block) {
             }
         }
     }
-    freeDequeList(readyList);
-    freeDequeList(tmp_deque);
+    freeDequeList(&readyList);
+    freeDequeList(&tmp_deque);
     return schedule_list;
 }
 
@@ -495,7 +506,7 @@ void __construct_new_ir_list(struct DequeList* schedule, list_entry_t* ir_head) 
         list_del(ir_elem);
         list_add_before(ir_head, ir_elem);
     }
-    freeDequeList(schedule);
+    freeDequeList(&schedule);
 }
 
 void __reorder_opid(BlockBegin* block) {

@@ -25,6 +25,7 @@ void depth_first_search_dom(BasicBlock* block) {
             suc->parent = block;
             depth_first_search_dom(suc);
         }
+        block_elem = list_next(block_elem);
     }
 }
 
@@ -38,7 +39,7 @@ void compress(BasicBlock* block) {
 }
 
 BasicBlock* Eval(BasicBlock* block) {
-    if (block->ancestor = n0)
+    if (block->ancestor == n0)
         return block->label;
     else {
         compress(block);
@@ -98,7 +99,7 @@ void __delete_old_data(BasicBlock* block, void* args) {
     }
 }
 
-void __caculate_dominance(struct FuncTabElem* func) {
+void __immediate_dominance(struct FuncTabElem* func) {
     BasicBlock* start = func->blocks;
     int max_index;
     n_for_fast_dom = 0;
@@ -121,11 +122,12 @@ void __caculate_dominance(struct FuncTabElem* func) {
     if (func->index_to_block != NULL) {
         free(func->index_to_block);
     }
-    MALLOC_WITHOUT_DECLARE(func->index_to_block, BasicBlock*, max_index);
+    MALLOC_WITHOUT_DECLARE(func->index_to_block, void*, max_index);
     deepTraverseSuccessorsBasicBlock(start, __init_index_to_block, func->index_to_block);
-    BasicBlock** index_to_block = func->index_to_block;
+    BasicBlock** index_to_block = (BasicBlock**)func->index_to_block;
 
-    for (int i = 0; i < max_index; i++) {
+    index_to_block[0] = n0;
+    for (int i = 1; i < max_index; i++) {
         BasicBlock* block = index_to_block[i];
         block->bucket = newBitMap(max_index);
     }
@@ -170,6 +172,77 @@ void __caculate_dominance(struct FuncTabElem* func) {
         BasicBlock* w = index_to_block[i];
         if (w->idom != index_to_block[w->sdno]) {
             w->idom = w->idom->idom;
+        }
+    }
+
+    for (int i = 2; i <= n_for_fast_dom; i++) {
+        BasicBlock* block = index_to_block[i];
+
+        list_entry_t* head = &block->i_dominator->block_link;
+        while (!list_empty(head)) {
+            list_entry_t* elem = list_next(head);
+            list_del(elem);
+            free(le2BasicBlock(elem));
+        }
+        MALLOC(i_node, BasicBlockNode, 1);
+        i_node->value = block->idom;
+        list_add(head, &i_node->block_link);
+
+        head = &block->Children->block_link;
+        while (!list_empty(head)) {
+            list_entry_t* elem = list_next(head);
+            list_del(elem);
+            free(le2BasicBlock(elem));
+        }
+    }
+
+    for (int i = 2; i <= n_for_fast_dom; i++) {
+        BasicBlock* block = index_to_block[i];
+
+        list_entry_t* head = &block->idom->Children->block_link;
+
+        MALLOC(i_node, BasicBlockNode, 1);
+        i_node->value = block;
+        list_add(head, &i_node->block_link);
+    }
+}
+
+void __caculate_dominance(struct FuncTabElem* func) {
+    static BasicBlock b;
+    n0 = &b;
+
+    __immediate_dominance(func);
+    struct DequeList* queue = newDequeList();
+    pushFrontDequeList(queue, func->blocks);
+    while (!isEmptyDequeList(queue)) {
+        BasicBlock* block = popBackDequeList(queue);
+        BasicBlock* idom = block->idom;
+
+        list_entry_t* b_dom_head = &block->dominator->block_link;
+        while (!list_empty(b_dom_head)) {
+            list_entry_t* elem = list_next(b_dom_head);
+            list_del(elem);
+            free(le2BasicBlock(elem));
+        }
+        if (idom != NULL) {
+            list_entry_t* i_dom_head = &idom->dominator->block_link;
+            list_entry_t* i_dom_elem = list_next(i_dom_head);
+            while (i_dom_elem != i_dom_head) {
+                MALLOC(node, BasicBlockNode, 1);
+                node->value = le2BasicBlock(i_dom_elem)->value;
+                list_add(b_dom_head, &node->block_link);
+                i_dom_elem = list_next(i_dom_elem);
+            }
+        }
+        MALLOC(node, BasicBlockNode, 1);
+        node->value = block;
+        list_add(b_dom_head, &node->block_link);
+
+        list_entry_t* b_child_head = &block->Children->block_link;
+        list_entry_t* b_child_elem = list_next(b_child_head);
+        while (b_child_elem != b_child_head) {
+            pushFrontDequeList(queue, le2BasicBlock(b_child_elem)->value);
+            b_child_elem = list_next(b_child_elem);
         }
     }
 }

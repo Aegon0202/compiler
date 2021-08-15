@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 struct BitMap {
-    int64_t* content;
+    uint64_t* content;
     int length;
 };
 

@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
     for (int i = 0; i < func_table->next_func_index; i++) {
         struct FuncTabElem* elem = getLinearList(func_table->all_funcs, i);
         if (elem->blocks != NULL) {
-            __dominance_frontier(elem->blocks);
+            __dominance_frontier(elem);
         }
     }
     calcAllLoopBlocks();

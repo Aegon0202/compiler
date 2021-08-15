@@ -18,7 +18,7 @@ int isBitMapEqual(struct DequeList* bm1, struct DequeList* bm2) {
 }
 
 //bm1 = bm2
-struct DequeList* newBitMap(int size) {
+struct DequeList* newBitMap_liverange(int size) {
     struct DequeList* bm = newDequeList();
     for (int i = 0; i < size; i++) {
         MALLOC(j, long long int, 1);
@@ -28,7 +28,7 @@ struct DequeList* newBitMap(int size) {
     return bm;
 }
 
-void freeBitMap(struct DequeList* bm) {
+void freeBitMap_liverange(struct DequeList* bm) {
     long long int* j = NULL;
     while ((j = popBackDequeList(bm)) != NULL) {
         free(j);
@@ -157,9 +157,9 @@ void compute_global_live_set_block(BlockBegin* block, void* args) {
     struct DequeList* b_live_kill = getBlock_kill(block);
     struct DequeList* b_live_gen = getBlock_gen(block);
     int size = sizeDequeList(b_live_out);
-    struct DequeList* tmp_live_out = newBitMap(size);
-    struct DequeList* tmp_live_in = newBitMap(size);
-    struct DequeList* tmp = newBitMap(size);
+    struct DequeList* tmp_live_out = newBitMap_liverange(size);
+    struct DequeList* tmp_live_in = newBitMap_liverange(size);
+    struct DequeList* tmp = newBitMap_liverange(size);
 
     while (!isEmptyDequeList(sux)) {
         BlockBegin* suc = popBackDequeList(sux);
@@ -179,9 +179,9 @@ void compute_global_live_set_block(BlockBegin* block, void* args) {
         BitMapCopy(b_live_out, tmp_live_out);
     }
 
-    freeBitMap(tmp_live_out);
-    freeBitMap(tmp_live_in);
-    freeBitMap(tmp);
+    freeBitMap_liverange(tmp_live_out);
+    freeBitMap_liverange(tmp_live_in);
+    freeBitMap_liverange(tmp);
 }
 
 void compute_global_live_set(struct DequeList* block_list) {
