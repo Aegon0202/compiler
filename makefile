@@ -13,9 +13,6 @@ BISON_GEN_C = $(BISON_DIR)/SysY.tab.c
 SYSY_DEF_DIR = src/SysY.type
 SYSY_DEF_SRC = 	$(SYSY_DEF_DIR)/*.c
 
-SYSY_AST_DIR = src/SysY.AST
-SYSY_AST_SRC = $(SYSY_AST_DIR)/SysY.AST.new.c
-
 SYSY_SYMTAB_DIR = src/SysY.symtab
 SYSY_SYMTAB_SRC = $(SYSY_SYMTAB_DIR)/*.c
 
@@ -23,10 +20,7 @@ SYSY_TARGET_DIR = src/SysY.target
 SYSY_TARGET_SRC = $(SYSY_TARGET_DIR)/*.c
 
 OPTIMIZER_DIR = src/optimizer
-OPTIMIZER_SRC = $(OPTIMIZER_DIR)/localExprEliminate.c \
-				$(OPTIMIZER_DIR)/loopInvariantExtraction.c \
-				$(OPTIMIZER_DIR)/peephole.c \
-				$(OPTIMIZER_DIR)/deadCodeEliminate.c
+OPTIMIZER_SRC = $(OPTIMIZER_DIR)/*.c
 
 UTILS_DIR = src/utils
 UTILS_SRC = $(UTILS_DIR)/*.c
