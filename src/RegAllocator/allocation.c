@@ -13,7 +13,7 @@ int free_pos[PHISICAL_REG_NUM];
 int use_pos[PHISICAL_REG_NUM];
 int blocked_pos[PHISICAL_REG_NUM];
 
-int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head, list_entry_t* unhandled);
+int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head, list_entry_t* unhandled, struct DequeList* blocks);
 void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t* inactive, list_entry_t* unhandled, struct DequeList* blocks);
 void __insert_interval_to_unhandled(Interval* it, list_entry_t* unhandled_list);
 
@@ -128,7 +128,7 @@ void walkIntervals(struct DequeList* blocks) {
             }
         }
 
-        int isAllocatedFree = tryAllocateFreeRegister(current->value, active_list_head, inactive_list_head, unhandled_list_head);
+        int isAllocatedFree = tryAllocateFreeRegister(current->value, active_list_head, inactive_list_head, unhandled_list_head, blocks);
         if (!isAllocatedFree) {
             allocate_blocked_reg(current->value, active_list_head, inactive_list_head, unhandled_list_head, blocks);
         }
@@ -223,7 +223,8 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
         //split current before first usePos
         current->phisical_reg = -1;
         if (current_first_usePos != 0x3f3f3f3f) {
-            int optimal_pos = getOptimalPos(getFirstUsePos(current));
+            int optimal_pos = getOptimalPos(getFirstRange(current)->begin + 1, getFirstUsePos(current) - 1, blocks);
+
             Interval* child = splitInterval(current, optimal_pos);
             __insert_interval_to_unhandled(child, unhandled);
             child->is_spilled = 1;
@@ -249,7 +250,7 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
     } else {
         //spill current
         current->phisical_reg = reg;
-        int current_split = getOptimalPos(blocked_pos[reg]);
+        int current_split = getOptimalPos(getFirstRange(current)->begin + 1, blocked_pos[reg] - 1, blocks);
         Interval* child = splitInterval(current, current_split);
         __insert_interval_to_unhandled(child, unhandled);
 
@@ -272,7 +273,7 @@ void allocate_blocked_reg(Interval* current, list_entry_t* active, list_entry_t*
     }
 }
 
-int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head, list_entry_t* unhandled) {
+int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, list_entry_t* inactive_list_head, list_entry_t* unhandled, struct DequeList* blocks) {
     memset(free_pos, 0x3f, sizeof free_pos);
 
     list_entry_t* active_list_tmp = list_next(active_list_head);
@@ -301,7 +302,7 @@ int tryAllocateFreeRegister(Interval* current, list_entry_t* active_list_head, l
         assign_reg2interval(current, reg);
     } else {
         assign_reg2interval(current, reg);
-        int optimal_pos = getOptimalPos(free_pos[reg]);
+        int optimal_pos = getOptimalPos(getFirstRange(current)->begin + 1, free_pos[reg] - 1, blocks);
         Interval* child = splitInterval(current, optimal_pos);
         __insert_interval_to_unhandled(child, unhandled);
         child->is_spilled = 2;

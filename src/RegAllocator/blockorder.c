@@ -75,6 +75,9 @@ void numberLirOp(struct DequeList* blocks) {
 }
 
 void __compute_loop_info_func(struct FuncTabElem* func) {
+    if (func->loop_blocks == NULL) {
+        return;
+    }
     int num = sizeDequeList(func->loop_blocks);
     for (int i = 0; i < num; i++) {
         struct LoopBlocks* lb = getDequeList(func->loop_blocks, i);
