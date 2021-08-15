@@ -166,7 +166,14 @@ enum {
     LT,
     GT,
     LE,
-    AL
+    AL,
+
+    WAW,
+    RAW,
+    WAR,
+    LAS,
+    SAS,
+    SAL
 };
 
 #endif
