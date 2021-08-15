@@ -5,6 +5,9 @@ import sys
 
 if __name__ == "__main__":
     test_folder_dict = {
+        "2021af": "../compiler2021/testcase/2021初赛所有用例/functional",
+        "2021ahf": "../compiler2021/testcase/2021初赛所有用例/h_functional",
+        "2021ap": "../compiler2021/testcase/2021初赛所有用例/performance",
         "2020": "../compiler2021/testcase/function_test2020",
         "2021": "../compiler2021/testcase/function_test2021",
         "2021p": "../compiler2021/testcase/performance_test2021_pre",

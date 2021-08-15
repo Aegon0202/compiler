@@ -26,7 +26,7 @@ struct DequeList* getBlock_out(BlockBegin*);
 list_entry_t* getArmIrByOpid(struct DequeList* block_list, int op_id);
 //usepos序列可以无序
 int getFirstUsePos(Interval* interval);
-int getOptimalPos(int);
+int getOptimalPos(int min_split_pos, int max_split_pos, struct DequeList* blocks);
 void assign_reg2interval(Interval* current, int reg);
 
 //current 和it之间有交叉，需要将it切分，使得切分后的it与current没有交叉，切分一次
@@ -43,4 +43,5 @@ Interval* create_new_interval(int reg_num, Interval* parent);
 void free_interval(Interval* it);
 void store_reg_to_stack(Interval* it, list_entry_t* add_before_entry);
 void load_reg_from_stack(Interval* it, list_entry_t* add_before_entry);
+BlockBegin* getBlockBeginByOpid(int op_id, struct DequeList* blocks);
 #endif

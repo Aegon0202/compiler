@@ -1,5 +1,7 @@
 #include "LRA.h"
 
+#include <assert.h>
+
 Interval* child_at(int reg_num, int op_id);
 
 int alloc_register();
@@ -84,7 +86,7 @@ void LinearScanRegAllocation(struct FuncTabElem* elem, FILE* out_file) {
     compute_local_live_set(block_seq);
     compute_global_live_set(block_seq);
 
-    gothrough_BlockBeginNode_list(block_seq, __print_arm_ir_block, NULL);
+    // gothrough_BlockBeginNode_list(block_seq, __print_arm_ir_block, NULL);
 
     build_interval(block_seq);
     walkIntervals(block_seq);
@@ -222,8 +224,54 @@ int getFirstUsePos(Interval* interval) {
     return ans;
 }
 
-int getOptimalPos(int n) {
-    return n - 1;
+int getOptimalPos(int min_split_pos, int max_split_pos, struct DequeList* blocks) {
+    int optimal_split_pos = -1;
+    if (min_split_pos == max_split_pos) {
+        optimal_split_pos = min_split_pos;
+    } else {
+        assert(min_split_pos < max_split_pos);
+        assert(min_split_pos > 0);
+
+        BlockBegin* min_block = NULL;
+        BlockBegin* max_block = NULL;
+        int min_block_id = 0;
+        int max_block_id = 0;
+        int num = sizeDequeList(blocks);
+
+        for (int i = 0; i < num; i++) {
+            BlockBegin* block = getDequeList(blocks, i);
+            if (block->first_op_id <= min_split_pos && block->last_op_id + 1 >= min_split_pos) {
+                min_block = block;
+                min_block_id = i;
+            }
+            if (block->first_op_id <= max_split_pos && block->last_op_id + 1 >= max_split_pos) {
+                max_block = block;
+                max_block_id = i;
+            }
+        }
+
+        EnsureNotNull(min_block);
+        EnsureNotNull(max_block);
+
+        if (min_block == max_block) {
+            optimal_split_pos = max_split_pos;
+        } else {
+            optimal_split_pos = max_block->last_op_id + 2;
+            if (optimal_split_pos > max_split_pos) {
+                optimal_split_pos = max_block->first_op_id;
+            }
+        }
+
+        int min_loop_depth = max_block->loop_depth;
+        for (int i = max_block_id - 1; i >= min_block_id; i--) {
+            BlockBegin* cur = getDequeList(blocks, i);
+            if (cur->loop_depth < min_loop_depth) {
+                optimal_split_pos = cur->last_op_id + 2;
+                min_loop_depth = cur->loop_depth;
+            }
+        }
+    }
+    return optimal_split_pos;
 }
 
 void __rename_reg_num(struct Register* reg, struct ArmIr* arm_ir) {
@@ -354,4 +402,15 @@ void load_reg_from_stack(Interval* it, list_entry_t* add_before_entry) {
         arm_ir = newArmIr(ARM_LDR_R, NULL, arm_op1, arm_op2, arm_op3, NULL);
         list_add_before(add_before_entry, &arm_ir->ir_link);
     }
+}
+
+BlockBegin* getBlockBeginByOpid(int op_id, struct DequeList* blocks) {
+    int size = sizeDequeList(blocks);
+    for (int i = 0; i < size; i++) {
+        BlockBegin* block = getDequeList(blocks, i);
+        if (block->first_op_id <= op_id && op_id <= block->last_op_id) {
+            return block;
+        }
+    }
+    return NULL;
 }

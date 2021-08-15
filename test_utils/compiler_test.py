@@ -5,6 +5,9 @@ import shutil
 import sys
 if __name__ == "__main__":
     test_folder_dict = {
+        "2021af": "../compiler2021/testcase/2021初赛所有用例/functional",
+        "2021ahf": "../compiler2021/testcase/2021初赛所有用例/h_functional",
+        "2021ap": "../compiler2021/testcase/2021初赛所有用例/performance",
         "2020": "../compiler2021/testcase/function_test2020",
         "2021": "../compiler2021/testcase/function_test2021",
         "2021p": "../compiler2021/testcase/performance_test2021_pre",
@@ -13,17 +16,26 @@ if __name__ == "__main__":
         "2020p2": "../sysyruntimelibrary/section2/performance_test"
     }
 
+    optimizter_flag = len(sys.argv) > 2
+
     test_folder = test_folder_dict[sys.argv[1]]
     if os.path.exists("tmp_result"):
         shutil.rmtree("tmp_result")
     os.mkdir("tmp_result")
     for f in os.listdir(test_folder):
         f_name, f_ext = os.path.splitext(f)
+        if f_name == "103_long_func":
+            continue
         if f_ext == ".sy":
             print(f"testing {f}")
             f = os.path.join(test_folder, f)
-            cmd: subprocess.CompletedProcess = subprocess.run(["./compiler", "-S", "-o",
-                                                               f"tmp_result/{f_name}.s", f], capture_output=True, text=True)
+            cmd = None
+            if optimizter_flag:
+                cmd: subprocess.CompletedProcess = subprocess.run(["./compiler", "-S", "-o",
+                                                                   f"tmp_result/{f_name}.s",  f, "-O2"], capture_output=True, text=True)
+            else:
+                cmd: subprocess.CompletedProcess = subprocess.run(["./compiler", "-S", "-o",
+                                                                   f"tmp_result/{f_name}.s", f], capture_output=True, text=True)
             if cmd.returncode != 0 or len(cmd.stderr):
                 print(f"compile error {f}")
                 print(f"return code {cmd.returncode}")

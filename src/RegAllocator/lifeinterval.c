@@ -131,7 +131,7 @@ void makeRoomForCurrent(Interval* current, Interval* it, list_entry_t* unhandled
 
     if (__is_exit_usepos(child)) {
         int usepos = getFirstUsePos(child);
-        int split_pos = getOptimalPos(usepos);
+        int split_pos = getOptimalPos(getFirstRange(child)->begin + 1, usepos - 1, blocks);
         Interval* grandChild = splitInterval(child, split_pos);
         grandChild->is_spilled = 1;
         child->phisical_reg = -1;
@@ -198,13 +198,7 @@ static void __build_interval_write_reg(struct Register* reg, struct ArmIr* arm_i
     Interval* inter = NULL;
     inter = getIntervalByVal(reg->reg);
 
-    list_entry_t* head = &inter->range_list->link;
-    if (head == head->next) {
-        add_range(inter, create_new_range(op_id, op_id + 1));
-    } else {
-        getFirstRange(inter)->begin = op_id;
-    }
-
+    add_range(inter, create_new_range(op_id, op_id + 1));
     add_use_pos(inter, create_new_useposition(op_id));
 }
 

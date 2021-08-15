@@ -1,0 +1,120 @@
+testing transpose1.s
+Timer@0028-0047: 0H-0M-7S-897855us
+TOTAL: 0H-0M-7S-897855us
+
+testing 03_sort1.s
+Timer@0090-0102: 0H-0M-2S-348696us
+TOTAL: 0H-0M-2S-348696us
+
+testing median1.s
+Timer@0059-0061: 0H-0M-7S-832854us
+TOTAL: 0H-0M-7S-832854us
+
+testing 03_sort2.s
+Timer@0090-0102: 0H-0M-40S-130268us
+TOTAL: 0H-0M-40S-130268us
+
+testing shuffle0.s
+Timer@0078-0090: 0H-0M-8S-532520us
+TOTAL: 0H-0M-8S-532520us
+
+testing shuffle1.s
+Timer@0078-0090: 0H-0M-11S-727897us
+TOTAL: 0H-0M-11S-727897us
+
+testing fft2.s
+Timer@0060-0079: 0H-0M-26S-485259us
+TOTAL: 0H-0M-26S-485259us
+
+testing median2.s
+Timer@0059-0061: 0H-1M-8S-530745us
+TOTAL: 0H-1M-8S-530745us
+
+testing 00_bitset3.s
+Timer@0056-0064: 0H-0M-9S-982055us
+TOTAL: 0H-0M-9S-982055us
+
+testing fft0.s
+Timer@0060-0079: 0H-0M-12S-782466us
+TOTAL: 0H-0M-12S-782466us
+
+testing shuffle2.s
+Timer@0078-0090: 0H-0M-6S-172032us
+TOTAL: 0H-0M-6S-172032us
+
+testing 01_mm2.s
+Timer@0065-0084: 0H-0M-14S-315600us
+TOTAL: 0H-0M-14S-315600us
+
+testing 02_mv2.s
+Timer@0059-0067: 0H-0M-5S-186331us
+TOTAL: 0H-0M-5S-186331us
+
+testing 02_mv3.s
+Timer@0059-0067: 0H-0M-7S-866683us
+TOTAL: 0H-0M-7S-866683us
+
+testing 04_spmv3.s
+Timer@0039-0047: 0H-0M-5S-730248us
+TOTAL: 0H-0M-5S-730248us
+
+testing 03_sort3.s
+Timer@0090-0102: 0H-0M-7S-846685us
+TOTAL: 0H-0M-7S-846685us
+
+testing fft1.s
+Timer@0060-0079: 0H-0M-27S-230313us
+TOTAL: 0H-0M-27S-230313us
+
+testing transpose0.s
+Timer@0028-0047: 0H-0M-6S-49178us
+TOTAL: 0H-0M-6S-49178us
+
+testing 00_bitset1.s
+Timer@0056-0064: 0H-0M-3S-337716us
+TOTAL: 0H-0M-3S-337716us
+
+testing conv0.s
+Timer@0109-0116: 0H-0M-16S-788278us
+TOTAL: 0H-0M-16S-788278us
+
+testing 04_spmv1.s
+Timer@0039-0047: 0H-0M-8S-437509us
+TOTAL: 0H-0M-8S-437509us
+
+testing 02_mv1.s
+Timer@0059-0067: 0H-0M-9S-553521us
+TOTAL: 0H-0M-9S-553521us
+
+testing 01_mm1.s
+Timer@0065-0084: 0H-0M-15S-939068us
+TOTAL: 0H-0M-15S-939068us
+
+testing 00_bitset2.s
+Timer@0056-0064: 0H-0M-6S-665415us
+TOTAL: 0H-0M-6S-665415us
+
+testing median0.s
+Timer@0059-0061: 0H-0M-12S-387388us
+TOTAL: 0H-0M-12S-387388us
+
+testing conv1.s
+Timer@0109-0116: 0H-0M-29S-714025us
+TOTAL: 0H-0M-29S-714025us
+
+testing transpose2.s
+Timer@0028-0047: 0H-0M-15S-463621us
+TOTAL: 0H-0M-15S-463621us
+
+testing conv2.s
+Timer@0109-0116: 0H-0M-23S-119974us
+TOTAL: 0H-0M-23S-119974us
+
+testing 01_mm3.s
+Timer@0065-0084: 0H-0M-10S-794460us
+TOTAL: 0H-0M-10S-794460us
+
+testing 04_spmv2.s
+Timer@0039-0047: 0H-0M-4S-992012us
+TOTAL: 0H-0M-4S-992012us
+
