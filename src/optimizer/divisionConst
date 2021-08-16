@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "../ssa/traverse.h"
 #include "./local_op.h"
 #define N 32

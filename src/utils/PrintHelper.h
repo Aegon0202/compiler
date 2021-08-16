@@ -30,5 +30,8 @@
  * :param (int) type enum数字或名称
  */
 const char *EnumTypeToString(int type);
-
+#define ASSERT(cond)         \
+    if (!(cond)) {           \
+        PrintErrExit(#cond); \
+    }
 #endif

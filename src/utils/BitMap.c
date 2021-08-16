@@ -1,7 +1,5 @@
 #include "./BitMap.h"
 
-#include <assert.h>
-
 #include "./Malloc.h"
 
 #define LENGTH_TO_SIZE(length) (((length) >> 6) + 1)
@@ -27,23 +25,23 @@ int bitmap_address(int index) {
 }
 
 void setBitMap(struct BitMap* map, int index) {
-    assert(index < map->length);
+    ASSERT(index < map->length);
     map->content[bitmap_address(index)] |= bitmap_mask(index);
 }
 
 void clearBitMap(struct BitMap* map, int index) {
-    assert(index < map->length);
+    ASSERT(index < map->length);
     map->content[bitmap_address(index)] &= ~bitmap_mask(index);
 }
 
 int getBitMap(struct BitMap* map, int index) {
-    assert(index < map->length);
+    ASSERT(index < map->length);
     return !!(map->content[bitmap_address(index)] & bitmap_mask(index));
 }
 
 // 返回 map1 和 map2 的并集
 struct BitMap* unionBitMap(struct BitMap* map1, struct BitMap* map2) {
-    assert(map1->length == map2->length);
+    ASSERT(map1->length == map2->length);
     struct BitMap* map = newBitMap(map1->length);
 
     int size = LENGTH_TO_SIZE(map->length);
@@ -54,7 +52,7 @@ struct BitMap* unionBitMap(struct BitMap* map1, struct BitMap* map2) {
 }
 // 返回 map1 和 map2 的交集
 struct BitMap* intersectionBitMap(struct BitMap* map1, struct BitMap* map2) {
-    assert(map1->length == map2->length);
+    ASSERT(map1->length == map2->length);
     struct BitMap* map = newBitMap(map1->length);
 
     int size = LENGTH_TO_SIZE(map->length);
@@ -65,7 +63,7 @@ struct BitMap* intersectionBitMap(struct BitMap* map1, struct BitMap* map2) {
 }
 // 返回 map1 和 map2 的差集  (map1 - map2)
 struct BitMap* differenceBitMap(struct BitMap* map1, struct BitMap* map2) {
-    assert(map1->length == map2->length);
+    ASSERT(map1->length == map2->length);
     struct BitMap* map = newBitMap(map1->length);
 
     int size = LENGTH_TO_SIZE(map->length);
@@ -76,7 +74,7 @@ struct BitMap* differenceBitMap(struct BitMap* map1, struct BitMap* map2) {
 }
 // map1 := map2
 void copyBitMap(struct BitMap* map1, struct BitMap* map2) {
-    assert(map1->length == map2->length);
+    ASSERT(map1->length == map2->length);
 
     int size = LENGTH_TO_SIZE(map1->length);
     for (int i = 0; i < size; i++) {
@@ -85,7 +83,7 @@ void copyBitMap(struct BitMap* map1, struct BitMap* map2) {
 }
 // map1 == map2 ?
 int equalBitMap(struct BitMap* map1, struct BitMap* map2) {
-    assert(map1->length == map2->length);
+    ASSERT(map1->length == map2->length);
 
     int size = LENGTH_TO_SIZE(map1->length);
     for (int i = 0; i < size; i++) {
@@ -97,7 +95,7 @@ int equalBitMap(struct BitMap* map1, struct BitMap* map2) {
 }
 
 int low_index(uint64_t content) {
-    assert(content);
+    ASSERT(content);
     content = content & (-content);
     int j = 0;
     while ((content >>= 1) != 0) {
@@ -107,7 +105,7 @@ int low_index(uint64_t content) {
 }
 
 int getNextSetBitMap(struct BitMap* map, int from) {
-    assert(0 <= from && from < map->length);
+    ASSERT(0 <= from && from < map->length);
     int size = LENGTH_TO_SIZE(map->length);
     int f_index = bitmap_address(from);
 

@@ -18,9 +18,71 @@ struct propertyNode {
     int is_schedule;
 };
 
+struct OpUser {
+    struct ArmIr* value;  //若为-1则在块尾
+    list_entry_t* link;
+};
+
+struct OperandInfo {
+    struct ArmIr* defination;  //若为-1则在开头
+    struct OpUser* users;      //保证有序
+};
+
 struct LinearList* dependency_suc;  //用linearList实现邻接表,linearList每个元素是一个dequeList
 struct LinearList* dependency_pred;
 struct LinearList* propertyList;
+struct LinearList* opInfoList;
+
+struct OperandInfo* create_new_opInfo(struct ArmIr* def, struct Register* op) {
+    MALLOC(node, struct OperandInfo, 1);
+    MALLOC(user_head, struct OpUser, 1);
+    node->defination = -1;
+    node->users = user_head;
+    list_init(&user_head->link);
+    setLinearList(node, (size_t)op, node);
+    return node;
+}
+
+struct OperandInfo* getOpInfo(struct Register* op) {
+    struct OperandInfo* op_info = getLinearList(opInfoList, (size_t)op);
+    if (!op_info) return create_new_opInfo(-1, op);
+    return op_info;
+}
+
+void __construct_duLink_read_op(struct Register* op, struct ArmIr* ir) {
+    if (op->type != REGISTER) return;
+    struct OperandInfo* op_info = getOpInfo(op);
+    list_entry_t* user_head = &op_info->users->link;
+    MALLOC(new_user, struct OpUser, 1);
+    new_user->value = ir;
+    list_add_before(user_head, &new_user->link);
+}
+void __construct_duLink_read_op2(struct Operand2* op, struct ArmIr* ir) {
+    if (op->type == REGISTER) __construct_duLink_read_op(op->Rm.reg, ir);
+    if (op->shift_type == REGISTER) __construct_duLink_read_op(op->shift.reg, ir);
+}
+void __construct_duLink_write_op(struct Register* op, struct ArmIr* ir) {
+    if (op->type != REGISTER) PrintErrExit(" ");
+    create_new_opInfo(ir, op);
+}
+
+void construct_duLink(BlockBegin* block) {
+    list_entry_t* ir_head = getIrListFromBlock(block);
+    list_entry_t* ir_elem = list_next(ir_head);
+    while (ir_elem != ir_head) {
+        struct ArmIr* ir_value = le2struct(ir_elem, struct ArmIr, ir_link);
+
+#define READ_OP(op) __construct_duLink_read_op(op, ir_value)
+#define WRITE_OP(op) __construct_duLink_write_op(op, ir_value)
+#define READ_OP2(op) __construct_duLink_read_op2(op, ir_value)
+        ARM_IR_OP_READ_WRITE(ir_value, READ_OP, READ_OP2, WRITE_OP, PrintErrExit(" "););
+#undef READ_OP
+#undef WRITE_OP
+#undef READ_OP2
+
+        ir_elem = list_next(ir_elem);
+    }
+}
 
 struct propertyNode* create_new_prop_node() {
     MALLOC(node, struct propertyNode, 1);

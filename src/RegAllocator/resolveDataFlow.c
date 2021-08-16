@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "./moveResolver.h"
 #include "LRA.h"
 #include "lifeinterval.h"
@@ -29,7 +27,7 @@ void resolve_data_flow_block(BlockBegin* block, void* args) {
 
         list_entry_t* add_before_entry = NULL;
         if (block->block->successor_num > 1) {
-            assert(suc->block->predecessor_num == 1);
+            ASSERT(suc->block->predecessor_num == 1);
             add_before_entry = suc->block->arm_ir_list->ir_link.next->next;
         } else {
             add_before_entry = block->block->arm_ir_list->ir_link.prev;

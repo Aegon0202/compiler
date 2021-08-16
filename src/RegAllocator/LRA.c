@@ -1,7 +1,5 @@
 #include "LRA.h"
 
-#include <assert.h>
-
 Interval* child_at(int reg_num, int op_id);
 
 int alloc_register();
@@ -229,8 +227,8 @@ int getOptimalPos(int min_split_pos, int max_split_pos, struct DequeList* blocks
     if (min_split_pos == max_split_pos) {
         optimal_split_pos = min_split_pos;
     } else {
-        assert(min_split_pos < max_split_pos);
-        assert(min_split_pos > 0);
+        ASSERT(min_split_pos < max_split_pos);
+        ASSERT(min_split_pos > 0);
 
         BlockBegin* min_block = NULL;
         BlockBegin* max_block = NULL;

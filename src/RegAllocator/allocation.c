@@ -1,7 +1,5 @@
 #include "allocation.h"
 
-#include <assert.h>
-
 #include "../utils/Malloc.h"
 #include "../utils/link.h"
 #include "./lifeinterval.h"
@@ -136,7 +134,7 @@ void walkIntervals(struct DequeList* blocks) {
             list_add_before(active_list_head, &current->link);
         } else {
             list_entry_t* head = &current->value->usepostion->link;
-            assert(head == head->next);
+            ASSERT(head == head->next);
         }
 
         if (last_position == -1) {
